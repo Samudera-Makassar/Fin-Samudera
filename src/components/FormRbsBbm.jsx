@@ -37,7 +37,7 @@ const RbsBbmForm = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500"
+                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value="Andi Ichwan"
                             disabled
@@ -46,7 +46,7 @@ const RbsBbmForm = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Unit Bisnis</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500"
+                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value="PT Samudera Makassar Logistik"
                             disabled
@@ -58,7 +58,7 @@ const RbsBbmForm = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500"
+                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value="1234567890"
                             disabled
@@ -67,7 +67,7 @@ const RbsBbmForm = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nama Bank</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500"
+                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value="Bank Rakyat Indonesia"
                             disabled
@@ -79,7 +79,7 @@ const RbsBbmForm = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500"
+                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="date"
                             value={todayDate}
                             disabled

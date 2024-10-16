@@ -4,30 +4,31 @@ import { NavLink } from 'react-router-dom'
 const Sidebar = () => {
     return (
         <div>
-            <aside className="fixed top-0 left-0 h-screen w-64 bg-red-600 pt-16">
+            <aside className="fixed top-0 left-0 h-screen w-64 bg-[#ED1C24] pt-16">
                 <ul className="w-full text-left">
                     <li>
                         <NavLink
                             to="/dashboard"
                             className={({ isActive }) =>
                                 isActive
-                                    ? 'block w-full py-2 pl-4 text-white bg-red-400 font-bold'
-                                    : 'block w-full py-2 pl-4 text-white font-bold'
+                                    ? 'block w-full py-2 pl-4 text-white font-bold bg-[#FF5B5F]'
+                                    : 'block w-full py-2 pl-4 text-white font-bold hover:bg-[#FF5B5F]'
                             }
                         >
                             Dashboard
                         </NavLink>
                     </li>
                     <li>
-                        <NavLink to="/reimbursement" className="block w-full py-2 pl-4 text-white font-bold">
+                        {/* Menu Reimbursement (Non-clickable) */}
+                        <span className="block w-full py-2 pl-4 text-white font-bold cursor-default">
                             Reimbursement
-                        </NavLink>
+                        </span>
                         <NavLink
                             to="/reimbursement/medical"
                             className={({ isActive }) =>
                                 isActive
-                                    ? 'block w-full py-2 pl-8 text-white bg-red-400'
-                                    : 'block w-full py-2 pl-8 text-white'
+                                    ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
+                                    : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
                             }
                         >
                             Medical
@@ -36,8 +37,8 @@ const Sidebar = () => {
                             to="/reimbursement/bbm"
                             className={({ isActive }) =>
                                 isActive
-                                    ? 'block w-full py-2 pl-8 text-white bg-red-400'
-                                    : 'block w-full py-2 pl-8 text-white'
+                                    ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
+                                    : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
                             }
                         >
                             BBM
@@ -46,8 +47,8 @@ const Sidebar = () => {
                             to="/reimbursement/operasional"
                             className={({ isActive }) =>
                                 isActive
-                                    ? 'block w-full py-2 pl-8 text-white bg-red-400'
-                                    : 'block w-full py-2 pl-8 text-white'
+                                    ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
+                                    : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
                             }
                         >
                             Operasional
@@ -56,30 +57,24 @@ const Sidebar = () => {
                             to="/reimbursement/umum"
                             className={({ isActive }) =>
                                 isActive
-                                    ? 'block w-full py-2 pl-8 text-white bg-red-400'
-                                    : 'block w-full py-2 pl-8 text-white'
+                                    ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
+                                    : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
                             }
                         >
                             GA/Umum
                         </NavLink>
                     </li>
                     <li>
-                        <NavLink
-                            to="/lpj"
-                            className={({ isActive }) =>
-                                isActive
-                                    ? 'block w-full py-2 pl-4 text-white bg-red-400 font-bold'
-                                    : 'block w-full py-2 pl-4 text-white font-bold'
-                            }
-                        >
+                        {/* Menu LPJ Bon Sementara (Non-clickable) */}
+                        <span className="block w-full py-2 pl-4 text-white font-bold cursor-default">
                             LPJ Bon Sementara
-                        </NavLink>
+                        </span>
                         <NavLink
                             to="/lpj/umum"
                             className={({ isActive }) =>
                                 isActive
-                                    ? 'block w-full py-2 pl-8 text-white bg-red-400'
-                                    : 'block w-full py-2 pl-8 text-white'
+                                    ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
+                                    : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
                             }
                         >
                             GA/Umum
@@ -88,8 +83,8 @@ const Sidebar = () => {
                             to="/lpj/marketing"
                             className={({ isActive }) =>
                                 isActive
-                                    ? 'block w-full py-2 pl-8 text-white bg-red-400'
-                                    : 'block w-full py-2 pl-8 text-white'
+                                    ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
+                                    : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
                             }
                         >
                             Marketing/Operasional
