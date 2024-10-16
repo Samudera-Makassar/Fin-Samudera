@@ -176,8 +176,12 @@ const RbsMedicalForm = () => {
                 <hr className="border-gray-300 my-6" />
 
                 <div className="flex justify-end mt-6">
-                    <button className="px-16 py-3 mr-4 bg-gray-200 text-gray-600 rounded">Cancel</button>
-                    <button className="px-16 py-3 bg-red-600 text-white rounded">Submit</button>
+                    <button className="px-16 py-3 mr-4 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700">
+                        Cancel
+                    </button>
+                    <button className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200">
+                        Submit
+                    </button>
                 </div>
             </div>
         </div>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 
-const RbsBbmForm = () => {
+const RbsOperasionalForm = () => {
     const [todayDate, setTodayDate] = useState('')
-    const [reimbursements, setReimbursements] = useState([{ jenis: '', biaya: '', lokasi: '', plat: '', tanggal: '' }])
+    const [reimbursements, setReimbursements] = useState([{ jenis: '', biaya: '', kebutuhan: '', keterangan: '', tanggal: '' }])
 
     useEffect(() => {
         const today = new Date()
@@ -11,7 +11,7 @@ const RbsBbmForm = () => {
     }, [])
 
     const handleAddForm = () => {
-        setReimbursements([...reimbursements, { jenis: '', biaya: '', lokasi: '', plat: '', tanggal: '' }])
+        setReimbursements([...reimbursements, { jenis: '', biaya: '', kebutuhan: '', keterangan: '', tanggal: '' }])
     }
 
     const handleRemoveForm = (index) => {
@@ -29,7 +29,7 @@ const RbsBbmForm = () => {
     return (
         <div className="container mx-auto py-8">
             <h2 className="text-xl font-medium mb-4">
-                Tambah <span className="font-semibold">Reimbursement BBM</span>
+                Tambah <span className="font-semibold">Reimbursement Operasional</span>
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
@@ -112,11 +112,10 @@ const RbsBbmForm = () => {
                                     value={reimbursement.jenis}
                                     onChange={(e) => handleInputChange(index, 'jenis', e.target.value)}
                                 >
-                                    <option value="BBM Pertalite">BBM Pertalite</option>
-                                    <option value="BBM Pertamax">BBM Pertamax</option>
-                                    <option value="BBM Solar">BBM Solar</option>
-                                    <option value="Top Up E-Toll">Top Up E-Toll</option>
+                                    <option value="Entertaint">Entertaint</option>
+                                    <option value="Melas Lembur">Melas Lembur</option>
                                     <option value="Parkir">Parkir</option>
+                                    <option value="Toll">Toll</option>
                                     <option value="Others">Others</option>
                                 </select>
 
@@ -164,22 +163,22 @@ const RbsBbmForm = () => {
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Lokasi Pertamina</label>
+                            <label className="block text-gray-700 font-medium mb-2">Kebutuhan</label>
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
-                                value={reimbursement.lokasi}
-                                onChange={(e) => handleInputChange(index, 'lokasi', e.target.value)}
+                                value={reimbursement.kebutuhan}
+                                onChange={(e) => handleInputChange(index, 'kebutuhan', e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Plat Nomor</label>
+                            <label className="block text-gray-700 font-medium mb-2">Keterangan</label>
                             <input
                                 className="w-4/6 px-4 py-2 border rounded-md"
                                 type="text"
-                                value={reimbursement.plat}
-                                onChange={(e) => handleInputChange(index, 'plat', e.target.value)}
+                                value={reimbursement.keterangan}
+                                onChange={(e) => handleInputChange(index, 'keterangan', e.target.value)}
                             />
                         </div>
 
@@ -225,4 +224,4 @@ const RbsBbmForm = () => {
     )
 }
 
-export default RbsBbmForm
+export default RbsOperasionalForm

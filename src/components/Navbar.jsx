@@ -1,5 +1,5 @@
 import React from 'react'
-import { NavLink } from 'react-router-dom'
+// import { NavLink } from 'react-router-dom'
 import Logo from '../assets/images/logo-samudera.png'
 
 const Navbar = () => {
