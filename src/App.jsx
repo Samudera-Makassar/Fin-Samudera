@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Login from './pages/LoginPage'
 import Dashboard from './pages/Dashboard'
 import RbsMedical from './pages/RbsMedical'
 import RbsBbm from './pages/RbsBbm'
@@ -11,7 +12,7 @@ function App() {
         <div>
             <BrowserRouter>
                 <Routes>
-                    {/* <Route path="/" element={<Login />} /> */}
+                    <Route path="/" element={<Login />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/reimbursement/medical" element={<RbsMedical />} />
                     <Route path="/reimbursement/bbm" element={<RbsBbm />} />
