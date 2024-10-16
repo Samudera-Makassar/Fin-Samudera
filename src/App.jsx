@@ -6,6 +6,7 @@ import RbsBbm from './pages/RbsBbm'
 import RbsOperasional from './pages/RbsOperasional'
 import RbsUmum from './pages/RbsUmum'
 import LpjUmum from './pages/LpjUmum'
+import LpjMarketing from './pages/LpjMarketing'
 // import './App.css';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
                     <Route path="/reimbursement/operasional" element={<RbsOperasional />} />
                     <Route path="/reimbursement/umum" element={<RbsUmum />} />
                     <Route path="/lpj/umum" element={<LpjUmum />} />
+                    <Route path="/lpj/marketing" element={<LpjMarketing />} />
                 </Routes>
             </BrowserRouter>
         </div>

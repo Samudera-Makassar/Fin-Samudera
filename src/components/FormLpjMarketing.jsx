@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
-const FormLpjUmum = () => {
+const FormLpjMarketing = () => {
     const [todayDate, setTodayDate] = useState('')
 
     useEffect(() => {
@@ -44,7 +44,7 @@ const FormLpjUmum = () => {
     return (
         <div className="container mx-auto py-8 relative">
             <h2 className="text-xl font-medium mb-4">
-                Tambah <span className="font-bold">LPJ Bon Sementara GA/Umum</span>
+                Tambah <span className="font-bold">LPJ Bon Sementara Marketing/Operasional</span>
             </h2>
 
             <div className="mx-auto bg-white shadow-lg rounded-lg p-8">
@@ -212,4 +212,4 @@ const FormLpjUmum = () => {
     )
 }
 
-export default FormLpjUmum
+export default FormLpjMarketing
