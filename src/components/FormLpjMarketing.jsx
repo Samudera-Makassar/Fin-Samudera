@@ -72,7 +72,7 @@ const FormLpjMarketing = () => {
     return (
         <div className="container mx-auto py-8 relative">
             <h2 className="text-xl font-medium mb-4">
-                Tambah <span className="font-bold">LPJ Bon Sementara GA/Umum</span>
+                Tambah <span className="font-bold">LPJ Bon Sementara Marketing/Operasional</span>
             </h2>
 
             <div className="mx-auto bg-white shadow-lg rounded-lg p-8">
@@ -80,7 +80,7 @@ const FormLpjMarketing = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed bg-[#D5D5D5]"
                             type="text"
                             value="Andi Ichwan"
                             disabled
@@ -89,7 +89,7 @@ const FormLpjMarketing = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Unit Bisnis</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed bg-[#D5D5D5]"
                             type="text"
                             value="PT Samudera Makassar Logistik"
                             disabled
@@ -117,7 +117,7 @@ const FormLpjMarketing = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed bg-[#D5D5D5]"
                             type="date"
                             value={todayDate}
                             disabled
