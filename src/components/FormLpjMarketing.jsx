@@ -19,7 +19,7 @@ const FormLpjMarketing = () => {
     }
 
     const formatRupiah = (value) => {
-        // Pastikan bahwa value adalah string
+        // Memastikan bahwa value adalah string
         let numberString = (value || '').toString().replace(/[^,\d]/g, '')
         let split = numberString.split(',')
         let sisa = split[0].length % 3
@@ -32,7 +32,7 @@ const FormLpjMarketing = () => {
         }
 
         rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah
-        return 'Rp. ' + rupiah
+        return 'Rp' + rupiah
     }
 
     const handleInputChange = (index, field, value) => {
@@ -43,13 +43,13 @@ const FormLpjMarketing = () => {
                     return {
                         ...item,
                         [field]: cleanValue,
-                        total: item.quantity * cleanValue // Hitung total saat cost diubah
+                        total: item.quantity * cleanValue // Menghitung total saat cost diubah
                     }
                 } else if (field === 'quantity') {
                     return {
                         ...item,
                         [field]: value,
-                        total: value * item.cost // Hitung total saat quantity diubah
+                        total: value * item.cost // Menghitung total saat quantity diubah
                     }
                 }
                 return { ...item, [field]: value }
