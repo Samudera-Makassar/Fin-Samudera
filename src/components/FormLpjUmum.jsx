@@ -129,7 +129,7 @@ const FormLpjUmum = () => {
                             <input className="hidden" type="file" name="resume" id="file-upload" />
                             <label
                                 htmlFor="file-upload"
-                                className="px-4 py-2 bg-gray-200 border rounded cursor-pointer"
+                                className="px-4 py-2 bg-gray-200 border rounded cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
                             >
                                 Upload File
                             </label>
@@ -186,7 +186,7 @@ const FormLpjUmum = () => {
                             <label className="block text-gray-700 font-medium mb-2">Jumlah Biaya</label>
                             <input
                                 type="text"
-                                value={`Rp.${item.total.toLocaleString()}`}
+                                value={`Rp${item.total.toLocaleString()}`}
                                 className="w-full border border-gray-300 rounded-md px-4 py-2"
                                 disabled
                             />
@@ -217,11 +217,11 @@ const FormLpjUmum = () => {
                         <span>Sisa Kurang Dibayarkan ke Pegawai</span>
                     </div>
                     <div className="text-right">
-                        <span>Rp.{totalCost.toLocaleString()}</span>
+                        <span>Rp{totalCost.toLocaleString()}</span>
                         <br />
-                        <span>Rp.{Math.max(0, bonSementara - totalCost).toLocaleString()}</span>
+                        <span>Rp{Math.max(0, bonSementara - totalCost).toLocaleString()}</span>
                         <br />
-                        <span>Rp.{sisaKurang.toLocaleString()}</span>
+                        <span>Rp{sisaKurang.toLocaleString()}</span>
                     </div>
                 </div>
 
