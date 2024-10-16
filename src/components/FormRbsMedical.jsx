@@ -31,7 +31,7 @@ const RbsMedicalForm = () => {
     return (
         <div className="container mx-auto py-8">
             <h2 className="text-xl font-medium mb-4">
-                Tambah <span className="font-semibold">Reimbursement Medical</span>
+                Tambah <span className="font-bold">Reimbursement Medical</span>
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">

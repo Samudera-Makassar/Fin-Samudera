@@ -29,7 +29,7 @@ const RbsOperasionalForm = () => {
     return (
         <div className="container mx-auto py-8">
             <h2 className="text-xl font-medium mb-4">
-                Tambah <span className="font-semibold">Reimbursement Operasional</span>
+                Tambah <span className="font-bold">Reimbursement Operasional</span>
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">

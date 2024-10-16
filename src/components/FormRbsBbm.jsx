@@ -29,7 +29,7 @@ const RbsBbmForm = () => {
     return (
         <div className="container mx-auto py-8">
             <h2 className="text-xl font-medium mb-4">
-                Tambah <span className="font-semibold">Reimbursement BBM</span>
+                Tambah <span className="font-bold">Reimbursement BBM</span>
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
