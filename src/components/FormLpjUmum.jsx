@@ -18,16 +18,44 @@ const FormLpjUmum = () => {
         setItems([...items, { date: '', name: '', cost: 0, quantity: 0, total: 0 }])
     }
 
+    const formatRupiah = (value) => {
+        // Pastikan bahwa value adalah string
+        let numberString = (value || '').toString().replace(/[^,\d]/g, '')
+        let split = numberString.split(',')
+        let sisa = split[0].length % 3
+        let rupiah = split[0].substr(0, sisa)
+        let ribuan = split[0].substr(sisa).match(/\d{3}/gi)
+
+        if (ribuan) {
+            let separator = sisa ? '.' : ''
+            rupiah += separator + ribuan.join('.')
+        }
+
+        rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah
+        return 'Rp. ' + rupiah
+    }
+
     const handleInputChange = (index, field, value) => {
-        const updatedItems = items.map((item, i) =>
-            i === index
-                ? {
-                      ...item,
-                      [field]: value,
-                      total: field === 'cost' || field === 'quantity' ? item.cost * item.quantity : item.total
-                  }
-                : item
-        )
+        const updatedItems = items.map((item, i) => {
+            if (i === index) {
+                if (field === 'cost') {
+                    const cleanValue = value.replace(/\D/g, '')
+                    return {
+                        ...item,
+                        [field]: cleanValue,
+                        total: item.quantity * cleanValue // Hitung total saat cost diubah
+                    }
+                } else if (field === 'quantity') {
+                    return {
+                        ...item,
+                        [field]: value,
+                        total: value * item.cost // Hitung total saat quantity diubah
+                    }
+                }
+                return { ...item, [field]: value }
+            }
+            return item
+        })
         setItems(updatedItems)
     }
 
@@ -137,8 +165,8 @@ const FormLpjUmum = () => {
                         <div>
                             <label className="block text-gray-700 font-medium mb-2">Biaya</label>
                             <input
-                                type="number"
-                                value={item.cost}
+                                type="text"
+                                value={formatRupiah(item.cost)}
                                 onChange={(e) => handleInputChange(index, 'cost', e.target.value)}
                                 className="w-full border border-gray-300 rounded-md px-4 py-2"
                             />

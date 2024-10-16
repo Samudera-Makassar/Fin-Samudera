@@ -12,6 +12,22 @@ const RbsMedicalForm = () => {
         setTodayDate(formattedDate)
     }, [])
 
+    const formatRupiah = (number) => {
+        const strNumber = number.replace(/[^,\d]/g, '').toString() // Menghilangkan karakter non-numerik
+        const split = strNumber.split(',')
+        const sisa = split[0].length % 3
+        let rupiah = split[0].substr(0, sisa)
+        const ribuan = split[0].substr(sisa).match(/\d{3}/gi)
+
+        if (ribuan) {
+            const separator = sisa ? '.' : ''
+            rupiah += separator + ribuan.join('.')
+        }
+
+        rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah
+        return 'Rp' + rupiah
+    }
+
     const handleAddForm = () => {
         setReimbursements([...reimbursements, { jenis: '', biaya: '', dokter: '', klinik: '', tanggal: '' }])
     }
@@ -22,8 +38,15 @@ const RbsMedicalForm = () => {
     }
 
     const handleInputChange = (index, field, value) => {
+        let formattedValue = value
+
+        if (field === 'biaya') {
+            // Format biaya menjadi rupiah
+            formattedValue = formatRupiah(value)
+        }
+
         const updatedReimbursements = reimbursements.map((item, i) =>
-            i === index ? { ...item, [field]: value } : item
+            i === index ? { ...item, [field]: formattedValue } : item
         )
         setReimbursements(updatedReimbursements)
     }
