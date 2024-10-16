@@ -1,14 +1,16 @@
-import React from 'react'
-import Login from '../components/Login' 
+import React, { useEffect } from 'react'
+import Login from '../components/Login'
 
-const LoginPage = () => { 
+const LoginPage = () => {
+    useEffect(() => {
+        document.title = 'Login - Samudera Indonesia'
+    }, [])
+
     return (
         <div>
-            
-                <Login /> 
-            
+            <Login />
         </div>
     )
 }
 
-export default LoginPage 
+export default LoginPage
