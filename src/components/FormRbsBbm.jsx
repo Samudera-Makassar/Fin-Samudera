@@ -95,7 +95,7 @@ const RbsBbmForm = () => {
                             >
                                 Upload File
                             </label>
-                            <span className="ml-4 text-gray-500">Format File .pdf</span>
+                            <span className="ml-4 text-gray-500">Format .pdf Max Size: 250MB</span>
                         </div>
                     </div>
                 </div>
