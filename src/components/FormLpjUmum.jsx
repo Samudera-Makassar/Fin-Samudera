@@ -10,9 +10,9 @@ const FormLpjUmum = () => {
     }, [])
 
     const [items, setItems] = useState([
-        { date: '10-Okt-2024', name: 'Item A', cost: 100000, quantity: 10, total: 1000000 },
-        { date: '10-Okt-2024', name: 'Item B', cost: 1000000, quantity: 2, total: 2000000 }
+        { date: '', name: '', cost: 0, quantity: 0, total: 0 }
     ])
+    
 
     const handleAddItem = () => {
         setItems([...items, { date: '', name: '', cost: 0, quantity: 0, total: 0 }])
@@ -66,7 +66,7 @@ const FormLpjUmum = () => {
     }
 
     const totalCost = items.reduce((acc, item) => acc + item.total, 0)
-    const bonSementara = 2000000
+    const [bonSementara, setBonSementara] = useState(0); // Bon Sementara sebagai state yang bisa diubah
     const sisaKurang = totalCost > bonSementara ? totalCost - bonSementara : 0
 
     return (
@@ -102,14 +102,27 @@ const FormLpjUmum = () => {
                         <label className="block text-gray-700 font-medium mb-2">
                             Nomor Bon Sementara <span className="text-red-500">*</span>
                         </label>
-
-                        <input className="w-full px-4 py-2 border rounded-md text-gray-500" type="text" />
+                        <input className="w-full px-4 py-2 border rounded-md text-gray-900" type="text" 
+                            placeholder='Masukkan nomor bon sementara'
+                        />
                     </div>
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">
                             Jumlah Bon Sementara <span className="text-red-500">*</span>
                         </label>
-                        <input className="w-full px-4 py-2 border rounded-md text-gray-500" type="text" />
+                        <input
+                          className="w-full px-4 py-2 border rounded-md text-gray-900"
+                          type="text"
+                          value={bonSementara ? formatRupiah(bonSementara) : ''}
+                          onChange={(e) => {
+                            const cleanValue = e.target.value.replace(/\D/g, '');
+                            const value = Number(cleanValue);
+                            if (value >= 0) {
+                                setBonSementara(value);
+                            }
+                          }}
+                          placeholder="Masukkan jumlah bon sementara tanpa Rp"
+                        />
                     </div>
                 </div>
 
@@ -124,7 +137,9 @@ const FormLpjUmum = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700 font-medium mb-2">Lampiran</label>
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Lampiran <span className="text-red-500">*</span>
+                        </label>
                         <div className="flex items-center">
                             <input className="hidden" type="file" name="resume" id="file-upload" />
                             <label
@@ -143,42 +158,58 @@ const FormLpjUmum = () => {
                 {items.map((item, index) => (
                     <div className="grid grid-cols-6 gap-2 mb-4" key={index}>
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Tanggal Kegiatan</label>
+                            <label className="block text-gray-700 font-medium mb-2">
+                                Tanggal Kegiatan <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="date"
                                 value={item.date}
                                 onChange={(e) => handleInputChange(index, 'date', e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2"
+                                className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Item</label>
+                            <label className="block text-gray-700 font-medium mb-2">
+                                Item <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
                                 value={item.name}
                                 onChange={(e) => handleInputChange(index, 'name', e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2"
+                                className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
+                                placeholder='Item A'
                             />
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Biaya</label>
+                            <label className="block text-gray-700 font-medium mb-2">
+                                Biaya <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
                                 value={formatRupiah(item.cost)}
                                 onChange={(e) => handleInputChange(index, 'cost', e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2"
+                                className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Jumlah</label>
+                            <label className="block text-gray-700 font-medium mb-2">
+                                Jumlah <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="number"
                                 value={item.quantity}
-                                onChange={(e) => handleInputChange(index, 'quantity', e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2"
+                                onChange={(e) => {
+                                    const inputValue = e.target.value;
+                                    const formattedValue = inputValue.replace(/^0+/,''); //Menghapus angka nol di depan
+                                    const value = Number(formattedValue); // Mengonversi ke angka dan memeriksa apakah nilainya positif
+                                    if (formattedValue === '' || value >= 0) {
+                                        handleInputChange(index, 'quantity', formattedValue)};    
+                                    }
+                                }
+                                className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
                             />
                         </div>
 
@@ -187,7 +218,7 @@ const FormLpjUmum = () => {
                             <input
                                 type="text"
                                 value={`Rp${item.total.toLocaleString()}`}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2"
+                                className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
                                 disabled
                             />
                         </div>
@@ -208,15 +239,22 @@ const FormLpjUmum = () => {
                 </button>
 
                 {/* Bagian Total Biaya */}
-                <div className="grid grid-cols-2 gap-6 my-6 ml-96 mr-60">
-                    <div className="text-left">
+                <div className="grid grid-cols-6 gap my-6">
+                    <div className="text-left col-span-4 border border-red-900 pl-96">
                         <span>Total Biaya</span>
                         <br />
                         <span>Sisa Lebih Bon Sementara</span>
                         <br />
                         <span>Sisa Kurang Dibayarkan ke Pegawai</span>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right border border-red-900 pr-4 ">
+                        <span>:</span>
+                        <br />
+                        <span>:</span>
+                        <br />
+                        <span>:</span>
+                    </div>
+                    <div className="text-left border border-red-900">
                         <span>Rp{totalCost.toLocaleString()}</span>
                         <br />
                         <span>Rp{Math.max(0, bonSementara - totalCost).toLocaleString()}</span>

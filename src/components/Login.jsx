@@ -21,7 +21,8 @@ const LoginPage = () => {
             {/* Right Side (Login Form) */}
             <div className="w-[35%] bg-white flex flex-col justify-center px-16">
                 <div className="mb-8">
-                    <img src={Logo} alt="Logo" className="w-[234px] h-[36px]" />
+                    {/* <img src={Logo} alt="Logo" className="w-[234px] h-[36px]" /> */}
+                    <img src={Logo} alt="Logo" className="w-8/12 h-full" />
                 </div>
 
                 <h1 className="text-3xl font-bold text-gray-900 mb-8">Login</h1>
