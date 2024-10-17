@@ -8,7 +8,13 @@ const RbsOperasionalForm = () => {
 
     useEffect(() => {
         const today = new Date()
-        const formattedDate = today.toISOString().split('T')[0]
+        const day = today.getDate()
+        const month = today.getMonth()
+        const year = today.getFullYear()
+
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+        const formattedDate = `${day}-${monthNames[month]}-${year}`
+
         setTodayDate(formattedDate)
     }, [])
 
@@ -105,7 +111,7 @@ const RbsOperasionalForm = () => {
                         <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                            type="date"
+                            type="text"
                             value={todayDate}
                             disabled
                         />
