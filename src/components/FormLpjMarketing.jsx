@@ -75,12 +75,12 @@ const FormLpjMarketing = () => {
     const sisaKurang = totalCost > bonSementara ? totalCost - bonSementara : 0
 
     return (
-        <div className="container mx-auto py-8 relative">
+        <div className="container mx-auto py-8">
             <h2 className="text-xl font-medium mb-4">
                 Tambah <span className="font-bold">LPJ Bon Sementara Marketing/Operasional</span>
             </h2>
 
-            <div className="mx-auto bg-white shadow-lg rounded-lg p-8">
+            <div className="bg-white p-6 rounded-lg shadow">
                 <div className="grid grid-cols-2 gap-6 mb-4">
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
