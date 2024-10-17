@@ -5,7 +5,13 @@ const FormLpjUmum = () => {
 
     useEffect(() => {
         const today = new Date()
-        const formattedDate = today.toISOString().split('T')[0]
+        const day = today.getDate()
+        const month = today.getMonth()
+        const year = today.getFullYear()
+
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+        const formattedDate = `${day}-${monthNames[month]}-${year}`
+
         setTodayDate(formattedDate)
     }, [])
 
@@ -13,7 +19,6 @@ const FormLpjUmum = () => {
         { date: '', name: '', cost: 0, quantity: 0, total: 0 }
     ])
     
-
     const handleAddItem = () => {
         setItems([...items, { date: '', name: '', cost: 0, quantity: 0, total: 0 }])
     }
@@ -131,7 +136,7 @@ const FormLpjUmum = () => {
                         <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                            type="date"
+                            type="text"
                             value={todayDate}
                             disabled
                         />
@@ -239,27 +244,22 @@ const FormLpjUmum = () => {
                 </button>
 
                 {/* Bagian Total Biaya */}
-                <div className="grid grid-cols-6 gap my-6">
-                    <div className="text-left col-span-4 border border-red-900 pl-96">
+                <div className="grid grid-cols-4 my-6">
+                    <div></div>
+                    <div></div>
+                    <div className="text-left ">
                         <span>Total Biaya</span>
                         <br />
                         <span>Sisa Lebih Bon Sementara</span>
                         <br />
                         <span>Sisa Kurang Dibayarkan ke Pegawai</span>
                     </div>
-                    <div className="text-right border border-red-900 pr-4 ">
-                        <span>:</span>
+                    <div className="text-left ">
+                        <span>: Rp{totalCost.toLocaleString()}</span>
                         <br />
-                        <span>:</span>
+                        <span>: Rp{Math.max(0, bonSementara - totalCost).toLocaleString()}</span>
                         <br />
-                        <span>:</span>
-                    </div>
-                    <div className="text-left border border-red-900">
-                        <span>Rp{totalCost.toLocaleString()}</span>
-                        <br />
-                        <span>Rp{Math.max(0, bonSementara - totalCost).toLocaleString()}</span>
-                        <br />
-                        <span>Rp{sisaKurang.toLocaleString()}</span>
+                        <span>: Rp{sisaKurang.toLocaleString()}</span>
                     </div>
                 </div>
 

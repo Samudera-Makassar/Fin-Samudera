@@ -5,13 +5,18 @@ const FormLpjMarketing = () => {
 
     useEffect(() => {
         const today = new Date()
-        const formattedDate = today.toISOString().split('T')[0]
+        const day = today.getDate()
+        const month = today.getMonth()
+        const year = today.getFullYear()
+
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+        const formattedDate = `${day}-${monthNames[month]}-${year}`
+
         setTodayDate(formattedDate)
     }, [])
 
     const [items, setItems] = useState([
-        { date: '10-Okt-2024', name: 'Item A', cost: 100000, quantity: 10, total: 1000000 },
-        { date: '10-Okt-2024', name: 'Item B', cost: 1000000, quantity: 2, total: 2000000 }
+        { date: '', name: '', cost: 0, quantity: 0, total: 0 }
     ])
 
     const handleAddItem = () => {
@@ -66,7 +71,7 @@ const FormLpjMarketing = () => {
     }
 
     const totalCost = items.reduce((acc, item) => acc + item.total, 0)
-    const bonSementara = 2000000
+    const [bonSementara, setBonSementara] = useState(0); // Bon Sementara sebagai state yang bisa diubah
     const sisaKurang = totalCost > bonSementara ? totalCost - bonSementara : 0
 
     return (
@@ -102,14 +107,27 @@ const FormLpjMarketing = () => {
                         <label className="block text-gray-700 font-medium mb-2">
                             Nomor Bon Sementara <span className="text-red-500">*</span>
                         </label>
-
-                        <input className="w-full px-4 py-2 border rounded-md text-gray-500" type="text" />
+                        <input className="w-full px-4 py-2 border rounded-md text-gray-900" type="text" 
+                            placeholder='Masukkan nomor bon sementara'
+                        />
                     </div>
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">
                             Jumlah Bon Sementara <span className="text-red-500">*</span>
                         </label>
-                        <input className="w-full px-4 py-2 border rounded-md text-gray-500" type="text" />
+                        <input
+                          className="w-full px-4 py-2 border rounded-md text-gray-900"
+                          type="text"
+                          value={bonSementara ? formatRupiah(bonSementara) : ''}
+                          onChange={(e) => {
+                            const cleanValue = e.target.value.replace(/\D/g, '');
+                            const value = Number(cleanValue);
+                            if (value >= 0) {
+                                setBonSementara(value);
+                            }
+                          }}
+                          placeholder="Masukkan jumlah bon sementara tanpa Rp"
+                        />
                     </div>
                 </div>
 
@@ -118,13 +136,15 @@ const FormLpjMarketing = () => {
                         <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                            type="date"
+                            type="text"
                             value={todayDate}
                             disabled
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700 font-medium mb-2">Lampiran</label>
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Lampiran <span className="text-red-500">*</span>
+                        </label>
                         <div className="flex items-center">
                             <input className="hidden" type="file" name="resume" id="file-upload" />
                             <label
@@ -144,7 +164,9 @@ const FormLpjMarketing = () => {
                 {items.map((item, index) => (
                     <div className="grid grid-cols-6 gap-2 mb-4" key={index}>
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Tanggal Kegiatan</label>
+                            <label className="block text-gray-700 font-medium mb-2">
+                                Tanggal Kegiatan <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="date"
                                 value={item.date}
@@ -154,17 +176,22 @@ const FormLpjMarketing = () => {
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Item</label>
+                            <label className="block text-gray-700 font-medium mb-2">
+                                Item <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
                                 value={item.name}
                                 onChange={(e) => handleInputChange(index, 'name', e.target.value)}
                                 className="w-full border border-gray-300 rounded-md px-4 py-2"
+                                placeholder='Item A'
                             />
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Biaya</label>
+                            <label className="block text-gray-700 font-medium mb-2">
+                                Biaya <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
                                 value={formatRupiah(item.cost)}
@@ -174,12 +201,21 @@ const FormLpjMarketing = () => {
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Jumlah</label>
+                            <label className="block text-gray-700 font-medium mb-2">
+                                Jumlah <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="number"
                                 value={item.quantity}
-                                onChange={(e) => handleInputChange(index, 'quantity', e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2"
+                                onChange={(e) => {
+                                    const inputValue = e.target.value;
+                                    const formattedValue = inputValue.replace(/^0+/,''); //Menghapus angka nol di depan
+                                    const value = Number(formattedValue); // Mengonversi ke angka dan memeriksa apakah nilainya positif
+                                    if (formattedValue === '' || value >= 0) {
+                                        handleInputChange(index, 'quantity', formattedValue)};    
+                                    }
+                                }
+                                className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
                             />
                         </div>
 
@@ -209,23 +245,25 @@ const FormLpjMarketing = () => {
                 </button>
 
                 {/* Bagian Total Biaya */}
-                <div className="grid grid-cols-2 gap-6 my-6 ml-96 mr-60">
-                    <div className="text-left">
+                <div className="grid grid-cols-4 my-6">
+                    <div></div>
+                    <div></div>
+                    <div className="text-left ">
                         <span>Total Biaya</span>
                         <br />
                         <span>Sisa Lebih Bon Sementara</span>
                         <br />
                         <span>Sisa Kurang Dibayarkan ke Pegawai</span>
                     </div>
-                    <div className="text-right">
-                        <span>Rp{totalCost.toLocaleString()}</span>
+                    <div className="text-left ">
+                        <span>: Rp{totalCost.toLocaleString()}</span>
                         <br />
-                        <span>Rp{Math.max(0, bonSementara - totalCost).toLocaleString()}</span>
+                        <span>: Rp{Math.max(0, bonSementara - totalCost).toLocaleString()}</span>
                         <br />
-                        <span>Rp{sisaKurang.toLocaleString()}</span>
+                        <span>: Rp{sisaKurang.toLocaleString()}</span>
                     </div>
                 </div>
-
+                
                 <hr className="border-gray-300 my-6" />
 
                 <div className="flex justify-end mt-6">
