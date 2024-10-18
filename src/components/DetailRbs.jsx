@@ -10,7 +10,7 @@ const DetailRbs = () => {
         status: 'Disetujui',
         approver: 'Pak Budi',
         accountNumber: '1234567890',
-        bankName: 'BRI',
+        bankName: 'Bank Rakyat Indonesia',
         reimbursementCategory: 'BBM',
         items: [
             {
@@ -49,7 +49,7 @@ const DetailRbs = () => {
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
-                <div className="grid grid-cols-2 gap-64 mb-6 font-medium">
+                <div className="grid grid-cols-2 gap-48 mb-6 font-medium">
                     <div className='grid grid-cols-2'>
                         <div>
                             <p>ID </p>
