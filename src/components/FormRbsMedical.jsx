@@ -117,7 +117,9 @@ const RbsMedicalForm = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700 font-medium mb-2">Lampiran</label>
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Lampiran <span className="text-red-500">*</span>
+                        </label>
                         <div className="flex items-center">
                             <input className="hidden" type="file" name="resume" id="file-upload" />
                             <label
@@ -134,9 +136,13 @@ const RbsMedicalForm = () => {
                 <hr className="border-gray-300 my-6" />
 
                 {reimbursements.map((reimbursement, index) => (
-                    <div className="grid grid-cols-6 gap-2 mb-4" key={index}>
+                    <div className="flex justify-stretch gap-2 mb-2" key={index}>
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Jenis Reimbursement</label>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Jenis Reimbursement <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
@@ -146,17 +152,25 @@ const RbsMedicalForm = () => {
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Biaya</label>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Biaya <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
-                                value={reimbursement.biaya}
+                                value={formatRupiah(reimbursement.biaya)}
                                 onChange={(e) => handleInputChange(index, 'biaya', e.target.value)}
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-gray-700 font-medium mb-2">Nama Dokter</label>
+                        <div className='flex-grow'>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Nama Dokter <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
@@ -165,8 +179,12 @@ const RbsMedicalForm = () => {
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-gray-700 font-medium mb-2">Nama Klinik/RS</label>
+                        <div className='flex-grow'>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Nama Klinik/RS <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
@@ -176,7 +194,11 @@ const RbsMedicalForm = () => {
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Tanggal Aktivitas</label>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Tanggal Aktivitas <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="date"
@@ -197,7 +219,7 @@ const RbsMedicalForm = () => {
                 ))}
 
                 <div className="mb-4">
-                    <span className="text-red-500 font-bold underline cursor-pointer" onClick={handleAddForm}>
+                    <span className="text-red-600 font-bold underline cursor-pointer" onClick={handleAddForm}>
                         Tambah
                     </span>
                 </div>

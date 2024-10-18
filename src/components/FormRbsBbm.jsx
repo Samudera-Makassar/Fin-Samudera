@@ -115,7 +115,9 @@ const RbsBbmForm = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700 font-medium mb-2">Lampiran</label>
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Lampiran <span className="text-red-500">*</span>
+                        </label>
                         <div className="flex items-center">
                             <input className="hidden" type="file" name="resume" id="file-upload" />
                             <label
@@ -132,9 +134,13 @@ const RbsBbmForm = () => {
                 <hr className="border-gray-300 my-6" />
 
                 {reimbursements.map((reimbursement, index) => (
-                    <div className="grid grid-cols-6 gap-2 mb-4" key={index}>
-                        <div className="w-full">
-                            <label className="block text-gray-700 font-medium mb-2">Jenis Reimbursement</label>
+                    <div className="flex justify-stretch gap-2 mb-2" key={index}>
+                        <div>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Jenis Reimbursement <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <div className="relative">
                                 <select
                                     className="block w-full px-4 py-2 pr-8 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -150,7 +156,7 @@ const RbsBbmForm = () => {
                                 </select>
 
                                 {/* Icon Dropdown */}
-                                <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                                <div className="absolute inset-y-0 right-0 flex px-4 pt-3 pointer-events-none">
                                     <svg
                                         className="w-4 h-4 text-gray-400"
                                         fill="none"
@@ -168,7 +174,7 @@ const RbsBbmForm = () => {
                                 </div>
 
                                 {reimbursement.jenis === 'Others' && (
-                                    <div className="mt-4">
+                                    <div className="mt-2">
                                         <label className="block text-gray-700 font-medium mb-2">Keterangan</label>
                                         <input
                                             className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -183,17 +189,25 @@ const RbsBbmForm = () => {
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Biaya</label>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Biaya <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
-                                value={reimbursement.biaya}
+                                value={formatRupiah(reimbursement.biaya)}
                                 onChange={(e) => handleInputChange(index, 'biaya', e.target.value)}
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-gray-700 font-medium mb-2">Lokasi Pertamina</label>
+                        <div className='flex-grow'>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Lokasi Pertamina <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
@@ -203,9 +217,13 @@ const RbsBbmForm = () => {
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Plat Nomor</label>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Plat Nomor <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
-                                className="w-4/6 px-4 py-2 border rounded-md"
+                                className="w-full px-4 py-2 border rounded-md"
                                 type="text"
                                 value={reimbursement.plat}
                                 onChange={(e) => handleInputChange(index, 'plat', e.target.value)}
@@ -213,9 +231,13 @@ const RbsBbmForm = () => {
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Tanggal Aktivitas</label>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Tanggal Aktivitas <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
-                                className="w-auto px-4 py-2 border rounded-md"
+                                className="w-full px-4 py-2 border rounded-md"
                                 type="date"
                                 value={reimbursement.tanggal}
                                 onChange={(e) => handleInputChange(index, 'tanggal', e.target.value)}
@@ -234,7 +256,7 @@ const RbsBbmForm = () => {
                 ))}
 
                 <div className="mb-4">
-                    <span className="text-red-500 font-bold underline cursor-pointer" onClick={handleAddForm}>
+                    <span className="text-red-600 font-bold underline cursor-pointer" onClick={handleAddForm}>
                         Tambah
                     </span>
                 </div>

@@ -161,11 +161,13 @@ const FormLpjUmum = () => {
                 <hr className="border-gray-300 my-6" />
 
                 {items.map((item, index) => (
-                    <div className="grid grid-cols-6 gap-2 mb-4" key={index}>
+                    <div className="flex justify-stretch gap-2 mb-2" key={index}>
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">
-                                Tanggal Kegiatan <span className="text-red-500">*</span>
-                            </label>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Tanggal Kegiatan <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
                                 type="date"
                                 value={item.date}
@@ -174,23 +176,26 @@ const FormLpjUmum = () => {
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-gray-700 font-medium mb-2">
-                                Item <span className="text-red-500">*</span>
-                            </label>
+                        <div className='flex-grow'>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Item <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
                                 type="text"
                                 value={item.name}
                                 onChange={(e) => handleInputChange(index, 'name', e.target.value)}
                                 className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
-                                placeholder='Item A'
                             />
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">
-                                Biaya <span className="text-red-500">*</span>
-                            </label>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Biaya <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
                                 type="text"
                                 value={formatRupiah(item.cost)}
@@ -200,9 +205,11 @@ const FormLpjUmum = () => {
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">
-                                Jumlah <span className="text-red-500">*</span>
-                            </label>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Jumlah <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
                                 type="number"
                                 value={item.quantity}
@@ -219,7 +226,11 @@ const FormLpjUmum = () => {
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Jumlah Biaya</label>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Jumlah Biaya
+                                </label>
+                            )}
                             <input
                                 type="text"
                                 value={`Rp${item.total.toLocaleString()}`}
@@ -239,7 +250,7 @@ const FormLpjUmum = () => {
                     </div>
                 ))}
 
-                <button onClick={handleAddItem} className="mt-4 text-red-600 font-bold underline cursor-pointer">
+                <button onClick={handleAddItem} className="text-red-600 font-bold underline cursor-pointer">
                     Tambah
                 </button>
 
