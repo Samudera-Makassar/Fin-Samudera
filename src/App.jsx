@@ -8,6 +8,7 @@ import RbsUmum from './pages/RbsUmum'
 import LpjUmum from './pages/LpjUmum'
 import LpjMarketing from './pages/LpjMarketing'
 import DetailReimbursementPage from './pages/DetailRbsPage'
+import DetailLpjPage from './pages/DetailLpjPage'
 // import './App.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
                     <Route path="/reimbursement/detail" element={<DetailReimbursementPage />} />
                     <Route path="/lpj/umum" element={<LpjUmum />} />
                     <Route path="/lpj/marketing" element={<LpjMarketing />} />
+                    <Route path="/lpj/detail" element={<DetailLpjPage />} />
                 </Routes>
             </BrowserRouter>
         </div>
