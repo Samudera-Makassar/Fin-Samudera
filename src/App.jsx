@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from './pages/LoginPage'
-import Dashboard from './pages/Dashboard'
+import Sidebar from './components/Sidebar'
 import RbsMedical from './pages/RbsMedical'
 import RbsBbm from './pages/RbsBbm'
 import RbsOperasional from './pages/RbsOperasional'
@@ -9,15 +9,41 @@ import LpjUmum from './pages/LpjUmum'
 import LpjMarketing from './pages/LpjMarketing'
 import DetailReimbursementPage from './pages/DetailRbsPage'
 import DetailLpjPage from './pages/DetailLpjPage'
-// import './App.css';
+import EmployeeDashboard from './pages/EmployeeDashboard'
+import ReviewerDashboard from './pages/ReviewerDashboard'
+import AdminDashboard from './pages/AdminDashboard'
 
-function App() {
+const App = () => {
+    const userRole = 'admin'; 
+
+    const PrivateRoute = ({ children, allowedRoles }) => {
+        if (allowedRoles.includes(userRole)) {
+            return children;
+        }
+        return <div>Access Denied</div>;
+    };
+
     return (
         <div>
             <BrowserRouter>
+                <Sidebar role={userRole} />
                 <Routes>
                     <Route path="/" element={<Login />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/dashboard/employee" element={
+                        <PrivateRoute allowedRoles={['employee']}>
+                            <EmployeeDashboard />
+                        </PrivateRoute>
+                    } />
+                    <Route path="/dashboard/reviewer" element={
+                        <PrivateRoute allowedRoles={['reviewer']}>
+                            <ReviewerDashboard />
+                        </PrivateRoute>
+                    } />
+                    <Route path="/dashboard/admin" element={
+                        <PrivateRoute allowedRoles={['admin']}>
+                            <AdminDashboard />
+                        </PrivateRoute>
+                    } />
                     <Route path="/reimbursement/medical" element={<RbsMedical />} />
                     <Route path="/reimbursement/bbm" element={<RbsBbm />} />
                     <Route path="/reimbursement/operasional" element={<RbsOperasional />} />
