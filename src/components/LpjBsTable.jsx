@@ -3,7 +3,7 @@ import EmptyState from '../assets/images/EmptyState.png';
 
 const LpjBsTable = ({ data = { 
     lpjBs: [
-        { id: 'LPJ-01', jenis: 'BBM', noBs: 'BS0001', tanggal: '10-Okt-2024', jumlah: 'Rp.123.000', status: 'Diproses' },
+            { id: 'LPJ-01', jenis: 'BBM', noBs: 'BS0001', tanggal: '10-Okt-2024', jumlah: 'Rp.123.000', status: 'Diproses' },
         ] 
     }, onCancel }) => {
     return (

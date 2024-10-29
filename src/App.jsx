@@ -15,6 +15,8 @@ import ReviewerDashboard from './pages/ReviewerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/protectedRoute';
+import RbsCheckPage from './pages/RbsCheckPage';
+import LpjCheckPage from './pages/LpjCheckPage';
 
 const AppContent = ({ userRole }) => {
     return (
@@ -47,11 +49,13 @@ const AppContent = ({ userRole }) => {
                 <Route path="/reimbursement/operasional" element={<RbsOperasional />} />
                 <Route path="/reimbursement/umum" element={<RbsUmum />} />
                 <Route path="/reimbursement/detail" element={<DetailReimbursementPage />} />
+                <Route path="/reimbursement/cek-laporan" element={<RbsCheckPage />} />
 
                 {/* LPJ Routes */}
                 <Route path="/lpj/umum" element={<LpjUmum />} />
                 <Route path="/lpj/marketing" element={<LpjMarketing />} />
                 <Route path="/lpj/detail" element={<DetailLpjPage />} />
+                <Route path="/lpj/cek-laporan" element={<LpjCheckPage />} />
 
                 {/* Not Found Route */}
                 <Route path="*" element={<NotFoundPage />} />

@@ -6,7 +6,6 @@ import { validPaths } from './routesConfig';
 const SidebarWrapper = ({ role }) => {
     const location = useLocation();
     const showSidebar = location.pathname !== '/' && validPaths.includes(location.pathname);
-    // const showSidebar = location.pathname !== '/' && !location.pathname.includes('not-found');
     return showSidebar ? <Sidebar role={role} /> : null;
 };
 

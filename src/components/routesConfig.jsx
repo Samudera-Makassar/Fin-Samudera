@@ -8,7 +8,9 @@ export const validPaths = [
     "/reimbursement/operasional",
     "/reimbursement/umum", 
     "/reimbursement/detail", 
+    "/reimbursement/cek-laporan",
     "/lpj/umum", 
     "/lpj/marketing",
-    "/lpj/detail"
+    "/lpj/detail",
+    "/lpj/cek-laporan"
 ];
