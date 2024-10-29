@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReimbursementTable from '../components/ReimbursementTable';
 import LpjBsTable from '../components/LpjBsTable';
+import ReportCard from '../components/ReportCard';
 import CancelModal from '../components/CancelModal';
 import Layout from './Layout';
 
@@ -49,12 +50,11 @@ const AdminDashboard = () => {
                         <h2 className="text-xl font-medium mb-4">
                             Welcome, <span className='font-bold'>Rachmat Maulana</span>
                         </h2>
-
+                        <ReportCard />
                         <ReimbursementTable 
                             reimbursements={data.reimbursements} 
                             onCancel={handleCancel} 
                         />
-                    
                         <LpjBsTable
                             lpjBs={data.lpjBs} 
                             onCancel={handleCancel} 
