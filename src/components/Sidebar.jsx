@@ -15,17 +15,18 @@ const Sidebar = ({ role }) => {
                             to={`/dashboard/${role}`}
                             className={({ isActive }) =>
                                 isActive
-                                    ? 'block w-full py-2 pl-4 text-white font-bold bg-[#FF5B5F]'
-                                    : 'block w-full py-2 pl-4 text-white font-bold hover:bg-[#FF5B5F]'
+                                    ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
+                                    : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
                             }
                         >
                             Dashboard
                         </NavLink>
                     </li>
                     <li>
-                        {/* Menu Reimbursement (Non-clickable) */}
-                        <span className="block w-full py-2 pl-4 text-white font-bold cursor-default">
-                            Reimbursement
+                        <hr className="border-red-500" /> 
+                        {/* Menu Reimbursement */}
+                        <span className="block w-full py-2 pl-4 text-gray-100 text-xs font-semibold cursor-default">
+                            REIMBURSEMENT
                         </span>
                         <NavLink
                             to="/reimbursement/medical"
@@ -83,9 +84,10 @@ const Sidebar = ({ role }) => {
                     </li>
                     )}
                     <li>
-                        {/* Menu LPJ Bon Sementara (Non-clickable) */}
-                        <span className="block w-full py-2 pl-4 text-white font-bold cursor-default">
-                            LPJ Bon Sementara
+                        <hr className="border-red-500" /> 
+                        {/* Menu LPJ Bon Sementara */}
+                        <span className="block w-full py-2 pl-4 text-gray-100 text-xs font-semibold cursor-default">
+                            LPJ BON SEMENTARA
                         </span>
                         <NavLink
                             to="/lpj/umum"
@@ -124,12 +126,13 @@ const Sidebar = ({ role }) => {
                     )}
                     {role === 'admin' && (
                     <li>
+                        <hr className="border-red-500" /> 
                         <NavLink
-                            to="/admin/manage-users"
+                            to="/manage-users"
                             className={({ isActive }) =>
                                 isActive
-                                    ? 'block w-full py-2 pl-4 text-white font-bold bg-[#FF5B5F]'
-                                    : 'block w-full py-2 pl-4 text-white font-bold hover:bg-[#FF5B5F]'
+                                    ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
+                                    : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
                             }
                         >
                             Manage Users
