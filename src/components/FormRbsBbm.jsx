@@ -134,14 +134,14 @@ const RbsBbmForm = () => {
                 <hr className="border-gray-300 my-6" />
 
                 {reimbursements.map((reimbursement, index) => (
-                    <div className="flex justify-stretch gap-2 mb-2" key={index}>
-                        <div>
+                    <div key={index} className="flex justify-stretch gap-2 mb-2">
+                        <div className='flex-1 max-w-44'>
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Jenis Reimbursement <span className="text-red-500">*</span>
                                 </label>
                             )}
-                            <div className="relative">
+                            <div className='relative'>                        
                                 <select
                                     className="block w-full px-4 py-2 pr-8 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     value={reimbursement.jenis}
@@ -152,11 +152,10 @@ const RbsBbmForm = () => {
                                     <option value="BBM Solar">BBM Solar</option>
                                     <option value="Top Up E-Toll">Top Up E-Toll</option>
                                     <option value="Parkir">Parkir</option>
-                                    <option value="Others">Others</option>
+                                    <option value="Lainnya">Lainnya</option>
                                 </select>
-
-                                {/* Icon Dropdown */}
-                                <div className="absolute inset-y-0 right-0 flex px-4 pt-3 pointer-events-none">
+                                
+                                <div className="absolute inset-y-0 right-0 flex items-center px-4 justify-center pointer-events-none">
                                     <svg
                                         className="w-4 h-4 text-gray-400"
                                         fill="none"
@@ -172,23 +171,27 @@ const RbsBbmForm = () => {
                                         ></path>
                                     </svg>
                                 </div>
-
-                                {reimbursement.jenis === 'Others' && (
-                                    <div className="mt-2">
-                                        <label className="block text-gray-700 font-medium mb-2">Keterangan</label>
-                                        <input
-                                            className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                            type="text"
-                                            placeholder="Jenis Lain"
-                                            value={reimbursement.jenisLain}
-                                            onChange={(e) => handleInputChange(index, 'jenisLain', e.target.value)}
-                                        />
-                                    </div>
-                                )}
                             </div>
                         </div>
 
-                        <div>
+                        {reimbursement.jenis === 'Others' && (
+                            <div className="flex-1 max-w-40">
+                                {index === 0 &&
+                                    <label className="block text-gray-700 font-medium mb-2">
+                                        Jenis Lain <span className="text-red-500">*</span>
+                                    </label>
+                                }
+                                <input
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    type="text"
+                                    placeholder='Jenis lain'
+                                    value={reimbursement.jenisLain}
+                                    onChange={(e) => handleInputChange(index, 'jenisLain', e.target.value)}
+                                />
+                            </div>
+                        )}
+
+                        <div className='flex-1 max-w-36'> 
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Biaya <span className="text-red-500">*</span>
@@ -202,7 +205,7 @@ const RbsBbmForm = () => {
                             />
                         </div>
 
-                        <div className='flex-grow'>
+                        <div className='flex-1 min-w-36'>
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Lokasi Pertamina <span className="text-red-500">*</span>
@@ -211,12 +214,12 @@ const RbsBbmForm = () => {
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
-                                value={reimbursement.lokasi}
-                                onChange={(e) => handleInputChange(index, 'lokasi', e.target.value)}
+                                value={reimbursement.kebutuhan}
+                                onChange={(e) => handleInputChange(index, 'kebutuhan', e.target.value)}
                             />
                         </div>
 
-                        <div>
+                        <div className='flex-1 max-w-36'>
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Plat Nomor <span className="text-red-500">*</span>
@@ -225,12 +228,12 @@ const RbsBbmForm = () => {
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
-                                value={reimbursement.plat}
-                                onChange={(e) => handleInputChange(index, 'plat', e.target.value)}
+                                value={reimbursement.keterangan}
+                                onChange={(e) => handleInputChange(index, 'keterangan', e.target.value)}
                             />
                         </div>
 
-                        <div>
+                        <div className='flex-1 max-w-40'>
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Tanggal Aktivitas <span className="text-red-500">*</span>
@@ -244,7 +247,7 @@ const RbsBbmForm = () => {
                             />
                         </div>
 
-                        <div className="flex items-end">
+                        <div className="flex items-end ">
                             <button
                                 className="px-4 py-2 bg-transparent text-red-500 border border-red-500 rounded hover:bg-red-100"
                                 onClick={() => handleRemoveForm(index)}

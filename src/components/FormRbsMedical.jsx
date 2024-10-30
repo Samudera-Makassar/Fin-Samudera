@@ -136,8 +136,8 @@ const RbsMedicalForm = () => {
                 <hr className="border-gray-300 my-6" />
 
                 {reimbursements.map((reimbursement, index) => (
-                    <div className="flex justify-stretch gap-2 mb-2" key={index}>
-                        <div>
+                    <div key={index} className="flex justify-stretch gap-2 mb-2">
+                        <div className='flex-1 max-w-44'>
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Jenis Reimbursement <span className="text-red-500">*</span>
@@ -151,7 +151,24 @@ const RbsMedicalForm = () => {
                             />
                         </div>
 
-                        <div>
+                        {reimbursement.jenis === 'Others' && (
+                            <div className="flex-1 max-w-40">
+                                {index === 0 &&
+                                    <label className="block text-gray-700 font-medium mb-2">
+                                        Jenis Lain <span className="text-red-500">*</span>
+                                    </label>
+                                }
+                                <input
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    type="text"
+                                    placeholder='Jenis lain'
+                                    value={reimbursement.jenisLain}
+                                    onChange={(e) => handleInputChange(index, 'jenisLain', e.target.value)}
+                                />
+                            </div>
+                        )}
+
+                        <div className='flex-1 max-w-36'> 
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Biaya <span className="text-red-500">*</span>
@@ -165,7 +182,7 @@ const RbsMedicalForm = () => {
                             />
                         </div>
 
-                        <div className='flex-grow'>
+                        <div className='flex-1 min-w-36'>
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Nama Dokter <span className="text-red-500">*</span>
@@ -174,26 +191,26 @@ const RbsMedicalForm = () => {
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
-                                value={reimbursement.dokter}
-                                onChange={(e) => handleInputChange(index, 'dokter', e.target.value)}
+                                value={reimbursement.kebutuhan}
+                                onChange={(e) => handleInputChange(index, 'kebutuhan', e.target.value)}
                             />
                         </div>
 
-                        <div className='flex-grow'>
+                        <div className='flex-1 min-w-36'>
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
-                                    Nama Klinik/RS <span className="text-red-500">*</span>
+                                    Nama Rumah Sakit/Klinik <span className="text-red-500">*</span>
                                 </label>
                             )}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
-                                value={reimbursement.klinik}
-                                onChange={(e) => handleInputChange(index, 'klinik', e.target.value)}
+                                value={reimbursement.keterangan}
+                                onChange={(e) => handleInputChange(index, 'keterangan', e.target.value)}
                             />
                         </div>
 
-                        <div>
+                        <div className='flex-1 max-w-40'>
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Tanggal Aktivitas <span className="text-red-500">*</span>
@@ -207,7 +224,7 @@ const RbsMedicalForm = () => {
                             />
                         </div>
 
-                        <div className="flex items-end">
+                        <div className="flex items-end ">
                             <button
                                 className="px-4 py-2 bg-transparent text-red-500 border border-red-500 rounded hover:bg-red-100"
                                 onClick={() => handleRemoveForm(index)}
