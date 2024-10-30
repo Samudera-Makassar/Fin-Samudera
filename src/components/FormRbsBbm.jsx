@@ -17,7 +17,7 @@ const RbsBbmForm = () => {
     }, [])
 
     const formatRupiah = (number) => {
-        const strNumber = number.replace(/[^,\d]/g, '').toString() // Menghilangkan karakter non-numerik
+        const strNumber = number.replace(/[^,\d]/g, '').toString() 
         const split = strNumber.split(',')
         const sisa = split[0].length % 3
         let rupiah = split[0].substr(0, sisa)
@@ -45,7 +45,6 @@ const RbsBbmForm = () => {
         let formattedValue = value
 
         if (field === 'biaya') {
-            // Format biaya menjadi rupiah
             formattedValue = formatRupiah(value)
         }
 
@@ -174,7 +173,7 @@ const RbsBbmForm = () => {
                             </div>
                         </div>
 
-                        {reimbursement.jenis === 'Others' && (
+                        {reimbursement.jenis === 'Lainnya' && (
                             <div className="flex-1 max-w-40">
                                 {index === 0 &&
                                     <label className="block text-gray-700 font-medium mb-2">

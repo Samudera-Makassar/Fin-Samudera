@@ -19,7 +19,7 @@ const RbsMedicalForm = () => {
     }, [])
 
     const formatRupiah = (number) => {
-        const strNumber = number.replace(/[^,\d]/g, '').toString() // Menghilangkan karakter non-numerik
+        const strNumber = number.replace(/[^,\d]/g, '').toString()
         const split = strNumber.split(',')
         const sisa = split[0].length % 3
         let rupiah = split[0].substr(0, sisa)
@@ -46,8 +46,7 @@ const RbsMedicalForm = () => {
     const handleInputChange = (index, field, value) => {
         let formattedValue = value
 
-        if (field === 'biaya') {
-            // Format biaya menjadi rupiah
+        if (field === 'biaya') {            
             formattedValue = formatRupiah(value)
         }
 
@@ -150,24 +149,7 @@ const RbsMedicalForm = () => {
                                 onChange={(e) => handleInputChange(index, 'jenis', e.target.value)}
                             />
                         </div>
-
-                        {reimbursement.jenis === 'Others' && (
-                            <div className="flex-1 max-w-40">
-                                {index === 0 &&
-                                    <label className="block text-gray-700 font-medium mb-2">
-                                        Jenis Lain <span className="text-red-500">*</span>
-                                    </label>
-                                }
-                                <input
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    type="text"
-                                    placeholder='Jenis lain'
-                                    value={reimbursement.jenisLain}
-                                    onChange={(e) => handleInputChange(index, 'jenisLain', e.target.value)}
-                                />
-                            </div>
-                        )}
-
+                        
                         <div className='flex-1 max-w-36'> 
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">

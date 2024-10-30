@@ -175,7 +175,7 @@ const RbsOperasionalForm = () => {
                             </div>
                         </div>
 
-                        {reimbursement.jenis === 'Others' && (
+                        {reimbursement.jenis === 'Lainnya' && (
                             <div className="flex-1 max-w-40">
                                 {index === 0 &&
                                     <label className="block text-gray-700 font-medium mb-2">
