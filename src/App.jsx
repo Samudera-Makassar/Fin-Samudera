@@ -17,6 +17,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/protectedRoute';
 import RbsCheckPage from './pages/RbsCheckPage';
 import LpjCheckPage from './pages/LpjCheckPage';
+import ManageUserPage from './pages/ManageUserPage';
 
 const AppContent = ({ userRole }) => {
     return (
@@ -56,6 +57,9 @@ const AppContent = ({ userRole }) => {
                 <Route path="/lpj/marketing" element={<LpjMarketing />} />
                 <Route path="/lpj/detail" element={<DetailLpjPage />} />
                 <Route path="/lpj/cek-laporan" element={<LpjCheckPage />} />
+
+                {/* Manage User Route */}
+                <Route path="/manage-users" element={<ManageUserPage />} />
 
                 {/* Not Found Route */}
                 <Route path="*" element={<NotFoundPage />} />
