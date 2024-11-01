@@ -21,7 +21,9 @@ const AdminDashboard = () => {
         ] 
     });
 
-    // State untuk mengelola modal
+    const reimbursementCount = data.reimbursements.filter(item => item.status === 'Diproses').length;
+    const lpjCount = data.lpjBs.filter(item => item.status === 'Diproses').length;
+
     const [showModal, setShowModal] = useState(false);
     const [selectedReport, setSelectedReport] = useState(null);
     const [cancelReason, setCancelReason] = useState('');
@@ -50,7 +52,10 @@ const AdminDashboard = () => {
                         <h2 className="text-xl font-medium mb-4">
                             Welcome, <span className='font-bold'>Rachmat Maulana</span>
                         </h2>
-                        <ReportCard />
+                        <ReportCard 
+                            reimbursementCount={reimbursementCount}
+                            lpjCount={lpjCount}
+                        />
                         <ReimbursementTable 
                             reimbursements={data.reimbursements} 
                             onCancel={handleCancel} 
