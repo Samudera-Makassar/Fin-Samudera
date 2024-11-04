@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReimbursementTable from '../components/ReimbursementTable';
 import LpjBsTable from '../components/LpjBsTable';
-import CancelModal from '../components/CancelModal';
+import Modal from '../components/Modal';
 import Layout from './Layout';
 
 const EmployeeDashboard = () => {
@@ -62,7 +62,7 @@ const EmployeeDashboard = () => {
                     </div>
                 </div>
                 
-                <CancelModal 
+                <Modal 
                     showModal={showModal}
                     selectedReport={selectedReport}
                     cancelReason={cancelReason}
