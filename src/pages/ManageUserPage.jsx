@@ -19,7 +19,7 @@ const ManageUserPage = () => {
                 posisi: 'Magang',
                 unit: 'MJS',
                 akses: 'Submit',
-                departemen: 'Operation'
+                department: 'Operation'
             },
             {
                 nama: 'Rachmat Maulana',
@@ -27,7 +27,7 @@ const ManageUserPage = () => {
                 posisi: 'Magang',
                 unit: 'MJS',
                 akses: 'Submit',
-                departemen: 'GA/Umum'
+                department: 'GA/Umum'
             }
         ]
     }

@@ -4,8 +4,8 @@ const DetailRbs = () => {
     const reimbursementDetail = {
         id: 'RBS-BBM-01',
         name: 'Andi Ichwan',
-        division: 'Finance',
-        businessUnit: 'PT Samudera Makassar Logistik',
+        department: 'Finance',
+        unitBusiness: 'PT Samudera Makassar Logistik',
         submissionDate: '10 Oktober 2024',
         status: 'Disetujui',
         approver: 'Pak Budi',
@@ -54,15 +54,15 @@ const DetailRbs = () => {
                         <div>
                             <p>ID </p>
                             <p>Nama Lengkap </p>
-                            <p>Divisi </p>
-                            <p>Bisnis Unit </p>
+                            <p>Department </p>
+                            <p>Unit Bisnis </p>
                             <p>Tanggal Pengajuan </p>
                         </div>
                         <div>
                             <p>: {reimbursementDetail.id}</p>
                             <p>: {reimbursementDetail.name}</p>
-                            <p>: {reimbursementDetail.division}</p>
-                            <p>: {reimbursementDetail.businessUnit}</p>
+                            <p>: {reimbursementDetail.department}</p>
+                            <p>: {reimbursementDetail.unitBusiness}</p>
                             <p>: {reimbursementDetail.submissionDate}</p>
                         </div>
                     </div>

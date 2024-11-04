@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 
 const ManageUser = ({ data, onEdit, onOpenModal }) => {
     const [user, setUser] = useState(data?.user || [])
@@ -16,9 +17,11 @@ const ManageUser = ({ data, onEdit, onOpenModal }) => {
             <div>
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
                     <h3 className="text-xl font-medium mb-4">Daftar Pengguna</h3>
-                    <button className="px-8 py-2 mb-4 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200">
-                        Tambah Data
-                    </button>
+                    <Link to="/manage-users/add">
+                        <button className="px-8 py-2 mb-4 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200">
+                            Tambah Data
+                        </button>
+                    </Link>
                     <table className="min-w-full bg-white border rounded-lg text-sm">
                         <thead>
                             <tr className="bg-gray-100 text-left">
@@ -28,7 +31,7 @@ const ManageUser = ({ data, onEdit, onOpenModal }) => {
                                 <th className="px-4 py-2 border break-words">Posisi</th>
                                 <th className="px-4 py-2 border break-words">Unit Bisnis</th>
                                 <th className="px-4 py-2 border break-words">User Akses</th>
-                                <th className="px-4 py-2 border break-words">Departemen</th>
+                                <th className="px-4 py-2 border break-words">Department</th>
                                 <th className="py-2 border text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -41,7 +44,7 @@ const ManageUser = ({ data, onEdit, onOpenModal }) => {
                                     <td className="px-4 py-2 border break-words">{item.posisi}</td>
                                     <td className="px-4 py-2 border break-words">{item.unit}</td>
                                     <td className="px-4 py-2 border break-words">{item.akses}</td>
-                                    <td className="px-4 py-2 border break-words">{item.departemen}</td>
+                                    <td className="px-4 py-2 border break-words">{item.department}</td>
                                     <td className="py-2 border text-center">
                                         <div className="flex justify-center space-x-4">
                                             <button

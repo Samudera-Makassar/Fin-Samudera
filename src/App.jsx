@@ -18,6 +18,7 @@ import ProtectedRoute from './components/protectedRoute';
 import RbsCheckPage from './pages/RbsCheckPage';
 import LpjCheckPage from './pages/LpjCheckPage';
 import ManageUserPage from './pages/ManageUserPage';
+import AddUserPage from './pages/AddUserPage';
 
 const AppContent = ({ userRole }) => {
     return (
@@ -60,6 +61,8 @@ const AppContent = ({ userRole }) => {
 
                 {/* Manage User Route */}
                 <Route path="/manage-users" element={<ManageUserPage />} />
+                <Route path="/manage-users/add" element={<AddUserPage />} />
+
 
                 {/* Not Found Route */}
                 <Route path="*" element={<NotFoundPage />} />

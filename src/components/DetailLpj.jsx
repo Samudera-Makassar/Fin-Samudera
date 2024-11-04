@@ -4,7 +4,7 @@ const DetailLpj = () => {
     const lpjDetail = {
         id: 'LPJ-01',
         name: 'Andi Ichwan',
-        division: 'Finance',
+        department: 'Finance',
         businessUnit: 'PT Samudera Makassar Logistik',
         submissionDate: '10 Oktober 2024',
         status: 'Disetujui',
@@ -56,14 +56,14 @@ const DetailLpj = () => {
                         <div>
                             <p>ID </p>
                             <p>Nama Lengkap </p>
-                            <p>Divisi </p>
+                            <p>Department </p>
                             <p>Bisnis Unit </p>
                             <p>Tanggal Pengajuan </p>
                         </div>
                         <div>
                             <p>: {lpjDetail.id}</p>
                             <p>: {lpjDetail.name}</p>
-                            <p>: {lpjDetail.division}</p>
+                            <p>: {lpjDetail.department}</p>
                             <p>: {lpjDetail.businessUnit}</p>
                             <p>: {lpjDetail.submissionDate}</p>
                         </div>
