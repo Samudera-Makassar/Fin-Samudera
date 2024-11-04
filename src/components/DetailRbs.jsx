@@ -113,7 +113,7 @@ const DetailRbs = () => {
                                 <td colSpan="6" className="px-4 py-4"></td>
                             </tr>
                             <tr className="font-semibold">
-                                <td colSpan="5" className="px-4 py-2 text-right border">Total Biaya:</td>
+                                <td colSpan="5" className="px-4 py-2 text-right border">Total Biaya :</td>
                                 <td className="px-4 py-2 border">{formatRupiah(totalBiaya)}</td>
                             </tr>
                         </tfoot>

@@ -116,21 +116,21 @@ const DetailLpj = () => {
                             </tr>
                             <tr className="font-semibold">
                                 <td colSpan="5" className="px-4 py-2 text-right border">
-                                    Total Biaya
+                                    Total Biaya :
                                 </td>
-                                <td className="px-4 py-2 border">: {formatRupiah(totalCost)}</td>
+                                <td className="px-4 py-2 border">{formatRupiah(totalCost)}</td>
                             </tr>
                             <tr className="font-semibold">
                                 <td colSpan="5" className="px-4 py-2 text-right border">
-                                    Sisa Lebih Bon Sementara
+                                    Sisa Lebih Bon Sementara :
                                 </td>
-                                <td className="px-4 py-2 border">: {formatRupiah(Math.max(0, bonSementara - totalCost))}</td>
+                                <td className="px-4 py-2 border">{formatRupiah(Math.max(0, bonSementara - totalCost))}</td>
                             </tr>
                             <tr className="font-semibold">
                                 <td colSpan="5" className="px-4 py-2 text-right border">
-                                    Sisa Kurang Dibayarkan ke Pegawai
+                                    Sisa Kurang Dibayarkan ke Pegawai :
                                 </td>
-                                <td className="px-4 py-2 border">: {formatRupiah(sisaKurang)}</td>
+                                <td className="px-4 py-2 border">{formatRupiah(sisaKurang)}</td>
                             </tr>
                         </tfoot>
                     </table>
