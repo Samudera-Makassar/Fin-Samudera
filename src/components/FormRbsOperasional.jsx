@@ -19,7 +19,7 @@ const RbsOperasionalForm = () => {
     }, [])
 
     const formatRupiah = (number) => {
-        const strNumber = number.replace(/[^,\d]/g, '').toString() 
+        const strNumber = number.replace(/[^,\d]/g, '').toString()
         const split = strNumber.split(',')
         const sisa = split[0].length % 3
         let rupiah = split[0].substr(0, sisa)
@@ -46,7 +46,7 @@ const RbsOperasionalForm = () => {
     const handleInputChange = (index, field, value) => {
         let formattedValue = value
 
-        if (field === 'biaya') {            
+        if (field === 'biaya') {
             formattedValue = formatRupiah(value)
         }
 
@@ -136,62 +136,57 @@ const RbsOperasionalForm = () => {
 
                 {reimbursements.map((reimbursement, index) => (
                     <div key={index} className="flex justify-stretch gap-2 mb-2">
-                        <div className='flex-1 max-w-44'>
+                        <div className="flex-1 max-w-44">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Jenis Reimbursement <span className="text-red-500">*</span>
                                 </label>
                             )}
-                            <div className='relative'>                        
-                                <select
-                                    className="block w-full px-4 py-2 pr-8 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    value={reimbursement.jenis}
-                                    onChange={(e) => handleInputChange(index, 'jenis', e.target.value)}
-                                >
-                                    <option value="Entertaint">Entertaint</option>
-                                    <option value="Melas Lembur">Melas Lembur</option>
-                                    <option value="Parkir">Parkir</option>
-                                    <option value="Toll">Toll</option>
-                                    <option value="Lainnya">Lainnya</option>
-                                </select>
-                                
-                                <div className="absolute inset-y-0 right-0 flex items-center px-4 justify-center pointer-events-none">
-                                    <svg
-                                        className="w-4 h-4 text-gray-400"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
+                            <div className="relative">
+                                {reimbursement.jenis === 'Lainnya' ? (
+                                    <input
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        type="text"
+                                        placeholder="Jenis lain"
+                                        value={reimbursement.jenisLain}
+                                        onChange={(e) => handleInputChange(index, 'jenisLain', e.target.value)}
+                                    />
+                                ) : (
+                                    <select
+                                        className="block w-full px-4 py-2 pr-8 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        value={reimbursement.jenis}
+                                        onChange={(e) => handleInputChange(index, 'jenis', e.target.value)}
                                     >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M19 9l-7 7-7-7"
-                                        ></path>
-                                    </svg>
-                                </div>
+                                        <option value="Entertaint">Entertaint</option>
+                                        <option value="Melas Lembur">Melas Lembur</option>
+                                        <option value="Parkir">Parkir</option>
+                                        <option value="Toll">Toll</option>
+                                        <option value="Lainnya">Lainnya</option>
+                                    </select>
+                                )}
+
+                                {reimbursement.jenis !== 'Lainnya' && (
+                                    <div className="absolute inset-y-0 right-0 flex items-center px-4 justify-center pointer-events-none">
+                                        <svg
+                                            className="w-4 h-4 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M19 9l-7 7-7-7"
+                                            ></path>
+                                        </svg>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        {reimbursement.jenis === 'Lainnya' && (
-                            <div className="flex-1 max-w-40">
-                                {index === 0 &&
-                                    <label className="block text-gray-700 font-medium mb-2">
-                                        Jenis Lain <span className="text-red-500">*</span>
-                                    </label>
-                                }
-                                <input
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    type="text"
-                                    placeholder='Jenis lain'
-                                    value={reimbursement.jenisLain}
-                                    onChange={(e) => handleInputChange(index, 'jenisLain', e.target.value)}
-                                />
-                            </div>
-                        )}
-
-                        <div className='flex-1 max-w-36'> 
+                        <div className="flex-1 max-w-36">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Biaya <span className="text-red-500">*</span>
@@ -205,7 +200,7 @@ const RbsOperasionalForm = () => {
                             />
                         </div>
 
-                        <div className='flex-1 min-w-36'>
+                        <div className="flex-1 min-w-36">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Kebutuhan <span className="text-red-500">*</span>
@@ -219,12 +214,8 @@ const RbsOperasionalForm = () => {
                             />
                         </div>
 
-                        <div className='flex-1 min-w-36'>
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Keterangan
-                                </label>
-                            )}
+                        <div className="flex-1 min-w-36">
+                            {index === 0 && <label className="block text-gray-700 font-medium mb-2">Keterangan</label>}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
@@ -233,7 +224,7 @@ const RbsOperasionalForm = () => {
                             />
                         </div>
 
-                        <div className='flex-1 max-w-40'>
+                        <div className="flex-1 max-w-40">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Tanggal Aktivitas <span className="text-red-500">*</span>
