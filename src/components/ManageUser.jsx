@@ -1,17 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 
-const ManageUser = ({
-    data,
-    onEdit,
-    openModal
-}) => {
-    const [user, setUser] = useState(data?.user || []); 
+const ManageUser = ({ data, onEdit, onOpenModal }) => {
+    const [user, setUser] = useState(data?.user || [])
 
     useEffect(() => {
         if (data) {
-            setUser(data.user);
+            setUser(data.user)
         }
-    }, [data]); 
+    }, [data])
 
     return (
         <div className="container mx-auto py-8">
@@ -66,7 +62,7 @@ const ManageUser = ({
 
                                             <button
                                                 className="rounded-full p-1 bg-red-200 hover:bg-red-300 text-red-600 border-[1px] border-red-600"
-                                                onClick={() => openModal(item)}
+                                                onClick={() => onOpenModal(item)}
                                                 title="Hapus"
                                             >
                                                 <svg
@@ -91,7 +87,7 @@ const ManageUser = ({
                 </div>
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default ManageUser;
+export default ManageUser
