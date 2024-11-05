@@ -74,6 +74,8 @@ const AdminDashboard = () => {
                     setCancelReason={setCancelReason}
                     onClose={handleCloseModal}
                     onSubmit={handleSubmitCancel}
+                    title="Konfirmasi Penghapusan"
+                    message={`Apakah Anda yakin ingin menghapus ${selectedReport?.id || 'ini'}?`}
                 />
             </Layout>
         </div>

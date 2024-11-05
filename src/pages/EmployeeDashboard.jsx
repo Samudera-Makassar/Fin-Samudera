@@ -69,6 +69,8 @@ const EmployeeDashboard = () => {
                     setCancelReason={setCancelReason}
                     onClose={handleCloseModal}
                     onSubmit={handleSubmitCancel}
+                    title="Konfirmasi Penghapusan"
+                    message={`Apakah Anda yakin ingin menghapus data ${selectedReport?.id || 'ini'}?`}
                 />
             </Layout>
         </div>
