@@ -71,6 +71,8 @@ const EmployeeDashboard = () => {
                     onSubmit={handleSubmitCancel}
                     title="Konfirmasi Pembatalan"
                     message={`Apakah Anda yakin ingin membatalkan laporan ${selectedReport?.id || 'ini'}?`}
+                    cancelText="Tidak"
+                    confirmText="Ya, Batalkan"
                 />
             </Layout>
         </div>

@@ -5,7 +5,9 @@ const Modal = ({
     title, 
     message, 
     onClose, 
-    onConfirm 
+    onConfirm, 
+    cancelText = "Batal", 
+    confirmText = "Hapus" 
 }) => {
     if (!showModal) return null;
 
@@ -20,13 +22,13 @@ const Modal = ({
                         className="bg-gray-200 text-gray-600 px-4 py-2 rounded hover:bg-gray-300 hover:text-gray-700 mr-2"
                         onClick={onClose}
                     >
-                        Batal
+                        {cancelText}
                     </button>
                     <button
                         className="bg-red-600 text-white px-8 py-2 rounded hover:bg-red-700 hover:text-gray-200"
                         onClick={onConfirm}
                     >
-                        Hapus
+                        {confirmText}
                     </button>
                 </div>
             </div>
