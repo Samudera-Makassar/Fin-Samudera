@@ -4,7 +4,7 @@ import AddUserForm from '../components/FormAddUser'
 
 const AddUserPage = () => {
     useEffect(() => {
-        document.title = 'Tambah User - Samudera Indonesia'
+        document.title = 'Tambah Pengguna - Samudera Indonesia'
     }, [])
 
     return (

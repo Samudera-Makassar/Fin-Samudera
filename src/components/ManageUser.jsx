@@ -47,6 +47,7 @@ const ManageUser = ({ data, onEdit, onOpenModal }) => {
                                     <td className="px-4 py-2 border break-words">{item.department}</td>
                                     <td className="py-2 border text-center">
                                         <div className="flex justify-center space-x-4">
+                                            <Link to="/manage-users/edit">
                                             <button
                                                 className="rounded-full p-1 bg-green-200 hover:bg-green-300 text-green-600 border-[1px] border-green-600"
                                                 onClick={() => onEdit(item)}
@@ -62,7 +63,7 @@ const ManageUser = ({ data, onEdit, onOpenModal }) => {
                                                     <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
                                                 </svg>
                                             </button>
-
+                                            </Link>
                                             <button
                                                 className="rounded-full p-1 bg-red-200 hover:bg-red-300 text-red-600 border-[1px] border-red-600"
                                                 onClick={() => onOpenModal(item)}

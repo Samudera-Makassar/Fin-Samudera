@@ -1,54 +1,41 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-const AddUserForm = () => {
-
+const EditUserForm = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const [formData, setFormData] = useState(location.state?.user || {});
 
-    const [formData, setFormData] = useState({
-        nama: '',
-        email: '',
-        password: '',
-        posisi: '',
-        unit: '',
-        akses: '',
-        department: '',
-        bankName: '',
-        accountNumber: ''
-    })
+    useEffect(() => {
+        if (!location.state?.user) {
+            console.error('No user data found');
+        }
+    }, [location.state]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target
+        const { name, value } = e.target;
         setFormData({
             ...formData,
             [name]: value
-        })
-    }
+        });
+    };
 
     const handleSubmit = (e) => {
-        e.preventDefault()
-        // Logika untuk mengirim data ke server atau state management
-        console.log('Data Pengguna Baru:', formData)
-        // Reset form setelah submit
-        setFormData({
-            nama: '',
-            email: '',
-            password: '',
-            posisi: '',
-            unit: '',
-            akses: '',
-            department: '',
-            bankName: '',
-            accountNumber: ''
-        })
-    }
+        e.preventDefault();
+        console.log('Updated User Data:', formData);
+        navigate(-1); // Kembali ke halaman sebelumnya
+    };
+
+    // if (!location.state?.user) {
+    //     return <div className='py-8'>Pengguna tidak ditemukan atau data tidak tersedia.</div>;
+    // }
 
     return (
         <div className="container mx-auto py-8">
             <h2 className="text-xl font-bold mb-4">Manage Users</h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-xl font-medium mb-4">Tambah Pengguna</h3>
+                <h3 className="text-xl font-medium mb-4">Ubah Data Pengguna</h3>
                 <div className="grid grid-cols-2 gap-6">
                     <div className="mb-2">
                         <label className="block font-medium text-gray-700">Nama Lengkap</label>
@@ -121,14 +108,13 @@ const AddUserForm = () => {
                             className="mt-1 block w-full border border-gray-300 rounded-md p-2"
                         />
                     </div>
-                    
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                     <div className="mb-2">
                         <label className="block font-medium text-gray-700">Department</label>
                         <input
                             type="text"
-                            name="departemen"
+                            name="department"
                             value={formData.department}
                             onChange={handleChange}
                             required
@@ -166,13 +152,15 @@ const AddUserForm = () => {
                         className="px-16 py-3 mr-4 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700">
                         Cancel
                     </button>
-                    <button className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200">
+                    <button 
+                        onClick={handleSubmit}
+                        className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200">
                         Save
                     </button>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default AddUserForm
+export default EditUserForm;

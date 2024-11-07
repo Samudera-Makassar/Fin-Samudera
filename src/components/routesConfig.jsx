@@ -14,5 +14,6 @@ export const validPaths = [
     "/lpj/detail",
     "/lpj/cek-laporan",
     "/manage-users",
-    "/manage-users/add"
+    "/manage-users/add",
+    "/manage-users/edit"
 ];
