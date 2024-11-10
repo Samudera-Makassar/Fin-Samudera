@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from 'react'
-import ReimbursementTable from '../components/ReimbursementTable'
-import LpjBsTable from '../components/LpjBsTable'
-import ReportCard from '../components/ReportCard'
-import Modal from '../components/Modal'
-import Layout from './Layout'
+import React, { useEffect, useState } from 'react';
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from '../firebaseConfig';
+import ReimbursementTable from '../components/ReimbursementTable';
+import LpjBsTable from '../components/LpjBsTable';
+import ReportCard from '../components/ReportCard';
+import Modal from '../components/Modal';
+import Layout from './Layout';
 
 const AdminDashboard = () => {
-    useEffect(() => {
-        document.title = 'Dashboard - Samudera Indonesia'
-    }, [])
-
+    const [user, setUser] = useState(null); // State untuk menyimpan data user yang sedang login
     const [data, setData] = useState({
         reimbursements: [
             { id: 'RBS-BBM-01', jenis: 'BBM', tanggal: '10-Okt-2024', jumlah: 'Rp.123.000', status: 'Disetujui' },
@@ -25,30 +24,47 @@ const AdminDashboard = () => {
                 status: 'Diproses'
             }
         ]
-    })
+    });
 
-    const reimbursementCount = data.reimbursements.filter((item) => item.status === 'Diproses').length
-    const lpjCount = data.lpjBs.filter((item) => item.status === 'Diproses').length
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedReport, setSelectedReport] = useState(null);
+    const [cancelReason, setCancelReason] = useState('');
 
-    const [showModal, setShowModal] = useState(false)
-    const [selectedReport, setSelectedReport] = useState(null)
-    const [cancelReason, setCancelReason] = useState('')
+    useEffect(() => {
+        document.title = 'Dashboard - Samudera Indonesia';
+
+        // Mengambil data user yang login
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                setUser({
+                    name: currentUser.displayName || "Anonymous",
+                });
+            } else {
+                setUser(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    const reimbursementCount = data.reimbursements.filter((item) => item.status === 'Diproses').length;
+    const lpjCount = data.lpjBs.filter((item) => item.status === 'Diproses').length;
 
     const handleCancel = (report) => {
-        setSelectedReport(report)
-        setShowModal(true)
-    }
+        setSelectedReport(report);
+        setIsModalOpen(true);
+    };
 
     const handleCloseModal = () => {
-        setShowModal(false)
-        setCancelReason('')
-        setSelectedReport(null)
-    }
+        setIsModalOpen(false);
+        setCancelReason('');
+        setSelectedReport(null);
+    };
 
     const handleSubmitCancel = () => {
-        console.log(`Alasan pembatalan laporan ${selectedReport.id}: ${cancelReason}`)
-        handleCloseModal()
-    }
+        console.log(`Alasan pembatalan laporan ${selectedReport.id}: ${cancelReason}`);
+        handleCloseModal();
+    };
 
     return (
         <div>
@@ -56,7 +72,7 @@ const AdminDashboard = () => {
                 <div className="container mx-auto py-8">
                     <div className="w-full">
                         <h2 className="text-xl font-medium mb-4">
-                            Welcome, <span className="font-bold">Rachmat Maulana</span>
+                            Welcome, <span className="font-bold">{user?.name || 'User'}</span>
                         </h2>
                         <ReportCard reimbursementCount={reimbursementCount} lpjCount={lpjCount} />
                         <ReimbursementTable reimbursements={data.reimbursements} onCancel={handleCancel} />
@@ -65,7 +81,7 @@ const AdminDashboard = () => {
                 </div>
 
                 <Modal
-                    showModal={showModal}
+                    showModal={isModalOpen}
                     selectedReport={selectedReport}
                     cancelReason={cancelReason}
                     setCancelReason={setCancelReason}
@@ -78,7 +94,7 @@ const AdminDashboard = () => {
                 />
             </Layout>
         </div>
-    )
-}
+    );
+};
 
-export default AdminDashboard
+export default AdminDashboard;

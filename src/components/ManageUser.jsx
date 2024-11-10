@@ -1,14 +1,50 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const ManageUser = ({ data, onEdit, onOpenModal }) => {
-    const [user, setUser] = useState(data?.user || [])
+    const [user, setUser] = useState(data?.user || []);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [searchQuery, setSearchQuery] = useState(''); // State untuk pencarian
 
     useEffect(() => {
         if (data) {
-            setUser(data.user)
+            setUser(data.user);
         }
-    }, [data])
+    }, [data]);
+
+    const handleRowsPerPageChange = (event) => {
+        setRowsPerPage(Number(event.target.value));
+        setCurrentPage(1); // Reset ke halaman pertama saat mengubah jumlah baris per halaman
+    };
+
+    const handleSearchChange = (event) => {
+        setSearchQuery(event.target.value);
+        setCurrentPage(1); // Reset ke halaman pertama saat mengubah pencarian
+    };
+
+    // Filter user berdasarkan searchQuery
+    const filteredUsers = user.filter((item) =>
+        item.nama.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
+    const displayedUsers = filteredUsers.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
 
     return (
         <div className="container mx-auto py-8">
@@ -22,6 +58,33 @@ const ManageUser = ({ data, onEdit, onOpenModal }) => {
                             Tambah Data
                         </button>
                     </Link>
+
+                    {/* Kontrol Pencarian */}
+                    <div className="mb-4">
+                        <input
+                            type="text"
+                            placeholder="Cari berdasarkan nama..."
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                            className="p-2 border rounded w-full md:w-1/3"
+                        />
+                    </div>
+
+                    {/* Kontrol Jumlah Baris per Halaman */}
+                    <div className="mb-4">
+                        <label htmlFor="rowsPerPage" className="mr-2">Rows per page:</label>
+                        <select
+                            id="rowsPerPage"
+                            value={rowsPerPage}
+                            onChange={handleRowsPerPageChange}
+                            className="p-2 border rounded"
+                        >
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={30}>30</option>
+                        </select>
+                    </div>
+
                     <table className="min-w-full bg-white border rounded-lg text-sm">
                         <thead>
                             <tr className="bg-gray-100 text-left">
@@ -36,9 +99,9 @@ const ManageUser = ({ data, onEdit, onOpenModal }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {user.map((item, index) => (
+                            {displayedUsers.map((item, index) => (
                                 <tr key={index}>
-                                    <td className="px-4 py-2 border text-center">{index + 1}</td>
+                                    <td className="px-4 py-2 border text-center">{(currentPage - 1) * rowsPerPage + index + 1}</td>
                                     <td className="px-4 py-2 border break-words">{item.nama}</td>
                                     <td className="px-4 py-2 border break-words">{item.email}</td>
                                     <td className="px-4 py-2 border break-words">{item.posisi}</td>
@@ -46,7 +109,7 @@ const ManageUser = ({ data, onEdit, onOpenModal }) => {
                                     <td className="px-4 py-2 border break-words">{item.akses}</td>
                                     <td className="px-4 py-2 border break-words">{item.department}</td>
                                     <td className="py-2 border text-center">
-                                        <div className="flex justify-center space-x-4">
+                                    <div className="flex justify-center space-x-4">
                                             <Link to="/manage-users/edit">
                                             <button
                                                 className="rounded-full p-1 bg-green-200 hover:bg-green-300 text-green-600 border-[1px] border-green-600"
@@ -88,10 +151,29 @@ const ManageUser = ({ data, onEdit, onOpenModal }) => {
                             ))}
                         </tbody>
                     </table>
+
+                    {/* Pagination Controls */}
+                    <div className="flex justify-between items-center mt-4">
+                        <button
+                            onClick={handlePrevPage}
+                            disabled={currentPage === 1}
+                            className={`px-4 py-2 bg-gray-300 rounded ${currentPage === 1 ? "cursor-not-allowed" : "hover:bg-gray-400"}`}
+                        >
+                            Previous
+                        </button>
+                        <span>Page {currentPage} of {totalPages}</span>
+                        <button
+                            onClick={handleNextPage}
+                            disabled={currentPage === totalPages}
+                            className={`px-4 py-2 bg-gray-300 rounded ${currentPage === totalPages ? "cursor-not-allowed" : "hover:bg-gray-400"}`}
+                        >
+                            Next
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default ManageUser
+export default ManageUser;
