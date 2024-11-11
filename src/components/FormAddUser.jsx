@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { db, auth } from '../firebaseConfig'
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
-import { collection, addDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
+import { collection, doc, setDoc, getDocs, query, where } from 'firebase/firestore';
 
 const AddUserForm = () => {
     const navigate = useNavigate()
@@ -13,11 +13,12 @@ const AddUserForm = () => {
         password: '',
         posisi: '',
         unit: '',
-        akses: '',
+        role: '',
         department: '',
         bankName: '',
         accountNumber: ''
     })
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -27,9 +28,24 @@ const AddUserForm = () => {
         })
     }
 
+    const checkEmailExists = async (email) => {
+        const q = query(collection(db, "users"), where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+        return !querySnapshot.empty;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
+
         try {
+            const emailExists = await checkEmailExists(formData.email);
+            if (emailExists) {
+                alert("Email sudah terdaftar. Gunakan email lain.");
+                setIsSubmitting(false);
+                return;
+            }
+
             // Membuat user di Firebase Auth
             const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
             const user = userCredential.user;
@@ -38,17 +54,21 @@ const AddUserForm = () => {
             await updateProfile(user, { displayName: formData.nama });
     
             // Menyimpan data pengguna tambahan ke Firestore
-            await addDoc(collection(db, "users"), {
+            await setDoc(doc(db, "users", formData.email), {
                 uid: user.uid,  
                 nama: formData.nama,
                 email: formData.email,
                 posisi: formData.posisi,
                 unit: formData.unit,
-                akses: formData.akses,
+                role: formData.role,
                 department: formData.department,
                 bankName: formData.bankName,
                 accountNumber: formData.accountNumber
             });
+
+            await signOut(auth);
+
+            alert("User berhasil ditambahkan.");
 
             // Reset form setelah submit
             setFormData({
@@ -57,14 +77,17 @@ const AddUserForm = () => {
                 password: '',
                 posisi: '',
                 unit: '',
-                akses: '',
+                role: '',
                 department: '',
                 bankName: '',
                 accountNumber: ''
             })
             navigate(-1) // Kembali ke halaman sebelumnya
         } catch (error) {
-            console.error('Error adding user:', error)
+            console.error('Error adding user:', error);
+            alert("Gagal menambahkan user. Silakan coba lagi.");
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
@@ -88,11 +111,11 @@ const AddUserForm = () => {
                             />
                         </div>
                         <div className="mb-2">
-                            <label className="block font-medium text-gray-700">User Akses</label>
+                            <label className="block font-medium text-gray-700">Role</label>
                             <input
                                 type="text"
-                                name="akses"
-                                value={formData.akses}
+                                name="role"
+                                value={formData.role}
                                 onChange={handleChange}
                                 required
                                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
@@ -188,14 +211,16 @@ const AddUserForm = () => {
                         <button
                             onClick={() => navigate(-1)}
                             className="px-16 py-3 mr-4 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700"
+                            disabled={isSubmitting}
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
+                            disabled={isSubmitting}
                         >
-                            Save
+                            {isSubmitting ? "Saving..." : "Save"}
                         </button>
                     </div>
                 </form>

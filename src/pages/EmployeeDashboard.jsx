@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { onAuthStateChanged } from "firebase/auth"
+import { auth } from '../firebaseConfig'
 import ReimbursementTable from '../components/ReimbursementTable';
 import LpjBsTable from '../components/LpjBsTable';
 import Modal from '../components/Modal';
 import Layout from './Layout';
 
 const EmployeeDashboard = () => {
-
-    useEffect(() => {
-        document.title = 'Dashboard - Samudera Indonesia'
-    }, [])
-
+    const [user, setUser] = useState(null); // State untuk menyimpan data user yang sedang login
     const [data, setData] = useState({
         reimbursements: [
             { id: 'RBS-BBM-01', jenis: 'BBM', tanggal: '10-Okt-2024', jumlah: 'Rp.123.000', status: 'Disetujui' },
@@ -19,6 +17,23 @@ const EmployeeDashboard = () => {
             { id: 'LPJ-01', jenis: 'BBM', noBs: 'BS0001', tanggal: '10-Okt-2024', jumlah: 'Rp.123.000', status: 'Diproses' },
         ] 
     });
+    
+    useEffect(() => {
+        document.title = 'Dashboard - Samudera Indonesia'
+
+        // Mengambil data user yang login
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                setUser({
+                    name: currentUser.displayName || "Anonymous",
+                });
+            } else {
+                setUser(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [])
 
     // State untuk mengelola modal
     const [showModal, setShowModal] = useState(false);
@@ -47,7 +62,7 @@ const EmployeeDashboard = () => {
                 <div className="container mx-auto py-8">
                     <div className="w-full">
                         <h2 className="text-xl font-medium mb-4">
-                            Welcome, <span className='font-bold'>Andi Ichwan</span>
+                            Welcome, <span className="font-bold">{user?.name || 'User'}</span>
                         </h2>
 
                         <ReimbursementTable 

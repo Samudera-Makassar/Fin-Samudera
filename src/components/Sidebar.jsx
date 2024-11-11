@@ -1,33 +1,28 @@
-import React, { useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import Modal from '../components/Modal'
+import React, { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import Modal from './Modal';
 
-const Sidebar = ({ role }) => {
-    const [showModal, setShowModal] = useState(false)
-    const navigate = useNavigate()
+const Sidebar = () => {
+    const [showModal, setShowModal] = useState(false);
+    const navigate = useNavigate();
+    const role = localStorage.getItem('userRole'); // Ambil role dari localStorage
 
     const onLogoutClick = () => {
-        setShowModal(true)
-    }
+        setShowModal(true);
+    };
 
     const handleCloseModal = () => {
-        setShowModal(false)
-    }
+        setShowModal(false);
+    };
 
     const handleConfirmLogout = () => {
-        setShowModal(false)
-        // Tambahkan logika logout di sini, misalnya menghapus token, redirect, dll.
-        console.log('Logout confirmed')
-
-        // Contoh: Menghapus token dari localStorage (opsional)
-        localStorage.removeItem('token')
-
-        // Redirect ke halaman login setelah logout
-        navigate('/')
-    }
+        setShowModal(false);
+        localStorage.removeItem('userRole'); // Hapus role dari localStorage
+        navigate('/');
+    };
 
     if (!role) {
-        return null // Atau Anda bisa menampilkan loading state atau pesan error
+        return null;
     }
 
     return (
@@ -36,7 +31,7 @@ const Sidebar = ({ role }) => {
                 <ul className="w-full text-left">
                     <li>
                         <NavLink
-                            to={`/dashboard/${role}`}
+                            to={'/dashboard/${role}'}
                             className={({ isActive }) =>
                                 isActive
                                     ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'

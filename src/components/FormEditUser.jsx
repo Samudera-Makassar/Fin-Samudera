@@ -1,16 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { db } from '../firebaseConfig';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 const EditUserForm = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [formData, setFormData] = useState(location.state?.user || {});
+    const [formData, setFormData] = useState({
+        nama: '',
+        email: '',
+        posisi: '',
+        unit: '',
+        role: '',
+        department: '',
+        bankName: '',
+        accountNumber: ''
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const getEmailFromParams = () => {
+        const params = new URLSearchParams(location.search);
+        return atob(params.get('email')); // Dekripsi email dengan atob
+    };
 
     useEffect(() => {
-        if (!location.state?.user) {
-            console.error('No user data found');
-        }
-    }, [location.state]);
+        const fetchUserData = async () => {
+            const email = getEmailFromParams();
+            const docRef = doc(db, 'users', email);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                setFormData(docSnap.data());
+            } else {
+                console.error('User not found');
+            }
+        };
+
+        fetchUserData();
+    }, [location]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -20,15 +47,19 @@ const EditUserForm = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Updated User Data:', formData);
-        navigate(-1); // Kembali ke halaman sebelumnya
+        try {
+            const email = getEmailFromParams();
+            const userRef = doc(db, 'users', email);
+            await updateDoc(userRef, formData);
+            alert("User berhasil diupdate.");
+            navigate(-1);
+        } catch (error) {
+            console.error('Error updating user data:', error);
+            alert("Gagal memperbarui user.");
+        }
     };
-
-    // if (!location.state?.user) {
-    //     return <div className='py-8'>Pengguna tidak ditemukan atau data tidak tersedia.</div>;
-    // }
 
     return (
         <div className="container mx-auto py-8">
@@ -49,11 +80,11 @@ const EditUserForm = () => {
                         />
                     </div>
                     <div className="mb-2">
-                        <label className="block font-medium text-gray-700">User Akses</label>
+                        <label className="block font-medium text-gray-700">Role</label>
                         <input
                             type="text"
-                            name="akses"
-                            value={formData.akses}
+                            name="role"
+                            value={formData.role}
                             onChange={handleChange}
                             required
                             className="mt-1 block w-full border border-gray-300 rounded-md p-2"
@@ -149,13 +180,17 @@ const EditUserForm = () => {
                 <div className="flex justify-end mt-6">
                     <button 
                         onClick={() => navigate(-1)}
-                        className="px-16 py-3 mr-4 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700">
+                        className="px-16 py-3 mr-4 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700"
+                        disabled={isSubmitting}
+                    >
                         Cancel
                     </button>
                     <button 
                         onClick={handleSubmit}
-                        className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200">
-                        Save
+                        className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? "Saving..." : "Save"}
                     </button>
                 </div>
             </div>

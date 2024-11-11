@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import LogoHero from '../assets/images/login-hero.png';
 import Logo from '../assets/images/logo-samudera.png';
@@ -12,7 +13,7 @@ const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const navigate = useNavigate(); // Initialize navigate hook
+    const navigate = useNavigate();
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -22,9 +23,23 @@ const LoginPage = () => {
         e.preventDefault();
         setError('');
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            console.log("User logged in successfully");
-            navigate('/dashboard/admin'); // Redirect ke halaman dashboard atau tujuan lain
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const userEmail = userCredential.user.email;
+    
+            const userDoc = await getDoc(doc(db, 'users', userEmail));
+            const userData = userDoc.data();
+    
+            if (userData && userData.role) {
+                const role = userData.role;
+                localStorage.setItem('userRole', role);
+    
+                // Navigasi langsung tanpa ProtectedRoute
+                if (role === 'admin') navigate('/dashboard/admin');
+                else if (role === 'reviewer') navigate('/dashboard/reviewer');
+                else if (role === 'employee') navigate('/dashboard/employee');
+            } else {
+                throw new Error("User role not defined");
+            }
         } catch (err) {
             console.error("Login error:", err);
             setError("Failed to login: " + err.message);
@@ -33,12 +48,10 @@ const LoginPage = () => {
 
     return (
         <div className="flex h-screen">
-            {/* Left Side (Hero Image) */}
             <div className="w-[65%] h-full">
                 <img src={LogoHero} alt="Login Hero" className="w-full h-full object-cover" />
             </div>
 
-            {/* Right Side (Login Form) */}
             <div className="w-[35%] bg-white flex flex-col justify-center px-16">
                 <div className="mb-8">
                     <img src={Logo} alt="Logo" className="w-8/12 h-full" />

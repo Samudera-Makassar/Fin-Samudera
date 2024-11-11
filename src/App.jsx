@@ -21,7 +21,9 @@ import ManageUserPage from './pages/ManageUserPage';
 import AddUserPage from './pages/AddUserPage';
 import EditUserPage from './pages/EditUserPage';
 
-const AppContent = ({ userRole }) => {
+const AppContent = () => {
+    const userRole = localStorage.getItem('userRole'); // Ambil role dari localStorage
+
     return (
         <div>
             <SidebarWrapper role={userRole} />
@@ -29,24 +31,10 @@ const AppContent = ({ userRole }) => {
             <Routes>
                 <Route path="/" element={<Login />} />
                 
-                {/* Dashboard Routes */}
-                <Route path="/dashboard/employee" element={
-                    <ProtectedRoute role="employee" userRole={userRole}>
-                        <EmployeeDashboard />
-                    </ProtectedRoute>
-                } />
-                <Route path="/dashboard/reviewer" element={
-                    <ProtectedRoute role="reviewer" userRole={userRole}>
-                        <ReviewerDashboard />
-                    </ProtectedRoute>
-                } />
-                <Route path="/dashboard/admin" element={
-                    <ProtectedRoute role="admin" userRole={userRole}>
-                        <AdminDashboard />
-                    </ProtectedRoute>
-                } />
+                <Route path="/dashboard/admin" element={<AdminDashboard />} />
+                <Route path="/dashboard/reviewer" element={<ReviewerDashboard />} />
+                <Route path="/dashboard/employee" element={<EmployeeDashboard />} />
 
-                {/* Reimbursement Routes */}
                 <Route path="/reimbursement/medical" element={<RbsMedical />} />
                 <Route path="/reimbursement/bbm" element={<RbsBbm />} />
                 <Route path="/reimbursement/operasional" element={<RbsOperasional />} />
@@ -54,18 +42,15 @@ const AppContent = ({ userRole }) => {
                 <Route path="/reimbursement/detail" element={<DetailReimbursementPage />} />
                 <Route path="/reimbursement/cek-laporan" element={<RbsCheckPage />} />
 
-                {/* LPJ Routes */}
                 <Route path="/lpj/umum" element={<LpjUmum />} />
                 <Route path="/lpj/marketing" element={<LpjMarketing />} />
                 <Route path="/lpj/detail" element={<DetailLpjPage />} />
                 <Route path="/lpj/cek-laporan" element={<LpjCheckPage />} />
 
-                {/* Manage User Route */}
                 <Route path="/manage-users" element={<ManageUserPage />} />
                 <Route path="/manage-users/add" element={<AddUserPage />} />
                 <Route path="/manage-users/edit" element={<EditUserPage />} />
 
-                {/* Not Found Route */}
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </div>
@@ -73,11 +58,9 @@ const AppContent = ({ userRole }) => {
 }
 
 const App = () => {
-    const userRole = 'admin';  // Contoh peran pengguna
-
     return (
         <BrowserRouter>
-            <AppContent userRole={userRole} />
+            <AppContent />
         </BrowserRouter>
     );
 }
