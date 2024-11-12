@@ -31,7 +31,7 @@ const Sidebar = () => {
                 <ul className="w-full text-left">
                     <li>
                         <NavLink
-                            to={'/dashboard/${role}'}
+                            to={`/dashboard/${role}`}
                             className={({ isActive }) =>
                                 isActive
                                     ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
