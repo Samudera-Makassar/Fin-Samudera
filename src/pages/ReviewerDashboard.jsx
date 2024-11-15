@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from '../firebaseConfig'
+import { db } from '../firebaseConfig' // Pastikan db diimpor dari firebaseConfig
+import { doc, getDoc } from 'firebase/firestore'
 import ReimbursementTable from '../components/ReimbursementTable'
 import LpjBsTable from '../components/LpjBsTable'
 import ReportCard from '../components/ReportCard'
 import Modal from '../components/Modal'
 import Layout from './Layout'
 
-const ReviewerDashboard = () => {
-    const [user, setUser] = useState(null); // State untuk menyimpan data user yang sedang login
+const ReviewerDashboard = ({ userEmail }) => {
+    const [user, setUser] = useState(null) // State untuk menyimpan data user yang sedang login
     const [data, setData] = useState({
         reimbursements: [
             { id: 'RBS-BBM-01', jenis: 'BBM', tanggal: '10-Okt-2024', jumlah: 'Rp.123.000', status: 'Disetujui' },
@@ -26,28 +26,40 @@ const ReviewerDashboard = () => {
         ]
     })
 
+    // Ambil email dari localStorage jika tidak dikirim melalui prop
+    const email = userEmail || localStorage.getItem('userEmail')
+
     useEffect(() => {
         document.title = 'Dashboard - Samudera Indonesia'
 
-        // Mengambil data user yang login
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            if (currentUser) {
-                setUser({
-                    name: currentUser.displayName || "Anonymous",
-                });
-            } else {
-                setUser(null);
+        const fetchUserData = async () => {
+            try {
+                if (email) {
+                    // Ambil data user dari Firestore berdasarkan email sebagai ID dokumen
+                    const userDoc = await getDoc(doc(db, 'users', email))
+                    if (userDoc.exists()) {
+                        setUser({
+                            name: userDoc.data().nama || 'Anonymous'
+                        })
+                    } else {
+                        console.log('User data not found in Firestore')
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error)
             }
-        });
+        }
 
-        return () => unsubscribe();
-    }, [])
-    
+        fetchUserData()
+    }, [email])
 
     // State untuk mengelola modal
     const [showModal, setShowModal] = useState(false)
     const [selectedReport, setSelectedReport] = useState(null)
     const [cancelReason, setCancelReason] = useState('')
+
+    const reimbursementCount = data.reimbursements.filter((item) => item.status === 'Diproses').length
+    const lpjCount = data.lpjBs.filter((item) => item.status === 'Diproses').length
 
     const handleCancel = (report) => {
         setSelectedReport(report)
@@ -73,7 +85,7 @@ const ReviewerDashboard = () => {
                         <h2 className="text-xl font-medium mb-4">
                             Welcome, <span className="font-bold">{user?.name || 'User'}</span>
                         </h2>
-                        <ReportCard />
+                        <ReportCard reimbursementCount={reimbursementCount} lpjCount={lpjCount} />
                         <ReimbursementTable reimbursements={data.reimbursements} onCancel={handleCancel} />
                         <LpjBsTable lpjBs={data.lpjBs} onCancel={handleCancel} />
                     </div>
@@ -90,6 +102,7 @@ const ReviewerDashboard = () => {
                     message={`Apakah Anda yakin ingin membatalkan laporan ${selectedReport?.id || 'ini'}?`}
                     cancelText="Tidak"
                     confirmText="Ya, Batalkan"
+                    showCancelReason={true}
                 />
             </Layout>
         </div>

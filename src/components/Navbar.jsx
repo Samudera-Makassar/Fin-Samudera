@@ -1,24 +1,34 @@
-import { useEffect, useState } from 'react';
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from '../firebaseConfig';
+import React, { useState, useEffect } from 'react'
+import { db } from '../firebaseConfig'
+import { doc, getDoc } from 'firebase/firestore'
 import Logo from '../assets/images/logo-samudera.png'
 
 function Navbar() {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(null)
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            if (currentUser) {
-                setUser({
-                    name: currentUser.displayName || "Anonymous",
-                    initials: getInitials(currentUser.displayName || "Anonymous"),
-                });
-            } else {
-                setUser(null);
+        const email = localStorage.getItem('userEmail') // Ambil email dari localStorage
+        const fetchUserData = async () => {
+            if (email) {
+                try {
+                    const userDoc = await getDoc(doc(db, 'users', email))
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data()
+                        setUser({
+                            name: userData.nama || 'Anonymous',
+                            initials: getInitials(userData.nama || 'Anonymous')
+                        })
+                    } else {
+                        console.log('User data not found in Firestore')
+                    }
+                } catch (error) {
+                    console.error('Error fetching user data:', error)
+                }
             }
-        });
-        return () => unsubscribe();
-    }, []);
+        }
+
+        fetchUserData()
+    }, [])
 
     return (
         <nav className="bg-white h-16 flex justify-between items-center px-6 shadow fixed top-0 left-64 right-0 z-50">
@@ -36,11 +46,14 @@ function Navbar() {
                 )}
             </div>
         </nav>
-    );
+    )
 }
 
 function getInitials(name) {
-    return name.split(' ').map(n => n[0]).join('');
+    return name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
 }
 
-export default Navbar;
+export default Navbar

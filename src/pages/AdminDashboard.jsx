@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from '../firebaseConfig';
-import ReimbursementTable from '../components/ReimbursementTable';
-import LpjBsTable from '../components/LpjBsTable';
-import ReportCard from '../components/ReportCard';
-import Modal from '../components/Modal';
-import Layout from './Layout';
+import React, { useEffect, useState } from 'react'
+import { db } from '../firebaseConfig' // Pastikan db diimpor dari firebaseConfig
+import { doc, getDoc } from 'firebase/firestore'
+import ReimbursementTable from '../components/ReimbursementTable'
+import LpjBsTable from '../components/LpjBsTable'
+import ReportCard from '../components/ReportCard'
+import Modal from '../components/Modal'
+import Layout from './Layout'
 
-const AdminDashboard = () => {
-    const [user, setUser] = useState(null); // State untuk menyimpan data user yang sedang login
+const AdminDashboard = ({ userEmail }) => {
+    const [user, setUser] = useState(null) // State untuk menyimpan data user yang sedang login
     const [data, setData] = useState({
         reimbursements: [
             { id: 'RBS-BBM-01', jenis: 'BBM', tanggal: '10-Okt-2024', jumlah: 'Rp.123.000', status: 'Disetujui' },
@@ -24,47 +24,57 @@ const AdminDashboard = () => {
                 status: 'Diproses'
             }
         ]
-    });
+    })
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedReport, setSelectedReport] = useState(null);
-    const [cancelReason, setCancelReason] = useState('');
+    // Ambil email dari localStorage jika tidak dikirim melalui prop
+    const email = userEmail || localStorage.getItem('userEmail')
 
     useEffect(() => {
-        document.title = 'Dashboard - Samudera Indonesia';
+        document.title = 'Dashboard - Samudera Indonesia'
 
-        // Mengambil data user yang login
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            if (currentUser) {
-                setUser({
-                    name: currentUser.displayName || "Anonymous",
-                });
-            } else {
-                setUser(null);
+        const fetchUserData = async () => {
+            try {
+                if (email) {
+                    // Ambil data user dari Firestore berdasarkan email sebagai ID dokumen
+                    const userDoc = await getDoc(doc(db, 'users', email))
+                    if (userDoc.exists()) {
+                        setUser({
+                            name: userDoc.data().nama || 'Anonymous'
+                        })
+                    } else {
+                        console.log('User data not found in Firestore')
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error)
             }
-        });
+        }
 
-        return () => unsubscribe();
-    }, []);
+        fetchUserData()
+    }, [email])
 
-    const reimbursementCount = data.reimbursements.filter((item) => item.status === 'Diproses').length;
-    const lpjCount = data.lpjBs.filter((item) => item.status === 'Diproses').length;
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [selectedReport, setSelectedReport] = useState(null)
+    const [cancelReason, setCancelReason] = useState('')
+
+    const reimbursementCount = data.reimbursements.filter((item) => item.status === 'Diproses').length
+    const lpjCount = data.lpjBs.filter((item) => item.status === 'Diproses').length
 
     const handleCancel = (report) => {
-        setSelectedReport(report);
-        setIsModalOpen(true);
-    };
+        setSelectedReport(report)
+        setIsModalOpen(true)
+    }
 
     const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setCancelReason('');
-        setSelectedReport(null);
-    };
+        setIsModalOpen(false)
+        setCancelReason('')
+        setSelectedReport(null)
+    }
 
     const handleSubmitCancel = () => {
-        console.log(`Alasan pembatalan laporan ${selectedReport.id}: ${cancelReason}`);
-        handleCloseModal();
-    };
+        console.log(`Alasan pembatalan laporan ${selectedReport.id}: ${cancelReason}`)
+        handleCloseModal()
+    }
 
     return (
         <div>
@@ -91,10 +101,11 @@ const AdminDashboard = () => {
                     message={`Apakah Anda yakin ingin membatalkan laporan ${selectedReport?.id || 'ini'}?`}
                     cancelText="Tidak"
                     confirmText="Ya, Batalkan"
+                    showCancelReason={true}
                 />
             </Layout>
         </div>
-    );
-};
+    )
+}
 
-export default AdminDashboard;
+export default AdminDashboard

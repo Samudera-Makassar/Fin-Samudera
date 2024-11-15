@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { db, auth } from '../firebaseConfig'
-import { createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
-import { collection, doc, setDoc, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../firebaseConfig'
+import { collection, doc, setDoc, getDocs, query, where } from 'firebase/firestore'
 
 const AddUserForm = () => {
     const navigate = useNavigate()
@@ -18,7 +17,7 @@ const AddUserForm = () => {
         bankName: '',
         accountNumber: ''
     })
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -29,46 +28,37 @@ const AddUserForm = () => {
     }
 
     const checkEmailExists = async (email) => {
-        const q = query(collection(db, "users"), where("email", "==", email));
-        const querySnapshot = await getDocs(q);
-        return !querySnapshot.empty;
-    };
+        const q = query(collection(db, 'users'), where('email', '==', email))
+        const querySnapshot = await getDocs(q)
+        return !querySnapshot.empty
+    }
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
+        e.preventDefault()
+        setIsSubmitting(true)
 
         try {
-            const emailExists = await checkEmailExists(formData.email);
+            const emailExists = await checkEmailExists(formData.email)
             if (emailExists) {
-                alert("Email sudah terdaftar. Gunakan email lain.");
-                setIsSubmitting(false);
-                return;
+                alert('Email sudah terdaftar. Gunakan email lain.')
+                setIsSubmitting(false)
+                return
             }
 
-            // Membuat user di Firebase Auth
-            const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-            const user = userCredential.user;
-    
-            // Mengupdate nama lengkap di Firebase Auth
-            await updateProfile(user, { displayName: formData.nama });
-    
-            // Menyimpan data pengguna tambahan ke Firestore
-            await setDoc(doc(db, "users", formData.email), {
-                uid: user.uid,  
+            // Menyimpan data pengguna ke Firestore tanpa menambahkan user ke Firebase Auth
+            await setDoc(doc(db, 'users', formData.email), {
                 nama: formData.nama,
                 email: formData.email,
+                password: formData.password,
                 posisi: formData.posisi,
                 unit: formData.unit,
                 role: formData.role,
                 department: formData.department,
                 bankName: formData.bankName,
                 accountNumber: formData.accountNumber
-            });
+            })
 
-            await signOut(auth);
-
-            alert("User berhasil ditambahkan.");
+            alert('User berhasil ditambahkan.')
 
             // Reset form setelah submit
             setFormData({
@@ -84,10 +74,10 @@ const AddUserForm = () => {
             })
             navigate(-1) // Kembali ke halaman sebelumnya
         } catch (error) {
-            console.error('Error adding user:', error);
-            alert("Gagal menambahkan user. Silakan coba lagi.");
+            console.error('Error adding user:', error)
+            alert('Gagal menambahkan user. Silakan coba lagi.')
         } finally {
-            setIsSubmitting(false);
+            setIsSubmitting(false)
         }
     }
 
@@ -220,7 +210,7 @@ const AddUserForm = () => {
                             className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? "Saving..." : "Save"}
+                            {isSubmitting ? 'Saving...' : 'Save'}
                         </button>
                     </div>
                 </form>

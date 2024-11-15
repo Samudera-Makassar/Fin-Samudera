@@ -1,50 +1,53 @@
-import React, { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
-import LogoHero from '../assets/images/login-hero.png';
-import Logo from '../assets/images/logo-samudera.png';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import React, { useState } from 'react'
+import { db } from '../firebaseConfig'
+import { doc, getDoc } from 'firebase/firestore'
+import { useNavigate } from 'react-router-dom'
+import LogoHero from '../assets/images/login-hero.png'
+import Logo from '../assets/images/logo-samudera.png'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 
 const LoginPage = () => {
-    const [showPassword, setShowPassword] = useState(false);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false)
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [error, setError] = useState('')
+    const navigate = useNavigate()
 
     const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
-    };
+        setShowPassword(!showPassword)
+    }
 
     const handleLogin = async (e) => {
-        e.preventDefault();
-        setError('');
+        e.preventDefault()
+        setError('')
+
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const userEmail = userCredential.user.email;
-    
-            const userDoc = await getDoc(doc(db, 'users', userEmail));
-            const userData = userDoc.data();
-    
-            if (userData && userData.role) {
-                const role = userData.role;
-                localStorage.setItem('userRole', role);
-    
-                // Navigasi langsung tanpa ProtectedRoute
-                if (role === 'admin') navigate('/dashboard/admin');
-                else if (role === 'reviewer') navigate('/dashboard/reviewer');
-                else if (role === 'employee') navigate('/dashboard/employee');
+            const userDoc = await getDoc(doc(db, 'users', email))
+            if (userDoc.exists()) {
+                const userData = userDoc.data()
+
+                // Cek kecocokan password
+                if (userData.password === password) {
+                    const role = userData.role
+                    localStorage.setItem('userRole', role)
+                    localStorage.setItem('userEmail', email)
+
+                    // Navigasi langsung tanpa ProtectedRoute
+                    if (role === 'admin') navigate('/dashboard/admin', { state: { email } })
+                    else if (role === 'reviewer') navigate('/dashboard/reviewer', { state: { email } })
+                    else if (role === 'employee') navigate('/dashboard/employee', { state: { email } })
+                } else {
+                    setError('Password salah. Silakan coba lagi.')
+                }
             } else {
-                throw new Error("User role not defined");
+                setError('Email tidak ditemukan. Silakan periksa email Anda.')
             }
         } catch (err) {
-            console.error("Login error:", err);
-            setError("Failed to login: " + err.message);
+            console.error('Login error:', err)
+            setError('Gagal login. Silakan coba lagi.')
         }
-    };
+    }
 
     return (
         <div className="flex h-screen">
@@ -110,7 +113,7 @@ const LoginPage = () => {
                 </form>
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default LoginPage;
+export default LoginPage
