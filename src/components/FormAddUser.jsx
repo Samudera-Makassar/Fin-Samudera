@@ -102,14 +102,17 @@ const AddUserForm = () => {
                         </div>
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">Role</label>
-                            <input
-                                type="text"
+                            <select
                                 name="role"
                                 value={formData.role}
                                 onChange={handleChange}
                                 required
                                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                            />
+                            >
+                                <option value="employe">Employee</option>
+                                <option value="reviewer">Reviewer</option>
+                                <option value="admin">Admin</option>
+                            </select>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-6">
@@ -126,14 +129,22 @@ const AddUserForm = () => {
                         </div>
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">Unit Bisnis</label>
-                            <input
-                                type="text"
+                            <select
                                 name="unit"
                                 value={formData.unit}
                                 onChange={handleChange}
                                 required
                                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                            />
+                            >
+                                <option value="MJS">PT Makassar Jaya Samudera</option>
+                                <option value="SML">PT Samudera Makassar Logistik</option>
+                                <option value="KJS">PT Kendari Jaya Samudera</option>
+                                <option value="SKL">PT Samudera Kendari Logistik</option>
+                                <option value="SAI">PT Samudera Agencies Indonesia</option>
+                                <option value="SKI">PT Silkargo Indonesia</option>
+                                <option value="SP">PT PAD Samudera Perdana</option>
+                                <option value="MKT">PT Masaji Kargosentra Tama</option>
+                            </select>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-6">
@@ -187,14 +198,19 @@ const AddUserForm = () => {
                     <div className="grid grid-cols-2 gap-6">
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">Posisi</label>
-                            <input
-                                type="text"
+                            <select
                                 name="posisi"
                                 value={formData.posisi}
                                 onChange={handleChange}
                                 required
                                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                            />
+                            >
+                                <option value="staff">Staff</option>
+                                <option value="sectionHead">Section Head</option>
+                                <option value="deptHead">Dept Head</option>
+                                <option value="GM">General Manager</option>
+                                <option value="Direktur">Direktur</option>
+                            </select>
                         </div>
                     </div>
                     <div className="flex justify-end mt-6">
