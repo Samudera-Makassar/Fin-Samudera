@@ -11,11 +11,11 @@ const AddUserForm = () => {
         nama: '',
         email: '',
         password: '',
-        posisi: 'staff',
+        posisi: '',
         reviewer1: [],
         reviewer2: [],
-        unit: 'MJS',
-        role: 'employee',
+        unit: '',
+        role: '',
         department: '',
         bankName: '',
         accountNumber: ''
@@ -27,6 +27,24 @@ const AddUserForm = () => {
         setFormData({
             ...formData,
             [name]: value
+        })
+    }
+
+    const handleRoleChange = (selectedOptions) => {
+        setFormData({
+            ...formData,
+            role: Array.isArray(selectedOptions)
+                ? selectedOptions.map((option) => option.value) // Jika array
+                : selectedOptions?.value || '' // Jika objek tunggal
+        })
+    }
+
+    const handleUnitChange = (selectedOptions) => {
+        setFormData({
+            ...formData,
+            unit: Array.isArray(selectedOptions)
+                ? selectedOptions.map((option) => option.value) // Jika array
+                : selectedOptions?.value || '' // Jika objek tunggal
         })
     }
 
@@ -49,6 +67,15 @@ const AddUserForm = () => {
         setFormData({
             ...formData,
             department: selectedOptions.map((option) => option.value) // Simpan hanya value
+        })
+    }
+
+    const handlePosisiChange = (selectedOptions) => {
+        setFormData({
+            ...formData,
+            posisi: Array.isArray(selectedOptions)
+                ? selectedOptions.map((option) => option.value) // Jika array
+                : selectedOptions?.value || '' // Jika objek tunggal
         })
     }
 
@@ -108,6 +135,25 @@ const AddUserForm = () => {
         }
     }
 
+    // Options role
+    const roleOptions = [
+        { value: 'employee', label: 'Employee' },
+        { value: 'reviewer', label: 'Reviewer' },
+        { value: 'admin', label: 'Admin' }
+    ]
+
+    // Options unit
+    const unitOptions = [
+        { value: 'MJS', label: 'PT Makassar Jaya Samudera' },
+        { value: 'SML', label: 'PT Samudera Makassar Logistik' },
+        { value: 'KJS', label: 'PT Kendari Jaya Samudera' },
+        { value: 'SKL', label: 'PT Samudera Kendari Logistik' },
+        { value: 'SAI', label: 'PT Samudera Agencies Indonesia' },
+        { value: 'SKI', label: 'PT Silkargo Indonesia' },
+        { value: 'SP', label: 'PT PAD Samudera Perdana' },
+        { value: 'MKT', label: 'PT Masaji Kargosentra Tama' }
+    ]
+
     // Options reviewer 1
     const reviewer1Options = [
         { value: 'wahyu', label: 'Wahyu Hermawan' },
@@ -136,11 +182,20 @@ const AddUserForm = () => {
     ]
 
     // Options department
-    const department = [
+    const departmentOptions = [
         { value: 'operation', label: 'Operation' },
         { value: 'marketing', label: 'Marketing' },
         { value: 'finance', label: 'Finance' },
         { value: 'umum', label: 'GA/Umum' }
+    ]
+
+    // Options posisi
+    const posisiOptions = [
+        { value: 'staff', label: 'Staff' },
+        { value: 'sectionHead', label: 'Section Head' },
+        { value: 'deptHead', label: 'Dept Head' },
+        { value: 'GM', label: 'General Manager' },
+        { value: 'Direktur', label: 'Direktur' }
     ]
 
     return (
@@ -164,34 +219,15 @@ const AddUserForm = () => {
                         </div>
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">Role</label>
-                            <div className="relative">
-                                <select
-                                    name="role"
-                                    value={formData.role}
-                                    onChange={handleChange}
-                                    required
-                                    className="mt-1 block w-full border border-gray-300 rounded-md bg-white p-2 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
-                                >
-                                    <option value="employee">Employee</option>
-                                    <option value="reviewer">Reviewer</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                    <svg
-                                        className="h-5 w-5 text-gray-400"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            fillRule="evenodd"
-                                            d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 01.02-1.06z"
-                                            clipRule="evenodd"
-                                        />
-                                    </svg>
-                                </div>
-                            </div>
+                            <Select
+                                name="role"
+                                options={roleOptions}
+                                className="basic-single-select"
+                                classNamePrefix="select"
+                                onChange={handleRoleChange}
+                                isMulti={false}
+                                isClearable
+                            />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-6">
@@ -209,37 +245,15 @@ const AddUserForm = () => {
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">Unit Bisnis</label>
                             <div className="relative">
-                                <select
+                                <Select
                                     name="unit"
-                                    value={formData.unit}
-                                    onChange={handleChange}
-                                    required
-                                    className="mt-1 block w-full border border-gray-300 rounded-md bg-white p-2 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
-                                >
-                                    <option value="MJS">PT Makassar Jaya Samudera</option>
-                                    <option value="SML">PT Samudera Makassar Logistik</option>
-                                    <option value="KJS">PT Kendari Jaya Samudera</option>
-                                    <option value="SKL">PT Samudera Kendari Logistik</option>
-                                    <option value="SAI">PT Samudera Agencies Indonesia</option>
-                                    <option value="SKI">PT Silkargo Indonesia</option>
-                                    <option value="SP">PT PAD Samudera Perdana</option>
-                                    <option value="MKT">PT Masaji Kargosentra Tama</option>
-                                </select>
-                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                    <svg
-                                        className="h-5 w-5 text-gray-400"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            fillRule="evenodd"
-                                            d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 01.02-1.06z"
-                                            clipRule="evenodd"
-                                        />
-                                    </svg>
-                                </div>
+                                    options={unitOptions}
+                                    className="basic-single-select"
+                                    classNamePrefix="select"
+                                    onChange={handleUnitChange}
+                                    isMulti={false}
+                                    isClearable
+                                />
                             </div>
                         </div>
                     </div>
@@ -273,7 +287,7 @@ const AddUserForm = () => {
                             <Select
                                 isMulti
                                 name="department"
-                                options={department}
+                                options={departmentOptions}
                                 className="basic-multi-select"
                                 classNamePrefix="select"
                                 onChange={handleDepartmentChange}
@@ -306,34 +320,15 @@ const AddUserForm = () => {
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">Posisi</label>
                             <div className="relative">
-                                <select
+                                <Select
                                     name="posisi"
-                                    value={formData.posisi}
-                                    onChange={handleChange}
-                                    required
-                                    className="mt-1 block w-full border border-gray-300 rounded-md bg-white p-2 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
-                                >
-                                    <option value="staff">Staff</option>
-                                    <option value="sectionHead">Section Head</option>
-                                    <option value="deptHead">Dept Head</option>
-                                    <option value="GM">General Manager</option>
-                                    <option value="Direktur">Direktur</option>
-                                </select>
-                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                    <svg
-                                        className="h-5 w-5 text-gray-400"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            fillRule="evenodd"
-                                            d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 01.02-1.06z"
-                                            clipRule="evenodd"
-                                        />
-                                    </svg>
-                                </div>
+                                    options={posisiOptions}
+                                    className="basic-single-select"
+                                    classNamePrefix="select"
+                                    onChange={handlePosisiChange}
+                                    isMulti={false}
+                                    isClearable
+                                />
                             </div>
                         </div>
                     </div>
