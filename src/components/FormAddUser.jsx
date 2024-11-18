@@ -216,7 +216,7 @@ const AddUserForm = () => {
                                 value={formData.nama}
                                 onChange={handleChange}
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
                         <div className="mb-2">
@@ -241,7 +241,7 @@ const AddUserForm = () => {
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
                         <div className="mb-2">
@@ -268,7 +268,7 @@ const AddUserForm = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
                         <div className="mb-2">
@@ -279,7 +279,7 @@ const AddUserForm = () => {
                                 value={formData.bankName}
                                 onChange={handleChange}
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
                     </div>
@@ -303,7 +303,7 @@ const AddUserForm = () => {
                                 value={formData.accountNumber}
                                 onChange={handleChange}
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
                     </div>

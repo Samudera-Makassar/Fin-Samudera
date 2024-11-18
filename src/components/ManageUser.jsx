@@ -62,12 +62,15 @@ const ManageUser = () => {
     }
 
     // Filter data pengguna berdasarkan nilai pencarian
-    const filteredUsers = users.filter(
-        (user) =>
-            user.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.role.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const filteredUsers = users.filter((user) => {
+        const searchTermLower = searchTerm.toLowerCase()
+    
+        // Filter hanya berdasarkan nama dan email
+        return (
+            user.nama.toLowerCase().includes(searchTermLower) ||
+            user.email.toLowerCase().includes(searchTermLower)
+        )
+    })
 
     // Menghitung total halaman
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)

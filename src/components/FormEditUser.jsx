@@ -119,17 +119,19 @@ const EditUserForm = () => {
         })
     }
 
-    const handleSelectChange = (selectedOptions, field) => {    
+    const handleSelectChange = (selectedOption, field) => {
         setFormData({
             ...formData,
-            [field]: Array.isArray(selectedOptions) ? selectedOptions.map(option => option.value) : [] 
+            [field]: Array.isArray(selectedOption)
+                ? selectedOption.map(option => option.value)
+                : selectedOption?.value || ''
         });
-    }
+    }    
     
     const handleSubmit = async (e) => {
         e.preventDefault()
-        try {
-            const email = getEmailFromParams()
+        const email = getEmailFromParams()
+        try {    
             const userRef = doc(db, 'users', email)
             await updateDoc(userRef, formData)
             alert('User berhasil diupdate.')
@@ -155,7 +157,7 @@ const EditUserForm = () => {
                             value={formData.nama}
                             onChange={handleChange}
                             required
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
                     </div>
                     <div className="mb-2">
@@ -179,7 +181,7 @@ const EditUserForm = () => {
                             value={formData.email}
                             onChange={handleChange}
                             required
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
                     </div>
 
@@ -204,7 +206,7 @@ const EditUserForm = () => {
                             value={formData.password}
                             onChange={handleChange}
                             required
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
                     </div>
                     <div className="mb-2">
@@ -215,7 +217,7 @@ const EditUserForm = () => {
                             value={formData.bankName}
                             onChange={handleChange}
                             required
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
                     </div>
                 </div>
@@ -240,7 +242,7 @@ const EditUserForm = () => {
                             value={formData.accountNumber}
                             onChange={handleChange}
                             required
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
                     </div>
                 </div>
