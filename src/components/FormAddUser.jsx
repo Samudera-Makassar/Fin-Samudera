@@ -16,7 +16,7 @@ const AddUserForm = () => {
         reviewer2: [],
         unit: '',
         role: '',
-        department: '',
+        department: [],
         bankName: '',
         accountNumber: ''
     })
@@ -122,9 +122,11 @@ const AddUserForm = () => {
                 posisi: '',
                 unit: '',
                 role: '',
-                department: '',
+                department: [],
                 bankName: '',
-                accountNumber: ''
+                accountNumber: '',
+                reviewer1: [],
+                reviewer2: []
             })
             navigate(-1) // Kembali ke halaman sebelumnya
         } catch (error) {
@@ -214,7 +216,7 @@ const AddUserForm = () => {
                                 value={formData.nama}
                                 onChange={handleChange}
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
                             />
                         </div>
                         <div className="mb-2">
@@ -222,7 +224,7 @@ const AddUserForm = () => {
                             <Select
                                 name="role"
                                 options={roleOptions}
-                                className="basic-single-select"
+                                className="basic-single-select mt-1"
                                 classNamePrefix="select"
                                 onChange={handleRoleChange}
                                 isMulti={false}
@@ -239,7 +241,7 @@ const AddUserForm = () => {
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
                             />
                         </div>
                         <div className="mb-2">
@@ -248,7 +250,7 @@ const AddUserForm = () => {
                                 <Select
                                     name="unit"
                                     options={unitOptions}
-                                    className="basic-single-select"
+                                    className="basic-single-select mt-1"
                                     classNamePrefix="select"
                                     onChange={handleUnitChange}
                                     isMulti={false}
@@ -266,7 +268,7 @@ const AddUserForm = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
                             />
                         </div>
                         <div className="mb-2">
@@ -277,7 +279,7 @@ const AddUserForm = () => {
                                 value={formData.bankName}
                                 onChange={handleChange}
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
                             />
                         </div>
                     </div>
@@ -288,7 +290,7 @@ const AddUserForm = () => {
                                 isMulti
                                 name="department"
                                 options={departmentOptions}
-                                className="basic-multi-select"
+                                className="basic-multi-select mt-1"
                                 classNamePrefix="select"
                                 onChange={handleDepartmentChange}
                             />
@@ -301,7 +303,7 @@ const AddUserForm = () => {
                                 value={formData.accountNumber}
                                 onChange={handleChange}
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5"
                             />
                         </div>
                     </div>
@@ -312,7 +314,7 @@ const AddUserForm = () => {
                                 isMulti
                                 name="unit"
                                 options={reviewer1Options}
-                                className="basic-multi-select"
+                                className="basic-multi-select mt-1"
                                 classNamePrefix="select"
                                 onChange={handleReviewer1Change}
                             />
@@ -323,7 +325,7 @@ const AddUserForm = () => {
                                 <Select
                                     name="posisi"
                                     options={posisiOptions}
-                                    className="basic-single-select"
+                                    className="basic-single-select mt-1"
                                     classNamePrefix="select"
                                     onChange={handlePosisiChange}
                                     isMulti={false}
@@ -339,7 +341,7 @@ const AddUserForm = () => {
                                 isMulti
                                 name="unit"
                                 options={reviewer2Options}
-                                className="basic-multi-select"
+                                className="basic-multi-select mt-1"
                                 classNamePrefix="select"
                                 onChange={handleReviewer2Change}
                             />
