@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { db } from '../firebaseConfig'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDocs, where, query, collection } from 'firebase/firestore'
 import { useNavigate } from 'react-router-dom'
 import LogoHero from '../assets/images/login-hero.png'
 import Logo from '../assets/images/logo-samudera.png'
@@ -23,29 +23,44 @@ const LoginPage = () => {
         setError('')
 
         try {
-            const userDoc = await getDoc(doc(db, 'users', email))
-            if (userDoc.exists()) {
-                const userData = userDoc.data()
+            // Query untuk memeriksa email
+            const emailQuery = query(collection(db, 'users'), where('email', '==', email));
+            const emailSnapshot = await getDocs(emailQuery);
 
-                // Cek kecocokan password
-                if (userData.password === password) {
-                    const role = userData.role
-                    localStorage.setItem('userRole', role)
-                    localStorage.setItem('userEmail', email)
-
-                    // Navigasi langsung tanpa ProtectedRoute
-                    if (role === 'admin') navigate('/dashboard/admin', { state: { email } })
-                    else if (role === 'reviewer') navigate('/dashboard/reviewer', { state: { email } })
-                    else if (role === 'employee') navigate('/dashboard/employee', { state: { email } })
-                } else {
-                    setError('Password salah. Silakan coba lagi.')
-                }
-            } else {
-                setError('Email tidak ditemukan. Silakan periksa email Anda.')
+            if (emailSnapshot.empty) {
+                setError('Email tidak ditemukan');
+                return;
             }
+
+            // Query untuk memeriksa password
+            const userQuery = query(
+                collection(db, 'users'),
+                where('email', '==', email),
+                where('password', '==', password)
+            );
+            const userSnapshot = await getDocs(userQuery);
+
+            if (userSnapshot.empty) {
+                setError('Password salah');
+                return;
+            }
+
+            // Ambil data user dan lakukan navigasi
+            const userDoc = userSnapshot.docs[0];
+            const userData = userDoc.data();
+
+            const role = userData.role;
+            localStorage.setItem('userRole', role);
+            localStorage.setItem('userUid', userDoc.id);
+
+            // Navigasi ke dashboard sesuai role
+            if (role === 'admin') navigate('/dashboard/admin');
+            else if (role === 'reviewer') navigate('/dashboard/reviewer');
+            else if (role === 'employee') navigate('/dashboard/employee');
+            else setError('Role tidak dikenali. Hubungi administrator.');
         } catch (err) {
-            console.error('Login error:', err)
-            setError('Gagal login. Silakan coba lagi.')
+            console.error('Login error:', err);
+            setError('Terjadi kesalahan saat login. Silakan coba lagi.');
         }
     }
 

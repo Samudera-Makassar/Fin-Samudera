@@ -7,7 +7,7 @@ const ManageUser = () => {
     const [users, setUsers] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 5 // Jumlah item per halaman
+    const itemsPerPage = 10 // Jumlah item per halaman
     const navigate = useNavigate()
 
     // Fungsi untuk mengambil data dari Firestore
@@ -24,26 +24,24 @@ const ManageUser = () => {
 
         fetchUsers()
     }, [])
-
-    // Fungsi untuk menangani edit dan mengarahkan ke halaman edit dengan parameter email terenkripsi
-    const handleEdit = (email) => {
-        const encryptedEmail = btoa(email) // Enkripsi email dengan btoa
-        navigate(`/manage-users/edit?email=${encryptedEmail}`)
+    
+    const handleEdit = (uid) => {        
+        navigate(`/manage-users/edit?uid=${uid}`)
     }
 
     // Fungsi untuk menghapus data dari Firestore
-    const handleDelete = async (email) => {
+    const handleDelete = async (uid) => {
         const confirmDelete = window.confirm('Apakah Anda yakin ingin menghapus pengguna ini?')
         if (confirmDelete) {
             try {
-                // Mencari dokumen berdasarkan email
+                // Mencari dokumen berdasarkan uid
                 const querySnapshot = await getDocs(collection(db, 'users'))
-                const userDoc = querySnapshot.docs.find((doc) => doc.data().email === email)
+                const userDoc = querySnapshot.docs.find((doc) => doc.data().uid === uid)
 
                 if (userDoc) {
                     // Menghapus dokumen berdasarkan ID dokumen yang ditemukan
                     await deleteDoc(doc(db, 'users', userDoc.id))
-                    setUsers(users.filter((user) => user.email !== email))
+                    setUsers(users.filter((user) => user.uid !== uid))
                     alert('Pengguna berhasil dihapus.')
                 } else {
                     alert('Pengguna tidak ditemukan.')
@@ -105,7 +103,7 @@ const ManageUser = () => {
                         placeholder="Cari pengguna..."
                         value={searchTerm}
                         onChange={handleSearch}
-                        className="flex-1 px-4 py-2 border rounded-lg"
+                        className="flex-1 px-4 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                     />
 
                     <Link to="/manage-users/add">
@@ -139,11 +137,11 @@ const ManageUser = () => {
                                 <td className="px-4 py-2 border">{user.posisi}</td>
                                 <td className="px-4 py-2 border">{user.unit}</td>
                                 <td className="px-4 py-2 border">{user.role}</td>
-                                <td className="px-4 py-2 border">{user.department}</td>
+                                <td className="px-4 py-2 border">{Array.isArray(user.department) ? user.department.join(', ') : user.department}</td>
                                 <td className="py-2 border text-center">
                                     <div className="flex justify-center space-x-4">
                                         <button
-                                            onClick={() => handleEdit(user.email)}
+                                            onClick={() => handleEdit(user.uid)}
                                             className="rounded-full p-1 bg-green-200 hover:bg-green-300 text-green-600 border-[1px] border-green-600"
                                             title="Edit"
                                         >
@@ -158,7 +156,7 @@ const ManageUser = () => {
                                             </svg>
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(user.email)}
+                                            onClick={() => handleDelete(user.uid)}
                                             className="rounded-full p-1 bg-red-200 hover:bg-red-300 text-red-600 border-[1px] border-red-600"
                                             title="Hapus"
                                         >
@@ -183,31 +181,74 @@ const ManageUser = () => {
                 </table>
 
                 {/* Pagination Controls */}
-                <div className="flex items-center justify-center gap-12 mt-4">
+                <div className="flex items-center justify-center gap-4 mt-6">
+                    {/* Tombol Previous */}
                     <button
                         onClick={prevPage}
                         disabled={currentPage === 1}
-                        className={`px-4 py-2 rounded ${
+                        className={`flex items-center gap-2 px-3 py-2 rounded ${
                             currentPage === 1
                                 ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
-                                : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                                : 'bg-red-600 text-white hover:bg-red-700 hover:text-gray-200'
                         }`}
                     >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-5 h-5"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15.75 19.5L8.25 12l7.5-7.5"
+                            />
+                        </svg>    
                         Previous
                     </button>
-                    <span>
-                        Halaman {currentPage} dari {totalPages}
-                    </span>
+
+                    {/* Tombol Halaman */}
+                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                        <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`px-4 py-2 rounded-full ${
+                                currentPage === page
+                                    ? 'bg-red-600 text-white'
+                                    : 'bg-gray-200 text-gray-700 hover:bg-red-100'
+                            }`}
+                        >
+                            {page}
+                        </button>
+                    ))}
+
+                    {/* Tombol Next */}
                     <button
                         onClick={nextPage}
                         disabled={currentPage === totalPages}
-                        className={`px-4 py-2 rounded ${
+                        className={`flex items-center gap-2 px-3 py-2 rounded ${
                             currentPage === totalPages
                                 ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
-                                : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                                : 'bg-red-600 text-white hover:bg-red-700 hover:text-gray-200'
                         }`}
                     >
                         Next
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-5 h-5"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                            />
+                        </svg>
                     </button>
                 </div>
             </div>

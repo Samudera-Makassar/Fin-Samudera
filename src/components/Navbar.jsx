@@ -7,11 +7,11 @@ function Navbar() {
     const [user, setUser] = useState(null)
 
     useEffect(() => {
-        const email = localStorage.getItem('userEmail') // Ambil email dari localStorage
+        const uid = localStorage.getItem('userUid') // Ambil email dari localStorage
         const fetchUserData = async () => {
-            if (email) {
+            if (uid) {
                 try {
-                    const userDoc = await getDoc(doc(db, 'users', email))
+                    const userDoc = await getDoc(doc(db, 'users', uid))
                     if (userDoc.exists()) {
                         const userData = userDoc.data()
                         setUser({

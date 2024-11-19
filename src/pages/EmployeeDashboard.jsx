@@ -6,7 +6,7 @@ import LpjBsTable from '../components/LpjBsTable'
 import Modal from '../components/Modal'
 import Layout from './Layout'
 
-const EmployeeDashboard = ({ userEmail }) => {
+const EmployeeDashboard = ({ userUid }) => {
     const [user, setUser] = useState(null) // State untuk menyimpan data user yang sedang login
     const [data, setData] = useState({
         reimbursements: [
@@ -26,19 +26,19 @@ const EmployeeDashboard = ({ userEmail }) => {
     })
 
     // Ambil email dari localStorage jika tidak dikirim melalui prop
-    const email = userEmail || localStorage.getItem('userEmail')
+    const uid = userUid || localStorage.getItem('userUid')
 
     useEffect(() => {
         document.title = 'Dashboard - Samudera Indonesia'
 
         const fetchUserData = async () => {
             try {
-                if (email) {
+                if (uid) {
                     // Ambil data user dari Firestore berdasarkan email sebagai ID dokumen
-                    const userDoc = await getDoc(doc(db, 'users', email))
+                    const userDoc = await getDoc(doc(db, 'users', uid))
                     if (userDoc.exists()) {
                         setUser({
-                            name: userDoc.data().nama || 'Anonymous'
+                            name: userDoc.data().nama || 'User'
                         })
                     } else {
                         console.log('User data not found in Firestore')
@@ -50,7 +50,7 @@ const EmployeeDashboard = ({ userEmail }) => {
         }
 
         fetchUserData()
-    }, [email])
+    }, [uid])
 
     // State untuk mengelola modal pembatalan
     const [showModal, setShowModal] = useState(false)
