@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../firebaseConfig'
 
 const RbsMedicalForm = () => {
     const [todayDate, setTodayDate] = useState('')
+    const [userData, setUserData] = useState({
+        nama: '',
+        bankName: '',
+        accountNumber: '',
+        unit: ''
+    })
     const [reimbursements, setReimbursements] = useState([
         { jenis: '', biaya: '', dokter: '', klinik: '', tanggal: '' }
     ])
@@ -15,7 +23,30 @@ const RbsMedicalForm = () => {
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
         const formattedDate = `${day}-${monthNames[month]}-${year}`
 
+        const uid = localStorage.getItem('userUid')
+
         setTodayDate(formattedDate)
+
+        const fetchUserData = async () => {
+            try {
+                const userDocRef = doc(db, 'users', uid)
+                const userDoc = await getDoc(userDocRef)
+
+                if (userDoc.exists()) {
+                    const data = userDoc.data()
+                    setUserData({
+                        nama: data.nama || '',
+                        bankName: data.bankName || '',
+                        accountNumber: data.accountNumber || '',
+                        unit: data.unit || '' // Assuming department is an array
+                    })
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error)
+            }
+        }
+
+        fetchUserData()
     }, [])
 
     const formatRupiah = (number) => {
@@ -35,7 +66,7 @@ const RbsMedicalForm = () => {
     }
 
     const handleAddForm = () => {
-        setReimbursements([...reimbursements, { jenis: '', biaya: '', dokter: '', klinik: '', tanggal: '' }])
+        setReimbursements([...reimbursements, { jenis: '', biaya: '', kebutuhan: '', keterangan: '', tanggal: '' }])
     }
 
     const handleRemoveForm = (index) => {
@@ -46,7 +77,7 @@ const RbsMedicalForm = () => {
     const handleInputChange = (index, field, value) => {
         let formattedValue = value
 
-        if (field === 'biaya') {            
+        if (field === 'biaya') {
             formattedValue = formatRupiah(value)
         }
 
@@ -69,7 +100,7 @@ const RbsMedicalForm = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="Andi Ichwan"
+                            value={userData.nama}
                             disabled
                         />
                     </div>
@@ -78,7 +109,7 @@ const RbsMedicalForm = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="PT Samudera Makassar Logistik"
+                            value={userData.unit}
                             disabled
                         />
                     </div>
@@ -90,7 +121,7 @@ const RbsMedicalForm = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="1234567890"
+                            value={userData.accountNumber}
                             disabled
                         />
                     </div>
@@ -99,7 +130,7 @@ const RbsMedicalForm = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="Bank Rakyat Indonesia"
+                            value={userData.bankName}
                             disabled
                         />
                     </div>
@@ -136,7 +167,7 @@ const RbsMedicalForm = () => {
 
                 {reimbursements.map((reimbursement, index) => (
                     <div key={index} className="flex justify-stretch gap-2 mb-2">
-                        <div className='flex-1 max-w-44'>
+                        <div className="flex-1 max-w-44">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Jenis Reimbursement <span className="text-red-500">*</span>
@@ -149,8 +180,8 @@ const RbsMedicalForm = () => {
                                 onChange={(e) => handleInputChange(index, 'jenis', e.target.value)}
                             />
                         </div>
-                        
-                        <div className='flex-1 max-w-36'> 
+
+                        <div className="flex-1 max-w-36">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Biaya <span className="text-red-500">*</span>
@@ -164,10 +195,10 @@ const RbsMedicalForm = () => {
                             />
                         </div>
 
-                        <div className='flex-1 min-w-36'>
+                        <div className="flex-1 min-w-36">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
-                                    Nama Dokter <span className="text-red-500">*</span>
+                                    Kebutuhan <span className="text-red-500">*</span>
                                 </label>
                             )}
                             <input
@@ -178,12 +209,8 @@ const RbsMedicalForm = () => {
                             />
                         </div>
 
-                        <div className='flex-1 min-w-36'>
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Nama Rumah Sakit/Klinik <span className="text-red-500">*</span>
-                                </label>
-                            )}
+                        <div className="flex-1 min-w-36">
+                            {index === 0 && <label className="block text-gray-700 font-medium mb-2">Keterangan</label>}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
@@ -192,7 +219,7 @@ const RbsMedicalForm = () => {
                             />
                         </div>
 
-                        <div className='flex-1 max-w-40'>
+                        <div className="flex-1 max-w-40">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Tanggal Aktivitas <span className="text-red-500">*</span>

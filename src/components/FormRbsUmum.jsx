@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../firebaseConfig'
 
 const RbsOperasionalForm = () => {
     const [todayDate, setTodayDate] = useState('')
+    const [userData, setUserData] = useState({
+        nama: '',
+        bankName: '',
+        accountNumber: '',
+        unit: ''
+    })
     const [reimbursements, setReimbursements] = useState([
         { jenis: '', biaya: '', kebutuhan: '', keterangan: '', tanggal: '' }
     ])
@@ -15,7 +23,30 @@ const RbsOperasionalForm = () => {
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
         const formattedDate = `${day}-${monthNames[month]}-${year}`
 
+        const uid = localStorage.getItem('userUid')
+
         setTodayDate(formattedDate)
+
+        const fetchUserData = async () => {
+            try {
+                const userDocRef = doc(db, 'users', uid)
+                const userDoc = await getDoc(userDocRef)
+
+                if (userDoc.exists()) {
+                    const data = userDoc.data()
+                    setUserData({
+                        nama: data.nama || '',
+                        bankName: data.bankName || '',
+                        accountNumber: data.accountNumber || '',
+                        unit: data.unit || ''
+                    })
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error)
+            }
+        }
+
+        fetchUserData()
     }, [])
 
     const formatRupiah = (number) => {
@@ -69,7 +100,7 @@ const RbsOperasionalForm = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="Andi Ichwan"
+                            value={userData.nama}
                             disabled
                         />
                     </div>
@@ -78,7 +109,7 @@ const RbsOperasionalForm = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="PT Samudera Makassar Logistik"
+                            value={userData.unit}
                             disabled
                         />
                     </div>
@@ -90,7 +121,7 @@ const RbsOperasionalForm = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="1234567890"
+                            value={userData.accountNumber}
                             disabled
                         />
                     </div>
@@ -99,7 +130,7 @@ const RbsOperasionalForm = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="Bank Rakyat Indonesia"
+                            value={userData.bankName}
                             disabled
                         />
                     </div>
@@ -187,9 +218,7 @@ const RbsOperasionalForm = () => {
                             </div>
                         </div>
 
-                        
-
-                        <div className='flex-1 max-w-36'> 
+                        <div className="flex-1 max-w-36">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Biaya <span className="text-red-500">*</span>
@@ -203,7 +232,7 @@ const RbsOperasionalForm = () => {
                             />
                         </div>
 
-                        <div className='flex-1 min-w-36'>
+                        <div className="flex-1 min-w-36">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Kebutuhan <span className="text-red-500">*</span>
@@ -217,12 +246,8 @@ const RbsOperasionalForm = () => {
                             />
                         </div>
 
-                        <div className='flex-1 min-w-36'>
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Keterangan
-                                </label>
-                            )}
+                        <div className="flex-1 min-w-36">
+                            {index === 0 && <label className="block text-gray-700 font-medium mb-2">Keterangan</label>}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
@@ -231,7 +256,7 @@ const RbsOperasionalForm = () => {
                             />
                         </div>
 
-                        <div className='flex-1 max-w-40'>
+                        <div className="flex-1 max-w-40">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Tanggal Aktivitas <span className="text-red-500">*</span>

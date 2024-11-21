@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../firebaseConfig'
 
 const FormLpjUmum = () => {
     const [todayDate, setTodayDate] = useState('')
+    const [userData, setUserData] = useState({
+        nama: '',
+        unit: ''
+    })
 
     useEffect(() => {
         const today = new Date()
@@ -12,13 +18,31 @@ const FormLpjUmum = () => {
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
         const formattedDate = `${day}-${monthNames[month]}-${year}`
 
+        const uid = localStorage.getItem('userUid')
+
         setTodayDate(formattedDate)
+        const fetchUserData = async () => {
+            try {
+                const userDocRef = doc(db, 'users', uid)
+                const userDoc = await getDoc(userDocRef)
+
+                if (userDoc.exists()) {
+                    const data = userDoc.data()
+                    setUserData({
+                        nama: data.nama || '',
+                        unit: data.unit || ''
+                    })
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error)
+            }
+        }
+
+        fetchUserData()
     }, [])
 
-    const [items, setItems] = useState([
-        { date: '', name: '', cost: 0, quantity: 0, total: 0 }
-    ])
-    
+    const [items, setItems] = useState([{ date: '', name: '', cost: 0, quantity: 0, total: 0 }])
+
     const handleAddItem = () => {
         setItems([...items, { date: '', name: '', cost: 0, quantity: 0, total: 0 }])
     }
@@ -71,7 +95,7 @@ const FormLpjUmum = () => {
     }
 
     const totalCost = items.reduce((acc, item) => acc + item.total, 0)
-    const [bonSementara, setBonSementara] = useState(0); // Bon Sementara sebagai state yang bisa diubah
+    const [bonSementara, setBonSementara] = useState(0) // Bon Sementara sebagai state yang bisa diubah
     const sisaKurang = totalCost > bonSementara ? totalCost - bonSementara : 0
 
     return (
@@ -87,7 +111,7 @@ const FormLpjUmum = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="Andi Ichwan"
+                            value={userData.nama}
                             disabled
                         />
                     </div>
@@ -96,7 +120,7 @@ const FormLpjUmum = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="PT Samudera Makassar Logistik"
+                            value={userData.unit}
                             disabled
                         />
                     </div>
@@ -107,8 +131,10 @@ const FormLpjUmum = () => {
                         <label className="block text-gray-700 font-medium mb-2">
                             Nomor Bon Sementara <span className="text-red-500">*</span>
                         </label>
-                        <input className="w-full px-4 py-2 border rounded-md text-gray-900" type="text" 
-                            placeholder='Masukkan nomor bon sementara'
+                        <input
+                            className="w-full px-4 py-2 border rounded-md text-gray-900"
+                            type="text"
+                            placeholder="Masukkan nomor bon sementara"
                         />
                     </div>
                     <div>
@@ -116,17 +142,17 @@ const FormLpjUmum = () => {
                             Jumlah Bon Sementara <span className="text-red-500">*</span>
                         </label>
                         <input
-                          className="w-full px-4 py-2 border rounded-md text-gray-900"
-                          type="text"
-                          value={bonSementara ? formatRupiah(bonSementara) : ''}
-                          onChange={(e) => {
-                            const cleanValue = e.target.value.replace(/\D/g, '');
-                            const value = Number(cleanValue);
-                            if (value >= 0) {
-                                setBonSementara(value);
-                            }
-                          }}
-                          placeholder="Masukkan jumlah bon sementara tanpa Rp"
+                            className="w-full px-4 py-2 border rounded-md text-gray-900"
+                            type="text"
+                            value={bonSementara ? formatRupiah(bonSementara) : ''}
+                            onChange={(e) => {
+                                const cleanValue = e.target.value.replace(/\D/g, '')
+                                const value = Number(cleanValue)
+                                if (value >= 0) {
+                                    setBonSementara(value)
+                                }
+                            }}
+                            placeholder="Masukkan jumlah bon sementara tanpa Rp"
                         />
                     </div>
                 </div>
@@ -176,7 +202,7 @@ const FormLpjUmum = () => {
                             />
                         </div>
 
-                        <div className='flex-grow'>
+                        <div className="flex-grow">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Item <span className="text-red-500">*</span>
@@ -214,22 +240,20 @@ const FormLpjUmum = () => {
                                 type="number"
                                 value={item.quantity}
                                 onChange={(e) => {
-                                    const inputValue = e.target.value;
-                                    const formattedValue = inputValue.replace(/^0+/,''); //Menghapus angka nol di depan
-                                    const value = Number(formattedValue); // Mengonversi ke angka dan memeriksa apakah nilainya positif
+                                    const inputValue = e.target.value
+                                    const formattedValue = inputValue.replace(/^0+/, '') //Menghapus angka nol di depan
+                                    const value = Number(formattedValue) // Mengonversi ke angka dan memeriksa apakah nilainya positif
                                     if (formattedValue === '' || value >= 0) {
-                                        handleInputChange(index, 'quantity', formattedValue)};    
+                                        handleInputChange(index, 'quantity', formattedValue)
                                     }
-                                }
+                                }}
                                 className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
                             />
                         </div>
 
                         <div>
                             {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Jumlah Biaya
-                                </label>
+                                <label className="block text-gray-700 font-medium mb-2">Jumlah Biaya</label>
                             )}
                             <input
                                 type="text"

@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../firebaseConfig'
 
 const RbsBbmForm = () => {
     const [todayDate, setTodayDate] = useState('')
-    const [reimbursements, setReimbursements] = useState([{ jenis: '', biaya: '', lokasi: '', plat: '', tanggal: '' }])
-
+    const [userData, setUserData] = useState({
+        nama: '',
+        bankName: '',
+        accountNumber: '',
+        unit: ''
+    })
+    const [reimbursements, setReimbursements] = useState([
+        { jenis: '', biaya: '', dokter: '', klinik: '', tanggal: '' }
+    ])
     useEffect(() => {
         const today = new Date()
         const day = today.getDate()
@@ -13,7 +22,30 @@ const RbsBbmForm = () => {
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
         const formattedDate = `${day}-${monthNames[month]}-${year}`
 
+        const uid = localStorage.getItem('userUid')
+
         setTodayDate(formattedDate)
+
+        const fetchUserData = async () => {
+            try {
+                const userDocRef = doc(db, 'users', uid)
+                const userDoc = await getDoc(userDocRef)
+
+                if (userDoc.exists()) {
+                    const data = userDoc.data()
+                    setUserData({
+                        nama: data.nama || '',
+                        bankName: data.bankName || '',
+                        accountNumber: data.accountNumber || '',
+                        unit: data.unit || '' // Assuming department is an array
+                    })
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error)
+            }
+        }
+
+        fetchUserData()
     }, [])
 
     const formatRupiah = (number) => {
@@ -67,7 +99,7 @@ const RbsBbmForm = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="Andi Ichwan"
+                            value={userData.nama}
                             disabled
                         />
                     </div>
@@ -76,7 +108,7 @@ const RbsBbmForm = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="PT Samudera Makassar Logistik"
+                            value={userData.unit}
                             disabled
                         />
                     </div>
@@ -88,7 +120,7 @@ const RbsBbmForm = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="1234567890"
+                            value={userData.accountNumber}
                             disabled
                         />
                     </div>
@@ -97,7 +129,7 @@ const RbsBbmForm = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value="Bank Rakyat Indonesia"
+                            value={userData.bankName}
                             disabled
                         />
                     </div>
