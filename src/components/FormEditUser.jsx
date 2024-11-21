@@ -61,33 +61,6 @@ const EditUserForm = () => {
         { value: 'Direktur', label: 'Direktur' }
     ]
 
-    // // Options reviewer 1
-    // const reviewer1Options = [
-    //     { value: 'wahyu', label: 'Wahyu Hermawan' },
-    //     { value: 'joko', label: 'Joko Susilo' },
-    //     { value: 'bernard', label: 'Bernard Hutagaol' },
-    //     { value: 'yusuf', label: 'Muh Yusuf' },
-    //     { value: 'agus', label: 'Agussalim' },
-    //     { value: 'fitri', label: 'Fitrityanti Jufri' },
-    //     { value: 'siti', label: 'Siti Muliana' },
-    //     { value: 'arham', label: 'Arham Jailani' },
-    //     { value: 'utami', label: 'Utami Warastiti' },
-    //     { value: 'saipul', label: 'Saipul Miraj' },
-    //     { value: 'iswan', label: 'Iswan Afandi' },
-    //     { value: 'agusri', label: 'Agusri' },
-    //     { value: 'erlangga', label: 'Erlangga Putra' },
-    //     { value: 'halim', label: 'Muhammad Halim' },
-    //     { value: 'irwansyah', label: 'Irwansyah Dahlan' },
-    //     { value: 'milda', label: 'Mildawaty Kahar' }
-    // ]
-
-    // // Options reviewer 2
-    // const reviewer2Options = [
-    //     { value: 'wahyu', label: 'Wahyu Hermawan' },
-    //     { value: 'joko', label: 'Joko Susilo' },
-    //     { value: 'bernard', label: 'Bernard Hutagaol' }
-    // ]
-
     const getUidFromParams = () => {
         const params = new URLSearchParams(location.search);
         return params.get('uid'); // Mengambil UID dari parameter id
@@ -261,11 +234,29 @@ const EditUserForm = () => {
             return
         }
         
+        // Pemetaan reviewer dari nama ke UID
+        const reviewer1Uids = formData.reviewer1.map(reviewerName => {
+            const reviewer = reviewer1Options.find(option => option.label === reviewerName);
+            return reviewer ? reviewer.uid : null;
+        }).filter(uid => uid !== null); // Hanya ambil UID yang valid
+
+        const reviewer2Uids = formData.reviewer2.map(reviewerName => {
+            const reviewer = reviewer2Options.find(option => option.label === reviewerName);
+            return reviewer ? reviewer.uid : null;
+        }).filter(uid => uid !== null); // Hanya ambil UID yang valid
+
+        // Update formData dengan UID
+        const updatedFormData = {
+            ...formData,
+            reviewer1: reviewer1Uids,
+            reviewer2: reviewer2Uids,
+        };
+
         setIsSubmitting(true)
 
         try {    
             const userRef = doc(db, 'users', uid)
-            await updateDoc(userRef, formData)
+            await updateDoc(userRef, updatedFormData)
             alert('User berhasil diupdate.')
             navigate(-1)
         } catch (error) {
