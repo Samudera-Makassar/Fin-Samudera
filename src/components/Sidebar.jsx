@@ -88,7 +88,7 @@ const Sidebar = () => {
                             GA/Umum
                         </NavLink>
                     </li>
-                    {(role === 'reviewer' || role === 'admin') && (
+                    {(role === 'Reviewer' || role === 'Admin') && (
                         <li>
                             <NavLink
                                 to="/reimbursement/cek-laporan"
@@ -129,7 +129,7 @@ const Sidebar = () => {
                             Marketing/Operasional
                         </NavLink>
                     </li>
-                    {(role === 'reviewer' || role === 'admin') && (
+                    {(role === 'Reviewer' || role === 'Admin') && (
                         <li>
                             <NavLink
                                 to="/lpj/cek-laporan"
@@ -143,7 +143,7 @@ const Sidebar = () => {
                             </NavLink>
                         </li>
                     )}
-                    {role === 'admin' && (
+                    {role === 'Admin' && (
                         <li>
                             <hr className="border-red-500" />
                             <NavLink

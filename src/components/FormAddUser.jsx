@@ -167,14 +167,14 @@ const AddUserForm = () => {
 
     // Options unit
     const unitOptions = [
-        { value: 'MJS', label: 'PT Makassar Jaya Samudera' },
-        { value: 'SML', label: 'PT Samudera Makassar Logistik' },
-        { value: 'KJS', label: 'PT Kendari Jaya Samudera' },
-        { value: 'SKL', label: 'PT Samudera Kendari Logistik' },
-        { value: 'SAI', label: 'PT Samudera Agencies Indonesia' },
-        { value: 'SKI', label: 'PT Silkargo Indonesia' },
-        { value: 'SP', label: 'PT PAD Samudera Perdana' },
-        { value: 'MKT', label: 'PT Masaji Kargosentra Tama' }
+        { value: 'PT Makassar Jaya Samudera', label: 'PT Makassar Jaya Samudera' },
+        { value: 'PT Samudera Makassar Logistik', label: 'PT Samudera Makassar Logistik' },
+        { value: 'PT Kendari Jaya Samudera', label: 'PT Kendari Jaya Samudera' },
+        { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
+        { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
+        { value: 'PT Silkargo Indonesia', label: 'PT Silkargo Indonesia' },
+        { value: 'PT PAD Samudera Indonesia', label: 'PT PAD Samudera Perdana' },
+        { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
     ]
 
     // Options department

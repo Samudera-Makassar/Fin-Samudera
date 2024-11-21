@@ -34,14 +34,14 @@ const EditUserForm = () => {
 
     // Options unit
     const unitOptions = [
-        { value: 'MJS', label: 'PT Makassar Jaya Samudera' },
-        { value: 'SML', label: 'PT Samudera Makassar Logistik' },
-        { value: 'KJS', label: 'PT Kendari Jaya Samudera' },
-        { value: 'SKL', label: 'PT Samudera Kendari Logistik' },
-        { value: 'SAI', label: 'PT Samudera Agencies Indonesia' },
-        { value: 'SKI', label: 'PT Silkargo Indonesia' },
-        { value: 'SP', label: 'PT PAD Samudera Perdana' },
-        { value: 'MKT', label: 'PT Masaji Kargosentra Tama' }
+        { value: 'PT Makassar Jaya Samudera', label: 'PT Makassar Jaya Samudera' },
+        { value: 'PT Samudera Makassar Logistik', label: 'PT Samudera Makassar Logistik' },
+        { value: 'PT Kendari Jaya Samudera', label: 'PT Kendari Jaya Samudera' },
+        { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
+        { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
+        { value: 'PT Silkargo Indonesia', label: 'PT Silkargo Indonesia' },
+        { value: 'PT PAD Samudera Indonesia', label: 'PT PAD Samudera Perdana' },
+        { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
     ]
 
     // Options department
@@ -104,14 +104,14 @@ const EditUserForm = () => {
             const docRef = doc(db, 'users', uid); // Gunakan UID sebagai referensi
             try {
                 const docSnap = await getDoc(docRef);
-    
+                
                 if (docSnap.exists()) {
-                    const userData = docSnap.data();
+                    const userData = docSnap.data();                    
                     setFormData({
                         ...userData,
                         reviewer1: userData.reviewer1 || [],
                         reviewer2: userData.reviewer2 || [],
-                        department: userData.department || [],
+                        department: userData.department || []                        
                     })
                 } else {
                     console.error('User not found');
@@ -139,15 +139,20 @@ const EditUserForm = () => {
                         value: user.nama,
                         label: user.nama,
                         uid: user.uid
-                    }))    
-                    console.log('Reviewer Options:', reviewerOptions)                
+                    }))                                 
 
                 // Hapus pengguna yang sedang diedit dari opsi reviewer
                 const currentUserName = formData.nama
                 const filteredReviewerOptions = reviewerOptions.filter(option => option.value !== currentUserName)
-
+                
                 setReviewer1Options(filteredReviewerOptions)
                 setReviewer2Options(filteredReviewerOptions)
+                
+                setFormData({
+                    ...formData,
+                    reviewer1: filteredReviewerOptions.filter((e) => formData.reviewer1.includes(e.uid)).map((e) => e.label) || [],
+                    reviewer2: filteredReviewerOptions.filter((e) => formData.reviewer2.includes(e.uid)).map((e) => e.label) || [],
+                })
             } catch (error) {
                 console.error('Error fetching reviewers:', error)
             }
@@ -242,7 +247,7 @@ const EditUserForm = () => {
 
         // Validasi untuk memastikan field selain reviewer2 tidak kosong
         const requiredFields = [
-            'nama', 'email', 'password', 'posisi', 'unit', 'role', 'department', 'bankName', 'accountNumber'
+            'nama', 'email', 'password', 'posisi', 'unit', 'role', 'department', 'bankName', 'accountNumber', 'reviewer1'
         ];
         for (let field of requiredFields) {
             if (!formData[field] || (Array.isArray(formData[field]) && formData[field].length === 0)) {

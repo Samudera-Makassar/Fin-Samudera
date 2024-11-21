@@ -54,9 +54,9 @@ const LoginPage = () => {
             localStorage.setItem('userUid', userDoc.id);
 
             // Navigasi ke dashboard sesuai role
-            if (role === 'admin') navigate('/dashboard/admin');
-            else if (role === 'reviewer') navigate('/dashboard/reviewer');
-            else if (role === 'employee') navigate('/dashboard/employee');
+            if (role === 'Admin') navigate('/dashboard/admin');
+            else if (role === 'Reviewer') navigate('/dashboard/reviewer');
+            else if (role === 'Employee') navigate('/dashboard/employee');
             else setError('Role tidak dikenali. Hubungi administrator.');
         } catch (err) {
             console.error('Login error:', err);
