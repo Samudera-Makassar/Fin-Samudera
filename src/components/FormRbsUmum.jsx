@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, addDoc, collection } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
+import Select from 'react-select'
 
 const RbsOperasionalForm = () => {
     const [todayDate, setTodayDate] = useState('')
@@ -8,11 +9,40 @@ const RbsOperasionalForm = () => {
         nama: '',
         bankName: '',
         accountNumber: '',
-        unit: ''
+        unit: '',
+        reviewer1: [],
+        reviewer2: []
     })
+
+    useEffect(() => {
+        if (todayDate) {
+            setReimbursements((prevReimbursements) =>
+                prevReimbursements.map((item) => ({ ...item, tanggalPengajuan: todayDate }))
+            )
+        }
+    }, [todayDate])
+
     const [reimbursements, setReimbursements] = useState([
-        { jenis: '', biaya: '', kebutuhan: '', keterangan: '', tanggal: '' }
+        {
+            jenis: '',
+            biaya: '',
+            kebutuhan: '',
+            keterangan: '',
+            tanggal: '',
+            isLainnya: false,
+            jenisLain: '',
+            tanggalPengajuan: todayDate
+        }
     ])
+
+    const jenisOptions = [
+        { value: 'ATK', label: 'ATK' },
+        { value: 'RTG', label: 'RTG' },
+        { value: 'Parkir', label: 'Parkir' },
+        { value: 'Melas Lembur', label: 'Melas Lembur' },
+        { value: 'Melas Meeting', label: 'Melas Meeting' },
+        { value: 'Lainnya', label: 'Lainnya' }
+    ]
 
     useEffect(() => {
         const today = new Date()
@@ -38,7 +68,9 @@ const RbsOperasionalForm = () => {
                         nama: data.nama || '',
                         bankName: data.bankName || '',
                         accountNumber: data.accountNumber || '',
-                        unit: data.unit || ''
+                        unit: data.unit || '',
+                        reviewer1: data.reviewer1 || [],
+                        reviewer2: data.reviewer2 || []
                     })
                 }
             } catch (error) {
@@ -66,7 +98,10 @@ const RbsOperasionalForm = () => {
     }
 
     const handleAddForm = () => {
-        setReimbursements([...reimbursements, { jenis: '', biaya: '', kebutuhan: '', keterangan: '', tanggal: '' }])
+        setReimbursements([
+            ...reimbursements, 
+            { jenis: '', biaya: '', kebutuhan: '', keterangan: '', tanggal: '', jenisLain: '' }
+        ])
     }
 
     const handleRemoveForm = (index) => {
@@ -85,6 +120,67 @@ const RbsOperasionalForm = () => {
             i === index ? { ...item, [field]: formattedValue } : item
         )
         setReimbursements(updatedReimbursements)
+    }
+
+    const handleJenisChange = (index, selectedOption) => {
+        const updatedReimbursements = [...reimbursements]
+        updatedReimbursements[index].jenis = selectedOption
+
+        if (selectedOption && selectedOption.value === 'Lainnya') {
+            updatedReimbursements[index].jenis = selectedOption
+            updatedReimbursements[index].isLainnya = true
+            updatedReimbursements[index].jenisLain = '' // Reset custom input
+        } else {
+            updatedReimbursements[index].jenis = selectedOption
+            updatedReimbursements[index].isLainnya = false
+            updatedReimbursements[index].jenisLain = ''
+        }
+
+        setReimbursements(updatedReimbursements)
+    }
+
+    const handleJenisLainChange = (index, value) => {
+        const updatedReimbursements = [...reimbursements]
+        updatedReimbursements[index].jenisLain = value
+        setReimbursements(updatedReimbursements)
+    }
+
+    const handleSubmit = async () => {
+        try {
+            // Tambahkan `tanggalPengajuan` jika belum ada
+            const updatedReimbursements = reimbursements.map((item) => ({
+                ...item,
+                tanggalPengajuan: item.tanggalPengajuan || todayDate
+            }))
+
+            // Validasi form
+            if (!userData.nama || reimbursements.some((r) => !r.jenis || !r.biaya || !r.tanggal)) {
+                alert('Mohon lengkapi semua field yang wajib diisi!')
+                return
+            }
+
+            // Data yang akan disimpan
+            const reimbursementData = {
+                user: {
+                    nama: userData.nama,
+                    bankName: userData.bankName,
+                    accountNumber: userData.accountNumber,
+                    unit: userData.unit,
+                    reviewer1: userData.reviewer1,
+                    reviewer2: userData.reviewer2
+                },
+                reimbursements: updatedReimbursements
+            }
+
+            // Simpan ke Firestore
+            const docRef = await addDoc(collection(db, 'reimbursement'), reimbursementData)
+
+            console.log('Data berhasil disimpan dengan ID:', docRef.id)
+            alert('Reimbursement berhasil diajukan!')
+        } catch (error) {
+            console.error('Error submitting reimbursement:', error)
+            alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
+        }
     }
 
     return (
@@ -173,47 +269,23 @@ const RbsOperasionalForm = () => {
                                     Jenis Reimbursement <span className="text-red-500">*</span>
                                 </label>
                             )}
-                            <div className="relative">
-                                {reimbursement.jenis === 'Lainnya' ? (
+                            <div key={index}>
+                                {reimbursement.isLainnya ? (
                                     <input
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         type="text"
                                         placeholder="Jenis lain"
                                         value={reimbursement.jenisLain}
-                                        onChange={(e) => handleInputChange(index, 'jenisLain', e.target.value)}
+                                        onChange={(e) => handleJenisLainChange(index, e.target.value)}
+                                        className="w-full px-4 py-2 border rounded"
                                     />
                                 ) : (
-                                    <select
-                                        className="block w-full px-4 py-2 pr-8 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    <Select
+                                        options={jenisOptions}
                                         value={reimbursement.jenis}
-                                        onChange={(e) => handleInputChange(index, 'jenis', e.target.value)}
-                                    >
-                                        <option value="ATK">ATK</option>
-                                        <option value="RTG">RTG</option>
-                                        <option value="Parkir">Parkir</option>
-                                        <option value="Melas Lembur">Melas Lembur</option>
-                                        <option value="Melas Meeting">Melas Meeting</option>
-                                        <option value="Lainnya">Lainnya</option>
-                                    </select>
-                                )}
-
-                                {reimbursement.jenis !== 'Lainnya' && (
-                                    <div className="absolute inset-y-0 right-0 flex items-center px-4 justify-center pointer-events-none">
-                                        <svg
-                                            className="w-4 h-4 text-gray-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M19 9l-7 7-7-7"
-                                            ></path>
-                                        </svg>
-                                    </div>
+                                        onChange={(selectedOption) => handleJenisChange(index, selectedOption)}
+                                        placeholder="Pilih jenis..."
+                                        className="w-full"
+                                    />
                                 )}
                             </div>
                         </div>
@@ -290,10 +362,10 @@ const RbsOperasionalForm = () => {
                 <hr className="border-gray-300 my-6" />
 
                 <div className="flex justify-end mt-6">
-                    <button className="px-16 py-3 mr-4 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700">
-                        Cancel
-                    </button>
-                    <button className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200">
+                    <button
+                        className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
+                        onClick={handleSubmit}
+                    >
                         Submit
                     </button>
                 </div>

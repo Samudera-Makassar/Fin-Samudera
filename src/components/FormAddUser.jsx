@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { collection, doc, setDoc, getDocs, query, where, or } from 'firebase/firestore'
 import Select from 'react-select'
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid'
 
 const AddUserForm = () => {
     const navigate = useNavigate()
@@ -67,25 +67,24 @@ const AddUserForm = () => {
                 ...formData,
                 reviewer1: [],
                 reviewer2: [],
-                [field]: selectedOption.value,
-            });
-        } else if (field === "department") {
+                [field]: selectedOption.value
+            })
+        } else if (field === 'department') {
             setFormData({
                 ...formData,
                 [field]: Array.isArray(selectedOption)
-                    ? selectedOption.map(option => option.value)
+                    ? selectedOption.map((option) => option.value)
                     : selectedOption?.value || ''
-            });
+            })
         } else {
             setFormData({
                 ...formData,
                 [field]: Array.isArray(selectedOption)
-                    ? selectedOption.map(option => option.uid)
+                    ? selectedOption.map((option) => option.uid)
                     : selectedOption?.value || ''
-            });
+            })
         }
-        
-    }    
+    }
 
     const checkEmailExists = async (email) => {
         const q = query(collection(db, 'users'), where('email', '==', email))
@@ -93,7 +92,7 @@ const AddUserForm = () => {
         return !querySnapshot.empty
     }
 
-    const uid = uuidv4();
+    const uid = uuidv4()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -130,7 +129,7 @@ const AddUserForm = () => {
                 bankName: formData.bankName,
                 accountNumber: formData.accountNumber,
                 reviewer1: formData.reviewer1,
-                reviewer2: formData.reviewer2                
+                reviewer2: formData.reviewer2
             })
 
             alert('User berhasil ditambahkan.')
@@ -354,7 +353,7 @@ const AddUserForm = () => {
                                 />
                             </div>
                         </div>
-                    </div>                    
+                    </div>
                     {formData.role !== 'admin' && (
                         <div className="grid grid-cols-2 gap-6">
                             <div className="mb-2">
@@ -367,7 +366,7 @@ const AddUserForm = () => {
                                     options={reviewerOptions}
                                     className="basic-multi-select mt-1"
                                     classNamePrefix="select"
-                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer2')}                                
+                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer2')}
                                 />
                             </div>
                         </div>

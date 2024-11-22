@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, addDoc, collection } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 
 const RbsMedicalForm = () => {
@@ -8,10 +8,21 @@ const RbsMedicalForm = () => {
         nama: '',
         bankName: '',
         accountNumber: '',
-        unit: ''
+        unit: '',
+        reviewer1: [],
+        reviewer2: []
     })
+
+    useEffect(() => {
+        if (todayDate) {
+            setReimbursements((prevReimbursements) =>
+                prevReimbursements.map((item) => ({ ...item, tanggalPengajuan: todayDate }))
+            )
+        }
+    }, [todayDate])
+
     const [reimbursements, setReimbursements] = useState([
-        { jenis: '', biaya: '', dokter: '', klinik: '', tanggal: '' }
+        { jenis: '', biaya: '', dokter: '', klinik: '', tanggal: '', tanggalPengajuan: todayDate }
     ])
 
     useEffect(() => {
@@ -38,7 +49,9 @@ const RbsMedicalForm = () => {
                         nama: data.nama || '',
                         bankName: data.bankName || '',
                         accountNumber: data.accountNumber || '',
-                        unit: data.unit || '' // Assuming department is an array
+                        unit: data.unit || '',
+                        reviewer1: data.reviewer1 || [],
+                        reviewer2: data.reviewer2 || []
                     })
                 }
             } catch (error) {
@@ -66,7 +79,7 @@ const RbsMedicalForm = () => {
     }
 
     const handleAddForm = () => {
-        setReimbursements([...reimbursements, { jenis: '', biaya: '', kebutuhan: '', keterangan: '', tanggal: '' }])
+        setReimbursements([...reimbursements, { jenis: '', biaya: '', dokter: '', klinik: '', tanggal: '' }])
     }
 
     const handleRemoveForm = (index) => {
@@ -85,6 +98,44 @@ const RbsMedicalForm = () => {
             i === index ? { ...item, [field]: formattedValue } : item
         )
         setReimbursements(updatedReimbursements)
+    }
+
+    const handleSubmit = async () => {
+        try {
+            // Tambahkan `tanggalPengajuan` jika belum ada
+            const updatedReimbursements = reimbursements.map((item) => ({
+                ...item,
+                tanggalPengajuan: item.tanggalPengajuan || todayDate
+            }))
+
+            // Validasi form
+            if (!userData.nama || reimbursements.some((r) => !r.jenis || !r.biaya || !r.tanggal)) {
+                alert('Mohon lengkapi semua field yang wajib diisi!')
+                return
+            }
+
+            // Data yang akan disimpan
+            const reimbursementData = {
+                user: {
+                    nama: userData.nama,
+                    bankName: userData.bankName,
+                    accountNumber: userData.accountNumber,
+                    unit: userData.unit,
+                    reviewer1: userData.reviewer1,
+                    reviewer2: userData.reviewer2
+                },
+                reimbursements: updatedReimbursements
+            }
+
+            // Simpan ke Firestore
+            const docRef = await addDoc(collection(db, 'reimbursement'), reimbursementData)
+
+            console.log('Data berhasil disimpan dengan ID:', docRef.id)
+            alert('Reimbursement berhasil diajukan!')
+        } catch (error) {
+            console.error('Error submitting reimbursement:', error)
+            alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
+        }
     }
 
     return (
@@ -198,24 +249,28 @@ const RbsMedicalForm = () => {
                         <div className="flex-1 min-w-36">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
-                                    Kebutuhan <span className="text-red-500">*</span>
+                                    Nama Dokter <span className="text-red-500">*</span>
                                 </label>
                             )}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
-                                value={reimbursement.kebutuhan}
-                                onChange={(e) => handleInputChange(index, 'kebutuhan', e.target.value)}
+                                value={reimbursement.dokter}
+                                onChange={(e) => handleInputChange(index, 'dokter', e.target.value)}
                             />
                         </div>
 
                         <div className="flex-1 min-w-36">
-                            {index === 0 && <label className="block text-gray-700 font-medium mb-2">Keterangan</label>}
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Klinik/RS <span className="text-red-500">*</span>
+                                </label>
+                            )}
                             <input
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
-                                value={reimbursement.keterangan}
-                                onChange={(e) => handleInputChange(index, 'keterangan', e.target.value)}
+                                value={reimbursement.klinik}
+                                onChange={(e) => handleInputChange(index, 'klinik', e.target.value)}
                             />
                         </div>
 
@@ -253,10 +308,10 @@ const RbsMedicalForm = () => {
                 <hr className="border-gray-300 my-6" />
 
                 <div className="flex justify-end mt-6">
-                    <button className="px-16 py-3 mr-4 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700">
-                        Cancel
-                    </button>
-                    <button className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200">
+                    <button
+                        className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
+                        onClick={handleSubmit}
+                    >
                         Submit
                     </button>
                 </div>
