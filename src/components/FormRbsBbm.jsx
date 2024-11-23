@@ -3,8 +3,10 @@ import { doc, getDoc, addDoc, collection } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import Select from 'react-select'
 
-const RbsBbmForm = () => {const [todayDate, setTodayDate] = useState('')
+const RbsBbmForm = () => {
+    const [todayDate, setTodayDate] = useState('')
     const [userData, setUserData] = useState({
+        uid: '',
         nama: '',
         bankName: '',
         accountNumber: '',
@@ -64,6 +66,7 @@ const RbsBbmForm = () => {const [todayDate, setTodayDate] = useState('')
                 if (userDoc.exists()) {
                     const data = userDoc.data()
                     setUserData({
+                        uid: data.uid || '',
                         nama: data.nama || '',
                         bankName: data.bankName || '',
                         accountNumber: data.accountNumber || '',
@@ -170,18 +173,25 @@ const RbsBbmForm = () => {const [todayDate, setTodayDate] = useState('')
                 !userData.nama ||
                 reimbursements.some((r) => {
                     if (r.isLainnya) {
-                        return !r.jenisLain || !r.biaya || !r.tanggal
+                        return !r.jenisLain || !r.biaya || !r.lokasi || !r.plat || !r.tanggal 
                     }
-                    return !r.jenis || !r.biaya || !r.tanggal
+                    return !r.jenis || !r.biaya || !r.lokasi || !r.plat || !r.tanggal
                 })
             ) {
                 alert('Mohon lengkapi semua field yang wajib diisi!')
                 return
             }
 
+            // Hitung total biaya
+            const totalBiaya = reimbursements.reduce((total, item) => {
+                const biayaNumber = parseInt(item.biaya.replace(/[^0-9]/g, ''))
+                return total + biayaNumber
+            }, 0)
+
             // Map data reimbursement langsung saat akan disimpan
             const reimbursementData = {
                 user: {
+                    uid: userData.uid,
                     nama: userData.nama,
                     bankName: userData.bankName,
                     accountNumber: userData.accountNumber,
@@ -193,18 +203,29 @@ const RbsBbmForm = () => {const [todayDate, setTodayDate] = useState('')
                     biaya: item.biaya,
                     lokasi: item.lokasi,
                     plat: item.plat,
-                    tanggal: item.tanggal,
-                    tanggalPengajuan: item.tanggalPengajuan || todayDate,
+                    tanggal: item.tanggal,                    
                     isLainnya: item.isLainnya,
-                    jenis: item.isLainnya ? item.jenisLain : item.jenis.value
-                }))
+                    jenis: item.isLainnya ? item.jenisLain : item.jenis.value,                    
+                })),
+                kategori: 'BBM',
+                status: 'Diproses',
+                tanggalPengajuan: todayDate,
+                totalBiaya: totalBiaya,
+                statusHistory: [
+                    {
+                        status: 'Diproses',
+                        timestamp: new Date().toISOString()
+                    }
+                ],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
             }
 
             // Simpan ke Firestore
             const docRef = await addDoc(collection(db, 'reimbursement'), reimbursementData)
 
             console.log('Data berhasil disimpan dengan ID:', docRef.id)
-            alert('Reimbursement berhasil diajukan!')
+            alert('Reimbursement BBM berhasil diajukan!')
             
             // Reset form setelah berhasil submit
             resetForm()
