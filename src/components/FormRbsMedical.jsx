@@ -5,6 +5,7 @@ import { db } from '../firebaseConfig'
 const RbsMedicalForm = () => {
     const [todayDate, setTodayDate] = useState('')
     const [userData, setUserData] = useState({
+        uid: '',
         nama: '',
         bankName: '',
         accountNumber: '',
@@ -13,6 +14,17 @@ const RbsMedicalForm = () => {
         reviewer2: []
     })
 
+    const initialReimbursementState = {
+        jenis: '',
+        biaya: '',
+        dokter: '',
+        klinik: '',
+        tanggal: '',
+        tanggalPengajuan: todayDate
+    }
+
+    const [reimbursements, setReimbursements] = useState([initialReimbursementState])
+
     useEffect(() => {
         if (todayDate) {
             setReimbursements((prevReimbursements) =>
@@ -20,10 +32,6 @@ const RbsMedicalForm = () => {
             )
         }
     }, [todayDate])
-
-    const [reimbursements, setReimbursements] = useState([
-        { jenis: '', biaya: '', dokter: '', klinik: '', tanggal: '', tanggalPengajuan: todayDate }
-    ])
 
     useEffect(() => {
         const today = new Date()
@@ -46,6 +54,7 @@ const RbsMedicalForm = () => {
                 if (userDoc.exists()) {
                     const data = userDoc.data()
                     setUserData({
+                        uid: data.uid || '',
                         nama: data.nama || '',
                         bankName: data.bankName || '',
                         accountNumber: data.accountNumber || '',
@@ -61,6 +70,22 @@ const RbsMedicalForm = () => {
 
         fetchUserData()
     }, [])
+
+    const resetForm = () => {
+        // Reset reimbursements to initial state with one empty form
+        setReimbursements([
+            {
+                ...initialReimbursementState,
+                tanggalPengajuan: todayDate
+            }
+        ])
+
+        // // Reset file input if you have one
+        // const fileInput = document.getElementById('file-upload')
+        // if (fileInput) {
+        //     fileInput.value = ''
+        // }
+    }
 
     const formatRupiah = (number) => {
         const strNumber = number.replace(/[^,\d]/g, '').toString()
@@ -79,7 +104,7 @@ const RbsMedicalForm = () => {
     }
 
     const handleAddForm = () => {
-        setReimbursements([...reimbursements, { jenis: '', biaya: '', dokter: '', klinik: '', tanggal: '' }])
+        setReimbursements([...reimbursements, { ...initialReimbursementState, tanggalPengajuan: todayDate }])
     }
 
     const handleRemoveForm = (index) => {
@@ -102,21 +127,25 @@ const RbsMedicalForm = () => {
 
     const handleSubmit = async () => {
         try {
-            // Tambahkan `tanggalPengajuan` jika belum ada
-            const updatedReimbursements = reimbursements.map((item) => ({
-                ...item,
-                tanggalPengajuan: item.tanggalPengajuan || todayDate
-            }))
-
             // Validasi form
-            if (!userData.nama || reimbursements.some((r) => !r.jenis || !r.biaya || !r.tanggal)) {
+            if (
+                !userData.nama ||
+                reimbursements.some((r) => !r.jenis || !r.biaya || !r.dokter || !r.klinik || !r.tanggal)
+            ) {
                 alert('Mohon lengkapi semua field yang wajib diisi!')
                 return
             }
 
-            // Data yang akan disimpan
+            // Hitung total biaya
+            const totalBiaya = reimbursements.reduce((total, item) => {
+                const biayaNumber = parseInt(item.biaya.replace(/[^0-9]/g, ''))
+                return total + biayaNumber
+            }, 0)
+
+            // Map data reimbursement langsung saat akan disimpan
             const reimbursementData = {
                 user: {
+                    uid: userData.uid,
                     nama: userData.nama,
                     bankName: userData.bankName,
                     accountNumber: userData.accountNumber,
@@ -124,14 +153,35 @@ const RbsMedicalForm = () => {
                     reviewer1: userData.reviewer1,
                     reviewer2: userData.reviewer2
                 },
-                reimbursements: updatedReimbursements
+                reimbursements: reimbursements.map((item) => ({
+                    jenis: item.jenis,
+                    biaya: item.biaya,
+                    dokter: item.dokter,
+                    klinik: item.klinik,
+                    tanggal: item.tanggal
+                })),
+                kategori: 'Medical',
+                status: 'Diproses',
+                tanggalPengajuan: todayDate,
+                totalBiaya: totalBiaya,
+                statusHistory: [
+                    {
+                        status: 'Diproses',
+                        timestamp: new Date().toISOString()
+                    }
+                ],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
             }
 
             // Simpan ke Firestore
             const docRef = await addDoc(collection(db, 'reimbursement'), reimbursementData)
 
             console.log('Data berhasil disimpan dengan ID:', docRef.id)
-            alert('Reimbursement berhasil diajukan!')
+            alert('Reimbursement Medical berhasil diajukan!')
+
+            // Reset form setelah berhasil submit
+            resetForm()
         } catch (error) {
             console.error('Error submitting reimbursement:', error)
             alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
