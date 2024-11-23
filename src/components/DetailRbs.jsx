@@ -1,16 +1,14 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../firebaseConfig' 
 
 const DetailRbs = () => {
-    const reimbursementDetail = {
+    const [userData, setUserData] = useState(null)
+    const [reimbursementDetail, setReimbursementDetail] = useState({
         id: 'RBS-BBM-01',
-        name: 'Andi Ichwan',
-        department: 'Finance',
-        unitBusiness: 'PT Samudera Makassar Logistik',
         submissionDate: '10 Oktober 2024',
         status: 'Disetujui',
         approver: 'Pak Budi',
-        accountNumber: '1234567890',
-        bankName: 'Bank Rakyat Indonesia',
         reimbursementCategory: 'BBM',
         items: [
             {
@@ -28,10 +26,32 @@ const DetailRbs = () => {
                 biaya: 50000,
             },
         ],
-    }
+    })
+
+    const uid = localStorage.getItem('userUid')
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                // Ganti dengan ID dokumen user yang sesuai
+                const userDocRef = doc(db, 'users', uid)
+                const userSnapshot = await getDoc(userDocRef)
+                
+                if (userSnapshot.exists()) {
+                    setUserData(userSnapshot.data())
+                } else {
+                    console.log("User tidak ditemukan")
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error)
+            }
+        }
+
+        fetchUserData()
+    })
 
     // Menghitung total biaya
-    const totalBiaya = reimbursementDetail.items.reduce((total, item) => total + item.biaya, 0);
+    const totalBiaya = reimbursementDetail.items.reduce((total, item) => total + item.biaya, 0)
 
     // Fungsi untuk memformat angka menjadi format rupiah
     const formatRupiah = (amount) => {
@@ -39,7 +59,11 @@ const DetailRbs = () => {
             style: 'currency',
             currency: 'IDR',
             minimumFractionDigits: 0
-        }).format(amount);
+        }).format(amount)
+    }
+
+    if (!userData) {
+        return <div>Loading...</div>
     }
 
     return (
@@ -60,9 +84,9 @@ const DetailRbs = () => {
                         </div>
                         <div>
                             <p>: {reimbursementDetail.id}</p>
-                            <p>: {reimbursementDetail.name}</p>
-                            <p>: {reimbursementDetail.department}</p>
-                            <p>: {reimbursementDetail.unitBusiness}</p>
+                            <p>: {userData.nama}</p>
+                            <p>: {userData.department.join(', ')}</p>
+                            <p>: {userData.unit}</p>
                             <p>: {reimbursementDetail.submissionDate}</p>
                         </div>
                     </div>
@@ -76,10 +100,10 @@ const DetailRbs = () => {
                         </div>
                         <div>
                             <p>: {reimbursementDetail.reimbursementCategory}</p>
-                            <p>: {reimbursementDetail.accountNumber}</p>
-                            <p>: {reimbursementDetail.bankName}</p>
+                            <p>: {userData.accountNumber}</p>
+                            <p>: {userData.bankName}</p>
                             <p>: {reimbursementDetail.status}</p>
-                            <p>: {reimbursementDetail.approver}</p>
+                            <p>: {userData.reviewer2}</p>
                         </div>
                     </div>
                 </div>
@@ -125,7 +149,6 @@ const DetailRbs = () => {
                         Download
                     </button>
                 </div>
-            
             </div>
         </div>    
     )

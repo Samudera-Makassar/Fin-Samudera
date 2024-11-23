@@ -3,8 +3,7 @@ import { doc, getDoc, addDoc, collection } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import Select from 'react-select'
 
-const RbsBbmForm = () => {
-    const [todayDate, setTodayDate] = useState('')
+const RbsBbmForm = () => {const [todayDate, setTodayDate] = useState('')
     const [userData, setUserData] = useState({
         nama: '',
         bankName: '',
@@ -14,6 +13,19 @@ const RbsBbmForm = () => {
         reviewer2: []
     })
 
+    const initialReimbursementState = {
+        jenis: '',
+        biaya: '',
+        lokasi: '',
+        plat: '',
+        tanggal: '',
+        isLainnya: false,
+        jenisLain: '',
+        tanggalPengajuan: todayDate
+    }
+
+    const [reimbursements, setReimbursements] = useState([initialReimbursementState])
+
     useEffect(() => {
         if (todayDate) {
             setReimbursements((prevReimbursements) =>
@@ -21,19 +33,6 @@ const RbsBbmForm = () => {
             )
         }
     }, [todayDate])
-
-    const [reimbursements, setReimbursements] = useState([
-        {
-            jenis: '',
-            biaya: '',
-            lokasi: '',
-            plat: '',
-            tanggal: '',
-            isLainnya: false,
-            jenisLain: '',
-            tanggalPengajuan: todayDate
-        }
-    ])
 
     const jenisOptions = [
         { value: 'BBM Pertalite', label: 'BBM Pertalite' },
@@ -81,6 +80,20 @@ const RbsBbmForm = () => {
         fetchUserData()
     }, [])
 
+    const resetForm = () => {
+        // Reset reimbursements to initial state with one empty form
+        setReimbursements([{
+            ...initialReimbursementState,
+            tanggalPengajuan: todayDate
+        }])
+
+        // // Reset file input if you have one
+        // const fileInput = document.getElementById('file-upload')
+        // if (fileInput) {
+        //     fileInput.value = ''
+        // }
+    }
+
     const formatRupiah = (number) => {
         const strNumber = number.replace(/[^,\d]/g, '').toString()
         const split = strNumber.split(',')
@@ -100,7 +113,7 @@ const RbsBbmForm = () => {
     const handleAddForm = () => {
         setReimbursements([
             ...reimbursements,
-            { jenis: '', biaya: '', lokasi: '', plat: '', tanggal: '', jenisLain: '' }
+            { ...initialReimbursementState, tanggalPengajuan: todayDate }
         ])
     }
 
@@ -124,16 +137,21 @@ const RbsBbmForm = () => {
 
     const handleJenisChange = (index, selectedOption) => {
         const updatedReimbursements = [...reimbursements]
-        updatedReimbursements[index].jenis = selectedOption
 
         if (selectedOption && selectedOption.value === 'Lainnya') {
-            updatedReimbursements[index].jenis = selectedOption
-            updatedReimbursements[index].isLainnya = true
-            updatedReimbursements[index].jenisLain = '' // Reset custom input
+            updatedReimbursements[index] = {
+                ...updatedReimbursements[index],
+                jenis: null,
+                isLainnya: true,
+                jenisLain: ''
+            }
         } else {
-            updatedReimbursements[index].jenis = selectedOption
-            updatedReimbursements[index].isLainnya = false
-            updatedReimbursements[index].jenisLain = ''
+            updatedReimbursements[index] = {
+                ...updatedReimbursements[index],
+                jenis: selectedOption,
+                isLainnya: false,
+                jenisLain: ''
+            }
         }
 
         setReimbursements(updatedReimbursements)
@@ -147,19 +165,21 @@ const RbsBbmForm = () => {
 
     const handleSubmit = async () => {
         try {
-            // Tambahkan `tanggalPengajuan` jika belum ada
-            const updatedReimbursements = reimbursements.map((item) => ({
-                ...item,
-                tanggalPengajuan: item.tanggalPengajuan || todayDate
-            }))
-
             // Validasi form
-            if (!userData.nama || reimbursements.some((r) => !r.jenis || !r.biaya || !r.tanggal)) {
+            if (
+                !userData.nama ||
+                reimbursements.some((r) => {
+                    if (r.isLainnya) {
+                        return !r.jenisLain || !r.biaya || !r.tanggal
+                    }
+                    return !r.jenis || !r.biaya || !r.tanggal
+                })
+            ) {
                 alert('Mohon lengkapi semua field yang wajib diisi!')
                 return
             }
 
-            // Data yang akan disimpan
+            // Map data reimbursement langsung saat akan disimpan
             const reimbursementData = {
                 user: {
                     nama: userData.nama,
@@ -169,7 +189,15 @@ const RbsBbmForm = () => {
                     reviewer1: userData.reviewer1,
                     reviewer2: userData.reviewer2
                 },
-                reimbursements: updatedReimbursements
+                reimbursements: reimbursements.map((item) => ({
+                    biaya: item.biaya,
+                    lokasi: item.lokasi,
+                    plat: item.plat,
+                    tanggal: item.tanggal,
+                    tanggalPengajuan: item.tanggalPengajuan || todayDate,
+                    isLainnya: item.isLainnya,
+                    jenis: item.isLainnya ? item.jenisLain : item.jenis.value
+                }))
             }
 
             // Simpan ke Firestore
@@ -177,6 +205,9 @@ const RbsBbmForm = () => {
 
             console.log('Data berhasil disimpan dengan ID:', docRef.id)
             alert('Reimbursement berhasil diajukan!')
+            
+            // Reset form setelah berhasil submit
+            resetForm()
         } catch (error) {
             console.error('Error submitting reimbursement:', error)
             alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
