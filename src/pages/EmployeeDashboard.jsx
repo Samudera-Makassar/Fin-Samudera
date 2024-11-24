@@ -69,7 +69,7 @@ const EmployeeDashboard = ({ userUid }) => {
     }
 
     const handleSubmitCancel = () => {
-        console.log(`Alasan pembatalan laporan ${selectedReport.id}: ${cancelReason}`)
+        console.log(`Alasan pembatalan laporan ${selectedReport.displayId}: ${cancelReason}`)
         handleCloseModal()
     }
 
@@ -100,7 +100,7 @@ const EmployeeDashboard = ({ userUid }) => {
                         onClose={handleCloseModal}
                         onSubmit={handleSubmitCancel}
                         title="Konfirmasi Pembatalan"
-                        message={`Apakah Anda yakin ingin membatalkan laporan ${selectedReport?.id || 'ini'}?`}
+                        message={`Apakah Anda yakin ingin membatalkan laporan ${selectedReport?.displayId || 'ini'}?`}
                         cancelText="Tidak"
                         confirmText="Ya, Batalkan"
                         showCancelReason={true}
