@@ -1,70 +1,114 @@
 import React, { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig' 
+import { useParams } from 'react-router-dom'
 
 const DetailRbs = () => {
     const [userData, setUserData] = useState(null)
-    const [reimbursementDetail, setReimbursementDetail] = useState({
-        id: 'RBS-BBM-01',
-        submissionDate: '10 Oktober 2024',
-        status: 'Disetujui',
-        approver: 'Pak Budi',
-        reimbursementCategory: 'BBM',
-        items: [
-            {
-                jenis: 'Top Up E-Toll',
-                tanggal: '10-Okt-2024',
-                lokasi: 'Jalan Sungai Saddang Lama',
-                platNomor: 'DD 1234 AB',
-                biaya: 52500,
-            },
-            {
-                jenis: 'BBM Pertamax',
-                tanggal: '10-Okt-2024',
-                lokasi: 'Jalan Sungai Saddang Lama',
-                platNomor: 'DD 1234 AB',
-                biaya: 50000,
-            },
-        ],
-    })
+    const [reimbursementDetail, setReimbursementDetail] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
+    const { id } = useParams() // Get reimbursement ID from URL params    
     const uid = localStorage.getItem('userUid')
 
     useEffect(() => {
-        const fetchUserData = async () => {
+        const fetchData = async () => {
             try {
-                // Ganti dengan ID dokumen user yang sesuai
+                setLoading(true)
+                
+                // Fetch user data
                 const userDocRef = doc(db, 'users', uid)
                 const userSnapshot = await getDoc(userDocRef)
                 
-                if (userSnapshot.exists()) {
-                    setUserData(userSnapshot.data())
-                } else {
-                    console.log("User tidak ditemukan")
+                if (!userSnapshot.exists()) {
+                    throw new Error('User tidak ditemukan')
                 }
+                
+                // Fetch reimbursement data
+                const reimbursementDocRef = doc(db, 'reimbursement', id)
+                const reimbursementSnapshot = await getDoc(reimbursementDocRef)
+                
+                if (!reimbursementSnapshot.exists()) {
+                    throw new Error('Data reimbursement tidak ditemukan')
+                }
+
+                setUserData(userSnapshot.data())
+                setReimbursementDetail(reimbursementSnapshot.data())
+                
             } catch (error) {
-                console.error("Error fetching user data:", error)
+                console.error("Error fetching data:", error)
+                setError(error.message)
+            } finally {
+                setLoading(false)
             }
         }
 
-        fetchUserData()
-    })
+        if (uid && id) {
+            fetchData()
+        }
+    }, [uid, id]) // Dependencies array to prevent infinite loop
 
-    // Menghitung total biaya
-    const totalBiaya = reimbursementDetail.items.reduce((total, item) => total + item.biaya, 0)
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A' // Handle null/undefined
+        const date = new Date(dateString)
+        return new Intl.DateTimeFormat('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+        }).format(date);
+    }
 
-    // Fungsi untuk memformat angka menjadi format rupiah
-    const formatRupiah = (amount) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0
-        }).format(amount)
+    const getColumns = (kategori) => {
+        const baseColumns = [
+            { header: 'No.', key: 'no' },
+            { header: 'Jenis Reimbursement', key: 'jenis' },
+            { header: 'Tanggal Aktivitas', key: 'tanggal' }
+        ]
+
+        const categoryColumns = {
+            bbm: [
+                { header: 'Lokasi Pertamina', key: 'lokasi' },
+                { header: 'Plat Nomor', key: 'plat' }
+            ],
+            medical: [
+                { header: 'Nama Dokter', key: 'dokter' },
+                { header: 'Nama Klinik/Rumah Sakit', key: 'klinik' }
+            ],
+            operasional: [
+                { header: 'Kebutuhan', key: 'kebutuhan' },
+                { header: 'Keterangan', key: 'keterangan' }
+            ],
+            'ga/umum': [
+                { header: 'Kebutuhan', key: 'kebutuhan' },
+                { header: 'Keterangan', key: 'keterangan' }
+            ],            
+            default: []
+        }
+
+        const additionalColumns = categoryColumns[kategori?.toLowerCase()] || categoryColumns.default
+        return [...baseColumns, ...additionalColumns, { header: 'Biaya', key: 'biaya' }]
+    }
+    
+    // Render cell berdasarkan key
+    const renderCell = (item, column, index) => {
+        switch (column.key) {
+            case 'no':
+                return index + 1
+            case 'tanggal':
+                return formatDate(item[column.key])
+            case 'biaya':
+                return item[column.key]?.toLocaleString('id-ID') || 'N/A'
+            default:
+                return item[column.key] || 'N/A'
+        }
     }
 
     if (!userData) {
         return <div>Loading...</div>
     }
+    
+    const columns = getColumns(reimbursementDetail?.kategori)
 
     return (
         <div className="container mx-auto py-8">
@@ -73,38 +117,30 @@ const DetailRbs = () => {
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
-                <div className="grid grid-cols-2 gap-48 mb-6 font-medium">
-                    <div className='grid grid-cols-2'>
-                        <div>
-                            <p>ID </p>
-                            <p>Nama Lengkap </p>
-                            <p>Department </p>
-                            <p>Unit Bisnis </p>
-                            <p>Tanggal Pengajuan </p>
-                        </div>
-                        <div>
-                            <p>: {reimbursementDetail.id}</p>
-                            <p>: {userData.nama}</p>
-                            <p>: {userData.department.join(', ')}</p>
-                            <p>: {userData.unit}</p>
-                            <p>: {reimbursementDetail.submissionDate}</p>
-                        </div>
+                <div className="grid grid-cols-2 gap-x-16 mb-6 font-medium">
+                    <div className="grid grid-cols-[auto_1fr] gap-x-16">
+                        <p>ID</p>
+                        <p>: {reimbursementDetail?.displayId ?? 'N/A'}</p>
+                        <p>Nama Lengkap</p>
+                        <p>: {reimbursementDetail?.user?.nama ?? 'N/A'}</p>
+                        <p>Department</p>
+                        <p>: {Array.isArray(reimbursementDetail?.user?.department) && reimbursementDetail.user.department.length > 0 ? reimbursementDetail.user.department.join(', ') : ''}</p>
+                        <p>Unit Bisnis</p>
+                        <p>: {reimbursementDetail?.user?.unit ?? 'N/A'}</p>
+                        <p>Tanggal Pengajuan</p>
+                        <p>: {formatDate(reimbursementDetail?.tanggalPengajuan) ?? 'N/A'}</p>
                     </div>
-                    <div className='grid grid-cols-2'>
-                        <div>
-                            <p>Kategori Reimbursement </p>
-                            <p>Nomor Rekening </p>
-                            <p>Nama Bank </p>
-                            <p>Status </p>
-                            <p>Disetujui Oleh </p>
-                        </div>
-                        <div>
-                            <p>: {reimbursementDetail.reimbursementCategory}</p>
-                            <p>: {userData.accountNumber}</p>
-                            <p>: {userData.bankName}</p>
-                            <p>: {reimbursementDetail.status}</p>
-                            <p>: {userData.reviewer2}</p>
-                        </div>
+                    <div className="grid grid-cols-[auto_1fr] gap-x-16">
+                        <p>Kategori Reimbursement</p>
+                        <p>: {reimbursementDetail?.kategori ?? 'N/A'}</p>
+                        <p>Nomor Rekening</p>
+                        <p>: {reimbursementDetail?.user?.accountNumber ?? 'N/A'}</p>
+                        <p>Nama Bank</p>
+                        <p>: {reimbursementDetail?.user?.bankName ?? 'N/A'}</p>
+                        <p>Status</p>
+                        <p>: {reimbursementDetail?.status ?? 'N/A'}</p>
+                        <p>Disetujui Oleh</p>
+                        <p>: {reimbursementDetail?.reviewer1?.[0] ?? ''}</p>
                     </div>
                 </div>
 
@@ -112,33 +148,35 @@ const DetailRbs = () => {
                     <table className="min-w-full bg-white border rounded-lg text-sm">
                         <thead>
                             <tr className="bg-gray-100 text-left">
-                                <th className="px-4 py-2 border">No.</th>
-                                <th className="px-4 py-2 border">Jenis Reimbursement</th>
-                                <th className="px-4 py-2 border">Tanggal Aktivitas</th>
-                                <th className="px-4 py-2 border">Lokasi Pertamina</th>
-                                <th className="px-4 py-2 border">Plat Nomor</th>
-                                <th className="px-4 py-2 border">Biaya</th>
+                                {columns.map((column) => (
+                                    <th key={column.key} className="px-4 py-2 border">
+                                        {column.header}
+                                    </th>
+                                ))}
                             </tr>
                         </thead>
                         <tbody>
-                            {reimbursementDetail.items.map((item, index) => (
+                            {reimbursementDetail?.reimbursements?.map((item, index) => (
                                 <tr key={index}>
-                                    <td className="px-4 py-2 border">{index + 1}</td>
-                                    <td className="px-4 py-2 border">{item.jenis}</td>
-                                    <td className="px-4 py-2 border">{item.tanggal}</td>
-                                    <td className="px-4 py-2 border">{item.lokasi}</td>
-                                    <td className="px-4 py-2 border">{item.platNomor}</td>
-                                    <td className="px-4 py-2 border">{formatRupiah(item.biaya)}</td>
+                                    {columns.map((column) => (
+                                        <td key={column.key} className="px-4 py-2 border">
+                                            {renderCell(item, column, index)}
+                                        </td>
+                                    ))}
                                 </tr>
                             ))}
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colSpan="6" className="px-4 py-4"></td>
+                                <td colSpan={columns.length} className="px-4 py-4"></td>
                             </tr>
                             <tr className="font-semibold">
-                                <td colSpan="5" className="px-4 py-2 text-right border">Total Biaya :</td>
-                                <td className="px-4 py-2 border">{formatRupiah(totalBiaya)}</td>
+                                <td colSpan={columns.length - 1} className="px-4 py-2 text-right border">
+                                    Total Biaya :
+                                </td>
+                                <td className="px-4 py-2 border">
+                                    Rp{reimbursementDetail?.totalBiaya?.toLocaleString('id-ID')}
+                                </td>
                             </tr>
                         </tfoot>
                     </table>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { doc, getDoc, addDoc, collection } from 'firebase/firestore'
+import { doc, setDoc, getDoc, addDoc, collection } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import Select from 'react-select'
 
@@ -71,6 +71,7 @@ const RbsBbmForm = () => {
                         bankName: data.bankName || '',
                         accountNumber: data.accountNumber || '',
                         unit: data.unit || '',
+                        department: data.department || [],
                         reviewer1: data.reviewer1 || [],
                         reviewer2: data.reviewer2 || []
                     })
@@ -166,6 +167,33 @@ const RbsBbmForm = () => {
         setReimbursements(updatedReimbursements)
     }
 
+    // Mapping nama unit ke singkatan
+    const UNIT_CODES = {
+        'PT Makassar Jaya Samudera': 'MJS',
+        'PT Samudera Makassar Logistik': 'SML',
+        'PT Kendari Jaya Samudera': 'KEJS',
+        'PT Samudera Kendari Logistik': 'SKEL',
+        'PT Samudera Agencies Indonesia': 'SAI',
+        'PT Silkargo Indonesia': 'SKI',
+        'PT PAD Samudera Indonesia': 'SP',
+        'PT Masaji Kargosentra Tama': 'MKT'
+    }
+
+    const getUnitCode = (unitName) => {
+        return UNIT_CODES[unitName] || unitName // Fallback ke nama unit jika tidak ada di mapping
+    }
+
+    const generateDisplayId = (unit) => {
+        const today = new Date()
+        const year = today.getFullYear().toString().slice(-2)
+        const month = (today.getMonth() + 1).toString().padStart(2, '0')
+        const day = today.getDate().toString().padStart(2, '0')
+        const sequence = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+        const unitCode= getUnitCode(unit)
+                
+        return `RBS/BBM/${unitCode}/${year}${month}${day}/${sequence}`
+    }
+
     const handleSubmit = async () => {
         try {
             // Validasi form
@@ -182,6 +210,9 @@ const RbsBbmForm = () => {
                 return
             }
 
+            // Generate display ID untuk user
+            const displayId = generateDisplayId(userData.unit)
+
             // Hitung total biaya
             const totalBiaya = reimbursements.reduce((total, item) => {
                 const biayaNumber = parseInt(item.biaya.replace(/[^0-9]/g, ''))
@@ -196,6 +227,8 @@ const RbsBbmForm = () => {
                     bankName: userData.bankName,
                     accountNumber: userData.accountNumber,
                     unit: userData.unit,
+                    unitCode: getUnitCode(userData.unit),
+                    department: userData.department,
                     reviewer1: userData.reviewer1,
                     reviewer2: userData.reviewer2
                 },
@@ -207,6 +240,7 @@ const RbsBbmForm = () => {
                     isLainnya: item.isLainnya,
                     jenis: item.isLainnya ? item.jenisLain : item.jenis.value,                    
                 })),
+                displayId: displayId,
                 kategori: 'BBM',
                 status: 'Diproses',
                 tanggalPengajuan: todayDate,
@@ -214,7 +248,8 @@ const RbsBbmForm = () => {
                 statusHistory: [
                     {
                         status: 'Diproses',
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString(),
+                        actor: userData.uid
                     }
                 ],
                 createdAt: new Date().toISOString(),
@@ -224,7 +259,13 @@ const RbsBbmForm = () => {
             // Simpan ke Firestore
             const docRef = await addDoc(collection(db, 'reimbursement'), reimbursementData)
 
-            console.log('Data berhasil disimpan dengan ID:', docRef.id)
+            // Update dengan ID dokumen
+            await setDoc(doc(db, 'reimbursement', docRef.id), { ...reimbursementData, id: docRef.id });
+
+            console.log('Reimbursement berhasil dibuat:', {
+                firestoreId: docRef.id,
+                displayId: displayId
+            })
             alert('Reimbursement BBM berhasil diajukan!')
             
             // Reset form setelah berhasil submit
@@ -380,7 +421,10 @@ const RbsBbmForm = () => {
                                 className="w-full px-4 py-2 border rounded-md"
                                 type="text"
                                 value={reimbursement.plat}
-                                onChange={(e) => handleInputChange(index, 'plat', e.target.value)}
+                                onChange={(e) => {
+                                    const filteredValue = e.target.value.toUpperCase().replace(/[^A-Z0-9\s]/g, '');
+                                    handleInputChange(index, 'plat', filteredValue);
+                                }}                                
                             />
                         </div>
 

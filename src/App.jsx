@@ -39,7 +39,7 @@ const AppContent = () => {
                 <Route path="/reimbursement/bbm" element={<RbsBbm />} />
                 <Route path="/reimbursement/operasional" element={<RbsOperasional />} />
                 <Route path="/reimbursement/umum" element={<RbsUmum />} />
-                <Route path="/reimbursement/detail" element={<DetailReimbursementPage />} />
+                <Route path="/reimbursement/:id" element={<DetailReimbursementPage />} />                
                 <Route path="/reimbursement/cek-laporan" element={<RbsCheckPage />} />
 
                 <Route path="/lpj/umum" element={<LpjUmum />} />

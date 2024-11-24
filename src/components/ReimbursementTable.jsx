@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig'; 
 import EmptyState from '../assets/images/EmptyState.png';
@@ -21,9 +22,7 @@ const ReimbursementTable = ({ onCancel }) => {
 
                 // Fetch data user berdasarkan UID
                 const userDocRef = doc(db, 'users', uid);
-                const userDoc = await getDoc(userDocRef);
-
-                
+                const userDoc = await getDoc(userDocRef);                
 
                 // Query reimbursement berdasarkan UID user
                 const q = query(
@@ -34,6 +33,7 @@ const ReimbursementTable = ({ onCancel }) => {
                 const querySnapshot = await getDocs(q);
                 const reimbursements = querySnapshot.docs.map((doc) => ({
                     id: doc.id,
+                    displayId: doc.data().displayId,
                     ...doc.data(),
                 }));
 
@@ -47,6 +47,16 @@ const ReimbursementTable = ({ onCancel }) => {
 
         fetchUserAndReimbursements();
     }, []);
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A' // Handle null/undefined
+        const date = new Date(dateString)
+        return new Intl.DateTimeFormat('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+        }).format(date);
+    }
 
     if (loading) {
         return <p>Loading...</p>;
@@ -82,10 +92,17 @@ const ReimbursementTable = ({ onCancel }) => {
                         <tbody>
                             {data.reimbursements.map((item, index) => (
                                 <tr key={index}>
-                                    <td className="px-4 py-2 border">{item.id}</td>
+                                    <td className="px-4 py-2 border">
+                                        <Link 
+                                            to={`/reimbursement/${item.id}`}
+                                            className="text-black hover:text-gray-700 hover:underline cursor-pointer"
+                                        >
+                                            {item.displayId}
+                                        </Link>                                                                            
+                                    </td>
                                     <td className="px-4 py-2 border">{item.kategori}</td>
-                                    <td className="px-4 py-2 border">{item.tanggalPengajuan}</td>
-                                    <td className="px-4 py-2 border">Rp. {item.totalBiaya.toLocaleString()}</td>
+                                    <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
+                                    <td className="px-4 py-2 border">Rp{item.totalBiaya.toLocaleString('id-ID')}</td>
                                     <td className="py-2 border text-center">
                                         <span className={`px-4 py-1 rounded-full text-xs font-medium ${item.status === 'Disetujui' ? 'bg-green-200 text-green-800 border-[1px] border-green-600' : item.status === 'Diproses' ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600' : 'bg-red-200 text-red-800 border-[1px] border-red-600'}`}>
                                             {item.status || 'Tidak Diketahui'}
