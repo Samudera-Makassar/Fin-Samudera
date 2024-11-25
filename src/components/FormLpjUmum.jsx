@@ -1,13 +1,24 @@
 import React, { useState, useEffect } from 'react'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc, addDoc, collection } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 
 const FormLpjUmum = () => {
     const [todayDate, setTodayDate] = useState('')
     const [userData, setUserData] = useState({
+        uid: '',
         nama: '',
-        unit: ''
+        unit: '',
+        reviewer1: [],
+        reviewer2: []
     })
+
+    const initialLpjState = {
+        date: '',
+        name: '',
+        cost: 0,
+        quantity: 0,
+        total: 0,
+    }
 
     useEffect(() => {
         const today = new Date()
@@ -29,8 +40,14 @@ const FormLpjUmum = () => {
                 if (userDoc.exists()) {
                     const data = userDoc.data()
                     setUserData({
+                        uid: data.uid || '',
                         nama: data.nama || '',
-                        unit: data.unit || ''
+                        bankName: data.bankName || '',
+                        accountNumber: data.accountNumber || '',
+                        unit: data.unit || '',
+                        department: data.department || [],
+                        reviewer1: data.reviewer1 || [],
+                        reviewer2: data.reviewer2 || []
                     })
                 }
             } catch (error) {
@@ -41,10 +58,18 @@ const FormLpjUmum = () => {
         fetchUserData()
     }, [])
 
-    const [items, setItems] = useState([{ date: '', name: '', cost: 0, quantity: 0, total: 0 }])
+    const [lpj, setLpj] = useState([initialLpjState])
 
-    const handleAddItem = () => {
-        setItems([...items, { date: '', name: '', cost: 0, quantity: 0, total: 0 }])
+    const [bonNumber, setBonNumber] = useState('')
+
+    const [bonSementara, setBonSementara] = useState(0)
+
+    const totalCost = lpj.reduce((acc, item) => acc + item.total, 0)
+
+    const sisaKurang = totalCost > bonSementara ? totalCost - bonSementara : 0
+
+    const handleAddForm = () => {
+        setLpj([...lpj, { date: '', name: '', cost: 0, quantity: 0, total: 0 }])
     }
 
     const formatRupiah = (value) => {
@@ -65,38 +90,63 @@ const FormLpjUmum = () => {
     }
 
     const handleInputChange = (index, field, value) => {
-        const updatedItems = items.map((item, i) => {
+        const updatedLpj = lpj.map((lpj, i) => {
             if (i === index) {
                 if (field === 'cost') {
                     const cleanValue = value.replace(/\D/g, '')
                     return {
-                        ...item,
+                        ...lpj,
                         [field]: cleanValue,
-                        total: item.quantity * cleanValue // Menghitung total saat cost diubah
+                        total: lpj.quantity * cleanValue
                     }
                 } else if (field === 'quantity') {
                     return {
-                        ...item,
+                        ...lpj,
                         [field]: value,
-                        total: value * item.cost // Menghitung total saat quantity diubah
+                        total: value * lpj.cost
                     }
                 }
-                return { ...item, [field]: value }
+                return { ...lpj, [field]: value }
             }
-            return item
+            return lpj
         })
-        setItems(updatedItems)
+        setLpj(updatedLpj)
     }
 
     const handleDelete = (index) => {
-        const newItems = [...items]
-        newItems.splice(index, 1)
-        setItems(newItems)
+        const newLpj = [...lpj]
+        newLpj.splice(index, 1)
+        setLpj(newLpj)
     }
 
-    const totalCost = items.reduce((acc, item) => acc + item.total, 0)
-    const [bonSementara, setBonSementara] = useState(0) // Bon Sementara sebagai state yang bisa diubah
-    const sisaKurang = totalCost > bonSementara ? totalCost - bonSementara : 0
+    const handleSubmit = async () => {
+        try {
+            const lpjData = {
+                nama: userData.nama,
+                unit: userData.unit,
+                tanggalPengajuan: todayDate,
+                bonNumber,
+                bonSementara,
+                totalBiaya: totalCost,
+                sisaKurang,
+                rincian: lpj
+            }
+
+            // Simpan ke Firestore
+            const docRef = await addDoc(collection(db, 'lpj'), lpjData)
+
+            // Update dengan ID dokumen
+            await setDoc(doc(db, 'lpj', docRef.id), { ...lpjData, id: docRef.id })
+
+            console.log('LPJ berhasil dibuat:', {
+                firestoreId: docRef.id
+            })
+            alert('LPJ GA/Umum berhasil dibuat')
+        } catch (error) {
+            console.error('Error saving data:', error)
+            alert('Terjadi kesalahan saat menyimpan data.')
+        }
+    }
 
     return (
         <div className="container mx-auto py-8">
@@ -134,6 +184,8 @@ const FormLpjUmum = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-900"
                             type="text"
+                            value={bonNumber}
+                            onChange={(e) => setBonNumber(e.target.value)}
                             placeholder="Masukkan nomor bon sementara"
                         />
                     </div>
@@ -186,7 +238,7 @@ const FormLpjUmum = () => {
 
                 <hr className="border-gray-300 my-6" />
 
-                {items.map((item, index) => (
+                {lpj.map((item, index) => (
                     <div className="flex justify-stretch gap-2 mb-2" key={index}>
                         <div>
                             {index === 0 && (
@@ -274,7 +326,7 @@ const FormLpjUmum = () => {
                     </div>
                 ))}
 
-                <button onClick={handleAddItem} className="text-red-600 font-bold underline cursor-pointer">
+                <button onClick={handleAddForm} className="text-red-600 font-bold underline cursor-pointer">
                     Tambah
                 </button>
 
@@ -301,10 +353,10 @@ const FormLpjUmum = () => {
                 <hr className="border-gray-300 my-6" />
 
                 <div className="flex justify-end mt-6">
-                    <button className="px-16 py-3 mr-4 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700">
-                        Cancel
-                    </button>
-                    <button className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200">
+                    <button
+                        className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
+                        onClick={handleSubmit}
+                    >
                         Submit
                     </button>
                 </div>
