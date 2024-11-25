@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import Layout from './Layout'
 import FormRbsUmum from '../components/FormRbsUmum'
 
-const RbsMedical = () => {
+const RbsUmum = () => {
     useEffect(() => {
         document.title = 'Reimbursement GA/Umum - Samudera Indonesia'
     }, [])
@@ -16,4 +16,4 @@ const RbsMedical = () => {
     )
 }
 
-export default RbsMedical
+export default RbsUmum

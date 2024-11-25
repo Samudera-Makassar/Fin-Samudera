@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import Layout from './Layout'
 import FormRbsOperasional from '../components/FormRbsOperasional'
 
-const RbsMedical = () => {
+const RbsOperasional = () => {
     useEffect(() => {
         document.title = 'Reimbursement Operasional - Samudera Indonesia'
     }, [])
@@ -16,4 +16,4 @@ const RbsMedical = () => {
     )
 }
 
-export default RbsMedical
+export default RbsOperasional

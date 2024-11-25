@@ -3,7 +3,7 @@ import { doc, setDoc, getDoc, addDoc, collection } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import Select from 'react-select'
 
-const RbsOperasionalForm = () => {
+const RbsUmumForm = () => {
     const [todayDate, setTodayDate] = useState('')
     const [userData, setUserData] = useState({
         uid: '',
@@ -468,4 +468,4 @@ const RbsOperasionalForm = () => {
     )
 }
 
-export default RbsOperasionalForm
+export default RbsUmumForm
