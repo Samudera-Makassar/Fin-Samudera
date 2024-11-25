@@ -8,6 +8,8 @@ const ReimbursementTable = ({ onCancel }) => {
     const [data, setData] = useState({ reimbursements: [] });
     const [userData, setUserData] = useState(null); // State untuk menyimpan data user
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 5 // Jumlah item per halaman
 
     useEffect(() => {
         const fetchUserAndReimbursements = async () => {
@@ -58,6 +60,26 @@ const ReimbursementTable = ({ onCancel }) => {
         }).format(date);
     }
 
+    // Menghitung total halaman
+    const totalPages = Math.ceil(data.reimbursements.length / itemsPerPage)
+
+    // Mendapatkan data pengguna untuk halaman saat ini
+    const currentReimbursements = data.reimbursements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+    // Fungsi untuk berpindah ke halaman berikutnya
+    const nextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
+
+    // Fungsi untuk berpindah ke halaman sebelumnya
+    const prevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
+
     if (loading) {
         return <p>Loading...</p>;
     }
@@ -90,7 +112,7 @@ const ReimbursementTable = ({ onCancel }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {data.reimbursements.map((item, index) => (
+                            {currentReimbursements.map((item, index) => (
                                 <tr key={index}>
                                     <td className="px-4 py-2 border">
                                         <Link 
@@ -104,7 +126,13 @@ const ReimbursementTable = ({ onCancel }) => {
                                     <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
                                     <td className="px-4 py-2 border">Rp{item.totalBiaya.toLocaleString('id-ID')}</td>
                                     <td className="py-2 border text-center">
-                                        <span className={`px-4 py-1 rounded-full text-xs font-medium ${item.status === 'Disetujui' ? 'bg-green-200 text-green-800 border-[1px] border-green-600' : item.status === 'Diproses' ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600' : 'bg-red-200 text-red-800 border-[1px] border-red-600'}`}>
+                                        <span className={`px-4 py-1 rounded-full text-xs font-medium 
+                                            ${
+                                                item.status === 'Disetujui' ? 'bg-green-200 text-green-800 border-[1px] border-green-600' : 
+                                                item.status === 'Diproses' ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600' : 
+                                                item.status === 'Ditolak' ? 'bg-red-200 text-red-800 border-[1px] border-red-600' : 
+                                                'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
+                                            }`}>
                                             {item.status || 'Tidak Diketahui'}
                                         </span>
                                     </td>
@@ -120,6 +148,76 @@ const ReimbursementTable = ({ onCancel }) => {
                             ))}
                         </tbody>
                     </table>
+
+                    {/* Pagination Controls */}
+                    <div className="flex items-center justify-center gap-2 mt-6 text-xs">
+                        {/* Tombol Previous */}
+                        <button
+                            onClick={prevPage}
+                            disabled={currentPage === 1}
+                            className={`flex items-center gap-2 p-2 rounded-full ${
+                                currentPage === 1
+                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                    : 'border border-red-600 text-red-600 hover:bg-red-100'
+                            }`}
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="size-4"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15.75 19.5L8.25 12l7.5-7.5"
+                                />
+                            </svg>                            
+                        </button>
+
+                        {/* Tombol Halaman */}
+                        {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                            <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`px-3 py-2 rounded-full ${
+                                    currentPage === page
+                                        ? 'bg-red-600 text-white'
+                                        : 'border border-red-600 text-red-600 hover:bg-red-100'
+                                }`}
+                            >
+                                {page}
+                            </button>
+                        ))}
+
+                        {/* Tombol Next */}
+                        <button
+                            onClick={nextPage}
+                            disabled={currentPage === totalPages}
+                            className={`flex items-center gap-2 px-2 py-2 rounded-full ${
+                                currentPage === totalPages
+                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                    : 'border border-red-600 text-red-600 hover:bg-red-100'
+                            }`}
+                        >                        
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="size-4"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                                />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

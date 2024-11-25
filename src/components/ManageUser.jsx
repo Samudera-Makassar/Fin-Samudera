@@ -14,7 +14,7 @@ const ManageUser = () => {
         role: '',
         department: ''
     })
-    const itemsPerPage = 10 // Jumlah item per halaman
+    const itemsPerPage = 5 // Jumlah item per halaman
     const navigate = useNavigate()
 
     const filterOptions = {
@@ -282,15 +282,15 @@ const ManageUser = () => {
                 </table>
 
                 {/* Pagination Controls */}
-                <div className="flex items-center justify-center gap-4 mt-6 text-xs">
+                <div className="flex items-center justify-center gap-2 mt-6 text-xs">
                     {/* Tombol Previous */}
                     <button
                         onClick={prevPage}
                         disabled={currentPage === 1}
-                        className={`flex items-center gap-2 px-2 py-2 rounded ${
+                        className={`flex items-center gap-2 p-2 rounded-full ${
                             currentPage === 1
-                                ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
-                                : 'bg-red-600 text-white hover:bg-red-700 hover:text-gray-200'
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                : 'border border-red-600 text-red-600 hover:bg-red-100'
                         }`}
                     >
                         <svg
@@ -299,7 +299,7 @@ const ManageUser = () => {
                             viewBox="0 0 24 24"
                             strokeWidth={1.5}
                             stroke="currentColor"
-                            className="w-5 h-5"
+                            className="size-4"
                         >
                             <path
                                 strokeLinecap="round"
@@ -314,10 +314,10 @@ const ManageUser = () => {
                         <button
                             key={page}
                             onClick={() => setCurrentPage(page)}
-                            className={`px-4 py-3 rounded-full ${
+                            className={`px-3 py-2 rounded-full ${
                                 currentPage === page
                                     ? 'bg-red-600 text-white'
-                                    : 'bg-gray-200 text-gray-700 hover:bg-red-100'
+                                    : 'border border-red-600 text-red-600 hover:bg-red-100'
                             }`}
                         >
                             {page}
@@ -328,10 +328,10 @@ const ManageUser = () => {
                     <button
                         onClick={nextPage}
                         disabled={currentPage === totalPages}
-                        className={`flex items-center gap-2 px-2 py-2 rounded ${
+                        className={`flex items-center gap-2 px-2 py-2 rounded-full ${
                             currentPage === totalPages
-                                ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
-                                : 'bg-red-600 text-white hover:bg-red-700 hover:text-gray-200'
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                : 'border border-red-600 text-red-600 hover:bg-red-100'
                         }`}
                     >                        
                         <svg
@@ -340,7 +340,7 @@ const ManageUser = () => {
                             viewBox="0 0 24 24"
                             strokeWidth={1.5}
                             stroke="currentColor"
-                            className="w-5 h-5"
+                            className="size-4"
                         >
                             <path
                                 strokeLinecap="round"
