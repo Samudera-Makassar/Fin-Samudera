@@ -130,16 +130,16 @@ const FormLpjUmum = () => {
                 const cleanValue = value.replace(/\D/g, '')
                 const numValue = Number(cleanValue)
                 
-                if (field === 'biaya' || field === 'cost') {
+                if (field === 'biaya') {
                     return { 
                         ...item, 
-                        biaya: cleanValue,
+                        biaya: numValue,
                         jumlahBiaya: numValue * Number(item.jumlah || 0)
                     }
-                } else if (field === 'jumlah' || field === 'quantity') {
+                } else if (field === 'jumlah') {
                     return { 
                         ...item, 
-                        jumlah: cleanValue,
+                        jumlah: numValue,
                         jumlahBiaya: Number(item.biaya || 0) * numValue
                     }
                 }
@@ -195,7 +195,7 @@ const FormLpjUmum = () => {
                 !noBs || 
                 !jumlahBs ||
                 !userData.nama ||
-                lpj.some((r) => !r.namaItem || !r.biaya || !r.jumlah)
+                lpj.some((r) => !r.tanggal || !r.namaItem || !r.biaya || !r.jumlah)
             ) {
                 alert('Mohon lengkapi semua field yang wajib diisi!')
                 return

@@ -130,16 +130,16 @@ const FormLpjMarketing = () => {
                 const cleanValue = value.replace(/\D/g, '')
                 const numValue = Number(cleanValue)
                 
-                if (field === 'biaya' || field === 'cost') {
+                if (field === 'biaya') {
                     return { 
                         ...item, 
-                        biaya: cleanValue,
+                        biaya: numValue,
                         jumlahBiaya: numValue * Number(item.jumlah || 0)
                     }
-                } else if (field === 'jumlah' || field === 'quantity') {
+                } else if (field === 'jumlah') {
                     return { 
                         ...item, 
-                        jumlah: cleanValue,
+                        jumlah: numValue,
                         jumlahBiaya: Number(item.biaya || 0) * numValue
                     }
                 }
@@ -185,7 +185,7 @@ const FormLpjMarketing = () => {
         const sequence = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
         const unitCode= getUnitCode(unit)
                 
-        return `LPJ/MOPR/${unitCode}/${year}${month}${day}/${sequence}`
+        return `LPJ/MRO/${unitCode}/${year}${month}${day}/${sequence}`
     }
 
     const handleSubmit = async () => {
@@ -195,7 +195,7 @@ const FormLpjMarketing = () => {
                 !noBs || 
                 !jumlahBs ||
                 !userData.nama ||
-                lpj.some((r) => !r.namaItem || !r.biaya || !r.jumlah)
+                lpj.some((r) => !r.tanggal || !r.namaItem || !r.biaya || !r.jumlah)
             ) {
                 alert('Mohon lengkapi semua field yang wajib diisi!')
                 return
@@ -224,7 +224,7 @@ const FormLpjMarketing = () => {
                     jumlahBiaya: Number(item.biaya) * Number(item.jumlah)
                 })),
                 displayId: displayId,
-                kategori: 'Marketing',
+                kategori: 'Marketing/Operasional',
                 status: 'Diproses',
                 noBs: noBs,
                 jumlahBs: jumlahBs,                                             

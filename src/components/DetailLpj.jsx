@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig' 
 import { useParams } from 'react-router-dom'
-import LpjUmum from '../pages/LpjUmum'
-import LpjMarketing from '../pages/LpjMarketing'
 
 const DetailLpj = () => {
     const [userData, setUserData] = useState(null)
@@ -61,48 +59,9 @@ const DetailLpj = () => {
         }).format(date);
     }
 
-    const getColumns = (kategori) => {
-        const baseColumns = [
-            { header: 'No.', key: 'no' },
-            { header: 'Tanggal Aktivitas', key: 'tanggal' },
-            { header: 'Item', key: 'namaItem' },
-        ]
-
-        const categoryColumns = {
-            umum: [
-                { header: 'Biaya', key: 'biaya' },
-                { header: 'Jumlah', key: 'jumlah' }
-            ],
-            marketing: [
-                { header: 'Biaya', key: 'biaya' },
-                { header: 'Jumlah', key: 'jumlah' }
-            ],           
-            default: []
-        }
-
-        const additionalColumns = categoryColumns[kategori?.toLowerCase()] || categoryColumns.default
-        return [...baseColumns, ...additionalColumns, { header: 'Jumlah Biaya', key: 'jumlahBiaya' }]
-    }
-
-    // Render cell berdasarkan key
-    const renderCell = (item, column, index) => {
-        switch (column.key) {
-            case 'no':
-                return index + 1
-            case 'tanggal':
-                return formatDate(item[column.key])
-            case 'biaya':
-                return item[column.key]?.toLocaleString('id-ID') || 'N/A'
-            default:
-                return item[column.key] || 'N/A'
-        }
-    }
-
     if (!userData) {
         return <div>Loading...</div>
-    }
-    
-    const columns = getColumns(lpjDetail?.kategori)
+    }    
 
     return (
         <div className="container mx-auto py-8">
@@ -125,12 +84,12 @@ const DetailLpj = () => {
                         <p>: {formatDate(lpjDetail?.tanggalPengajuan) ?? 'N/A'}</p>
                     </div>
                     <div className="grid grid-cols-[auto_1fr] gap-x-16">
-                        <p>Kategori lpj</p>
+                        <p>Kategori LPJ Bon Sementara</p>
                         <p>: {lpjDetail?.kategori ?? 'N/A'}</p>
-                        <p>Nomor Rekening</p>
-                        <p>: {lpjDetail?.user?.accountNumber ?? 'N/A'}</p>
-                        <p>Nama Bank</p>
-                        <p>: {lpjDetail?.user?.bankName ?? 'N/A'}</p>
+                        <p>Nomor Bon Sementara</p>
+                        <p>: {lpjDetail?.noBs ?? 'N/A'}</p>
+                        <p>Jumlah Bon Sementara</p>
+                        <p>: Rp{lpjDetail?.jumlahBs.toLocaleString('id-ID') ?? 'N/A'}</p>
                         <p>Status</p>
                         <p>: {lpjDetail?.status ?? 'N/A'}</p>
                         <p>Disetujui Oleh</p>
@@ -142,34 +101,52 @@ const DetailLpj = () => {
                 <table className="min-w-full bg-white border rounded-lg text-sm">
                         <thead>
                             <tr className="bg-gray-100 text-left">
-                                {columns.map((column) => (
-                                    <th key={column.key} className="px-4 py-2 border">
-                                        {column.header}
-                                    </th>
-                                ))}
+                                <th className="px-4 py-2 border">No.</th>
+                                <th className="px-4 py-2 border">Item</th>
+                                <th className="px-4 py-2 border">Tanggal Kegiatan</th>
+                                <th className="px-4 py-2 border">Biaya</th>
+                                <th className="px-4 py-2 border">Jumlah</th>
+                                <th className="px-4 py-2 border">Jumlah Biaya</th>
                             </tr>
                         </thead>
                         <tbody>
                             {lpjDetail?.lpj?.map((item, index) => (
                                 <tr key={index}>
-                                    {columns.map((column) => (
-                                        <td key={column.key} className="px-4 py-2 border">
-                                            {renderCell(item, column, index)}
-                                        </td>
-                                    ))}
+                                    <td className="px-4 py-2 border">{index + 1}</td>
+                                    <td className="px-4 py-2 border">{item.namaItem}</td>
+                                    <td className="px-4 py-2 border">{formatDate(item.tanggal)}</td>
+                                    <td className="px-4 py-2 border">Rp{item.biaya.toLocaleString('id-ID')}</td>
+                                    <td className="px-4 py-2 border">{item.jumlah}</td>
+                                    <td className="px-4 py-2 border">Rp{item.jumlahBiaya.toLocaleString('id-ID')}</td>
                                 </tr>
                             ))}
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colSpan={columns.length} className="px-4 py-4"></td>
+                                <td colSpan="6" className="px-4 py-4"></td>
                             </tr>
                             <tr className="font-semibold">
-                                <td colSpan={columns.length - 1} className="px-4 py-2 text-right border">
+                                <td colSpan="5"className="px-4 py-2 text-right border">
                                     Total Biaya :
                                 </td>
                                 <td className="px-4 py-2 border">
                                     Rp{lpjDetail?.totalBiaya?.toLocaleString('id-ID')}
+                                </td>
+                            </tr>                            
+                            <tr className="font-semibold">
+                                <td colSpan="5" className="px-4 py-2 text-right border">
+                                    Sisa Lebih Bon Sementara :
+                                </td>
+                                <td className="px-4 py-2 border">
+                                    Rp{lpjDetail?.sisaLebih?.toLocaleString('id-ID')}
+                                </td>
+                            </tr>
+                            <tr className="font-semibold">
+                                <td colSpan="5" className="px-4 py-2 text-right border">
+                                    Sisa Kurang Dibayarkan ke Pegawai :
+                                </td>
+                                <td className="px-4 py-2 border">
+                                    Rp{lpjDetail?.sisaKurang?.toLocaleString('id-ID')}
                                 </td>
                             </tr>
                         </tfoot>
