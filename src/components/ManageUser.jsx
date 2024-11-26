@@ -217,7 +217,7 @@ const ManageUser = () => {
                 <table className="min-w-full bg-white border rounded-lg text-sm">
                     <thead>
                         <tr className="bg-gray-100 text-left">
-                            <th className="px-4 py-2 border w-14">No.</th>
+                            <th className="px-2 py-2 border text-center w-auto">No.</th>
                             <th className="px-4 py-2 border break-words">Nama</th>
                             <th className="px-4 py-2 border break-words">Email</th>
                             <th className="px-4 py-2 border break-words">Posisi</th>
@@ -230,7 +230,7 @@ const ManageUser = () => {
                     <tbody>
                         {currentUsers.map((user, index) => (
                             <tr key={user.id}>
-                                <td className="px-4 py-2 border text-center">
+                                <td className="px-2 py-2 border text-center w-auto">
                                     {index + 1 + (currentPage - 1) * itemsPerPage}
                                 </td>
                                 <td className="px-4 py-2 border">{user.nama}</td>

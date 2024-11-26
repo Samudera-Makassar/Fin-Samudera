@@ -89,7 +89,7 @@ const LpjBsTable = ({ onCancel }) => {
             {data.lpj.length === 0 ? (
                 // Jika belum ada data lpj
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                    <h3 className="text-xl font-medium mb-4">lpj Terakhir</h3>
+                    <h3 className="text-xl font-medium mb-4">LPJ Bon Sementara Terakhir</h3>
                     <div className="flex justify-center">
                         <figure className="w-44 h-44">
                             <img src={EmptyState} alt="lpj icon" className="w-full h-full object-contain" />
@@ -99,12 +99,15 @@ const LpjBsTable = ({ onCancel }) => {
             ) : (
                 // Jika ada data lpj
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                    <h3 className="text-xl font-medium mb-4">LPJ Terakhir</h3>
+                    <h3 className="text-xl font-medium mb-4">LPJ Bon Sementara Terakhir</h3>
                     <table className="min-w-full bg-white border rounded-lg text-sm">
                         <thead>
                             <tr className="bg-gray-100 text-left">
+                                <th className="px-2 py-2 border text-center w-auto">No.</th>
                                 <th className="px-4 py-2 border">ID</th>
                                 <th className="px-4 py-2 border">Kategori LPJ</th>
+                                <th className="px-4 py-2 border">Nomor BS</th>
+                                <th className="px-4 py-2 border">Jumlah BS</th>
                                 <th className="px-4 py-2 border">Tanggal Pengajuan</th>
                                 <th className="px-4 py-2 border">Jumlah</th>
                                 <th className="py-2 border text-center">Status</th>
@@ -114,6 +117,9 @@ const LpjBsTable = ({ onCancel }) => {
                         <tbody>
                             {currentLpj.map((item, index) => (
                                 <tr key={index}>
+                                    <td className="px-2 py-2 border text-center w-auto">
+                                        {index + 1 + (currentPage - 1) * itemsPerPage}
+                                    </td>
                                     <td className="px-4 py-2 border">
                                         <Link 
                                             to={`/lpj/${item.id}`}
@@ -123,6 +129,8 @@ const LpjBsTable = ({ onCancel }) => {
                                         </Link>                                                                            
                                     </td>
                                     <td className="px-4 py-2 border">{item.kategori}</td>
+                                    <td className="px-4 py-2 border">{item.noBs}</td>
+                                    <td className="px-4 py-2 border">Rp{item.jumlahBs.toLocaleString('id-ID')}</td>
                                     <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
                                     <td className="px-4 py-2 border">Rp{item.totalBiaya.toLocaleString('id-ID')}</td>
                                     <td className="py-2 border text-center">

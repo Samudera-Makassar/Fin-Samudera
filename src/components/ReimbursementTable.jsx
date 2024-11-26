@@ -103,6 +103,7 @@ const ReimbursementTable = ({ onCancel }) => {
                     <table className="min-w-full bg-white border rounded-lg text-sm">
                         <thead>
                             <tr className="bg-gray-100 text-left">
+                                <th className="px-2 py-2 border text-center w-auto">No.</th>
                                 <th className="px-4 py-2 border">ID</th>
                                 <th className="px-4 py-2 border">Kategori Reimbursement</th>
                                 <th className="px-4 py-2 border">Tanggal Pengajuan</th>
@@ -114,6 +115,9 @@ const ReimbursementTable = ({ onCancel }) => {
                         <tbody>
                             {currentReimbursements.map((item, index) => (
                                 <tr key={index}>
+                                    <td className="px-2 py-2 border text-center w-auto">
+                                        {index + 1 + (currentPage - 1) * itemsPerPage}
+                                    </td>                                
                                     <td className="px-4 py-2 border">
                                         <Link 
                                             to={`/reimbursement/${item.id}`}
