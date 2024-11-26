@@ -44,7 +44,7 @@ const AppContent = () => {
 
                 <Route path="/lpj/umum" element={<LpjUmum />} />
                 <Route path="/lpj/marketing" element={<LpjMarketing />} />
-                <Route path="/lpj/detail" element={<DetailLpjPage />} />
+                <Route path="/lpj/:id" element={<DetailLpjPage />} />
                 <Route path="/lpj/cek-laporan" element={<LpjCheckPage />} />
 
                 <Route path="/manage-users" element={<ManageUserPage />} />

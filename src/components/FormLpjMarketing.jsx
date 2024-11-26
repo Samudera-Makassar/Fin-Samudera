@@ -1,13 +1,48 @@
 import React, { useState, useEffect } from 'react'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc, addDoc, collection } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 
 const FormLpjMarketing = () => {
     const [todayDate, setTodayDate] = useState('')
     const [userData, setUserData] = useState({
+        uid: '',
         nama: '',
-        unit: ''
+        unit: '',
+        reviewer1: [],
+        reviewer2: []
     })
+
+    const initialLpjState = {
+        noBs: '',
+        jumlahBs: '',
+        tanggal: '',
+        namaItem: '',
+        biaya: '',
+        jumlah: '',
+        jumlahBiaya: 0,
+        totalBiaya: '',
+        sisaLebih: '',
+        sisaKurang: '',
+        tanggalPengajuan: todayDate
+    }
+
+    const [lpj, setLpj] = useState([initialLpjState])
+    const [noBs, setNoBs] = useState('')    
+    const [jumlahBs, setJumlahBs] = useState(0)
+
+    const [calculatedCosts, setCalculatedCosts] = useState({
+        totalBiaya: 0,
+        sisaLebih: 0,
+        sisaKurang: 0
+    })
+
+    useEffect(() => {
+        if (todayDate) {
+            setLpj((prevLpj) =>
+                prevLpj.map((item) => ({ ...item, tanggalPengajuan: todayDate }))
+            )
+        }
+    }, [todayDate])
 
     useEffect(() => {
         const today = new Date()
@@ -17,10 +52,11 @@ const FormLpjMarketing = () => {
 
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
         const formattedDate = `${day}-${monthNames[month]}-${year}`
-
+        
         const uid = localStorage.getItem('userUid')
 
         setTodayDate(formattedDate)
+
         const fetchUserData = async () => {
             try {
                 const userDocRef = doc(db, 'users', uid)
@@ -29,23 +65,47 @@ const FormLpjMarketing = () => {
                 if (userDoc.exists()) {
                     const data = userDoc.data()
                     setUserData({
+                        uid: data.uid || '',
                         nama: data.nama || '',
-                        unit: data.unit || ''
+                        bankName: data.bankName || '',
+                        accountNumber: data.accountNumber || '',
+                        unit: data.unit || '',
+                        department: data.department || [],
+                        reviewer1: data.reviewer1 || [],
+                        reviewer2: data.reviewer2 || []
                     })
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error)
             }
         }
-
+        
         fetchUserData()
     }, [])
 
-    const [items, setItems] = useState([{ date: '', name: '', cost: 0, quantity: 0, total: 0 }])
+    const calculateCosts = (lpjItems, jumlahBs) => {
+        // Calculate total biaya
+        const totalBiaya = lpjItems.reduce((acc, item) => {
+            const biaya = Number(item.biaya) || 0
+            const jumlah = Number(item.jumlah) || 0
+            return acc + (biaya * jumlah)
+        }, 0)
 
-    const handleAddItem = () => {
-        setItems([...items, { date: '', name: '', cost: 0, quantity: 0, total: 0 }])
+        // Calculate sisa lebih atau kurang
+        const sisaLebih = Math.max(0, jumlahBs - totalBiaya)
+        const sisaKurang = Math.max(0, totalBiaya - jumlahBs)
+
+        return {
+            totalBiaya,
+            sisaLebih,
+            sisaKurang
+        }
     }
+
+    useEffect(() => {
+        const costs = calculateCosts(lpj, jumlahBs)
+        setCalculatedCosts(costs)
+    }, [lpj, jumlahBs])
 
     const formatRupiah = (value) => {
         // Memastikan bahwa value adalah string
@@ -65,38 +125,152 @@ const FormLpjMarketing = () => {
     }
 
     const handleInputChange = (index, field, value) => {
-        const updatedItems = items.map((item, i) => {
+        const updatedLpj = lpj.map((item, i) => {
             if (i === index) {
-                if (field === 'cost') {
-                    const cleanValue = value.replace(/\D/g, '')
-                    return {
-                        ...item,
-                        [field]: cleanValue,
-                        total: item.quantity * cleanValue // Menghitung total saat cost diubah
+                const cleanValue = value.replace(/\D/g, '')
+                const numValue = Number(cleanValue)
+                
+                if (field === 'biaya' || field === 'cost') {
+                    return { 
+                        ...item, 
+                        biaya: cleanValue,
+                        jumlahBiaya: numValue * Number(item.jumlah || 0)
                     }
-                } else if (field === 'quantity') {
-                    return {
-                        ...item,
-                        [field]: value,
-                        total: value * item.cost // Menghitung total saat quantity diubah
+                } else if (field === 'jumlah' || field === 'quantity') {
+                    return { 
+                        ...item, 
+                        jumlah: cleanValue,
+                        jumlahBiaya: Number(item.biaya || 0) * numValue
                     }
                 }
                 return { ...item, [field]: value }
             }
             return item
         })
-        setItems(updatedItems)
+        setLpj(updatedLpj)
     }
 
-    const handleDelete = (index) => {
-        const newItems = [...items]
-        newItems.splice(index, 1)
-        setItems(newItems)
+    const handleAddForm = () => {
+        setLpj([
+            ...lpj, 
+            { ...initialLpjState }])
     }
 
-    const totalCost = items.reduce((acc, item) => acc + item.total, 0)
-    const [bonSementara, setBonSementara] = useState(0) // Bon Sementara sebagai state yang bisa diubah
-    const sisaKurang = totalCost > bonSementara ? totalCost - bonSementara : 0
+    const handleRemoveForm = (index) => {
+        const updatedLpj = lpj.filter((_, i) => i !== index)
+        setLpj(updatedLpj)
+    }
+
+    // Mapping nama unit ke singkatan
+    const UNIT_CODES = {
+        'PT Makassar Jaya Samudera': 'MJS',
+        'PT Samudera Makassar Logistik': 'SML',
+        'PT Kendari Jaya Samudera': 'KEJS',
+        'PT Samudera Kendari Logistik': 'SKEL',
+        'PT Samudera Agencies Indonesia': 'SAI',
+        'PT Silkargo Indonesia': 'SKI',
+        'PT PAD Samudera Indonesia': 'SP',
+        'PT Masaji Kargosentra Tama': 'MKT'
+    }
+
+    const getUnitCode = (unitName) => {
+        return UNIT_CODES[unitName] || unitName // Fallback ke nama unit jika tidak ada di mapping
+    }
+
+    const generateDisplayId = (unit) => {
+        const today = new Date()
+        const year = today.getFullYear().toString().slice(-2)
+        const month = (today.getMonth() + 1).toString().padStart(2, '0')
+        const day = today.getDate().toString().padStart(2, '0')
+        const sequence = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+        const unitCode= getUnitCode(unit)
+                
+        return `LPJ/MOPR/${unitCode}/${year}${month}${day}/${sequence}`
+    }
+
+    const handleSubmit = async () => {
+        try {
+            // Validasi form
+            if (
+                !noBs || 
+                !jumlahBs ||
+                !userData.nama ||
+                lpj.some((r) => !r.namaItem || !r.biaya || !r.jumlah)
+            ) {
+                alert('Mohon lengkapi semua field yang wajib diisi!')
+                return
+            }
+
+            // Generate display ID untuk user
+            const displayId = generateDisplayId(userData.unit)
+            
+            const lpjData = {
+                user: {
+                    uid: userData.uid,
+                    nama: userData.nama,
+                    bankName: userData.bankName,
+                    accountNumber: userData.accountNumber,
+                    unit: userData.unit,
+                    unitCode: getUnitCode(userData.unit),
+                    department: userData.department,
+                    reviewer1: userData.reviewer1,
+                    reviewer2: userData.reviewer2
+                },
+                lpj: lpj.map((item) => ({
+                    tanggal: item.tanggal,                    
+                    namaItem: item.namaItem,
+                    biaya: item.biaya,
+                    jumlah: item.jumlah,
+                    jumlahBiaya: Number(item.biaya) * Number(item.jumlah)
+                })),
+                displayId: displayId,
+                kategori: 'Marketing',
+                status: 'Diproses',
+                noBs: noBs,
+                jumlahBs: jumlahBs,                                             
+                ...calculatedCosts,
+                tanggalPengajuan: todayDate,            
+                statusHistory: [
+                    {
+                        status: 'Diproses',
+                        timestamp: new Date().toISOString(),
+                        actor: userData.uid
+                    }
+                ],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            }
+
+            // Simpan ke Firestore
+            const docRef = await addDoc(collection(db, 'lpj'), lpjData)
+
+            // Update dengan ID dokumen
+            await setDoc(doc(db, 'lpj', docRef.id), { ...lpjData, id: docRef.id })
+
+            console.log('LPJ berhasil dibuat:', {
+                firestoreId: docRef.id,
+                displayId: displayId
+            })
+            alert('LPJ Marketing berhasil dibuat')
+
+            // Reset form setelah berhasil submit
+            resetForm()
+        } catch (error) {
+            console.error('Error submitting lpj:', error)
+            alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
+        }
+    }
+
+    const resetForm = () => {
+        setLpj([initialLpjState])
+        setNoBs('')
+        setJumlahBs(0)
+        setCalculatedCosts({
+            totalBiaya: 0,
+            sisaLebih: 0,
+            sisaKurang: 0
+        })
+    }
 
     return (
         <div className="container mx-auto py-8">
@@ -127,13 +301,15 @@ const FormLpjMarketing = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-6 mb-4">
-                    <div>
+                <div>
                         <label className="block text-gray-700 font-medium mb-2">
                             Nomor Bon Sementara <span className="text-red-500">*</span>
                         </label>
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-900"
                             type="text"
+                            value={noBs}
+                            onChange={(e) => setNoBs(e.target.value)}
                             placeholder="Masukkan nomor bon sementara"
                         />
                     </div>
@@ -144,12 +320,12 @@ const FormLpjMarketing = () => {
                         <input
                             className="w-full px-4 py-2 border rounded-md text-gray-900"
                             type="text"
-                            value={bonSementara ? formatRupiah(bonSementara) : ''}
+                            value={jumlahBs ? formatRupiah(jumlahBs) : ''}
                             onChange={(e) => {
                                 const cleanValue = e.target.value.replace(/\D/g, '')
                                 const value = Number(cleanValue)
                                 if (value >= 0) {
-                                    setBonSementara(value)
+                                    setJumlahBs(value)
                                 }
                             }}
                             placeholder="Masukkan jumlah bon sementara tanpa Rp"
@@ -187,7 +363,7 @@ const FormLpjMarketing = () => {
 
                 <hr className="border-gray-300 my-6" />
 
-                {items.map((item, index) => (
+                {lpj.map((item, index) => (
                     <div className="flex justify-stretch gap-2 mb-2" key={index}>
                         <div>
                             {index === 0 && (
@@ -197,9 +373,9 @@ const FormLpjMarketing = () => {
                             )}
                             <input
                                 type="date"
-                                value={item.date}
-                                onChange={(e) => handleInputChange(index, 'date', e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2"
+                                value={item.tanggal}
+                                onChange={(e) => handleInputChange(index, 'tanggal', e.target.value)}
+                                className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
                             />
                         </div>
 
@@ -211,9 +387,9 @@ const FormLpjMarketing = () => {
                             )}
                             <input
                                 type="text"
-                                value={item.name}
-                                onChange={(e) => handleInputChange(index, 'name', e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2"
+                                value={item.namaItem}
+                                onChange={(e) => handleInputChange(index, 'namaItem', e.target.value)}
+                                className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
                             />
                         </div>
 
@@ -225,9 +401,9 @@ const FormLpjMarketing = () => {
                             )}
                             <input
                                 type="text"
-                                value={formatRupiah(item.cost)}
-                                onChange={(e) => handleInputChange(index, 'cost', e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2"
+                                value={formatRupiah(item.biaya)}
+                                onChange={(e) => handleInputChange(index, 'biaya', e.target.value)}
+                                className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
                             />
                         </div>
 
@@ -239,13 +415,13 @@ const FormLpjMarketing = () => {
                             )}
                             <input
                                 type="number"
-                                value={item.quantity}
+                                value={item.jumlah}
                                 onChange={(e) => {
                                     const inputValue = e.target.value
                                     const formattedValue = inputValue.replace(/^0+/, '') //Menghapus angka nol di depan
                                     const value = Number(formattedValue) // Mengonversi ke angka dan memeriksa apakah nilainya positif
                                     if (formattedValue === '' || value >= 0) {
-                                        handleInputChange(index, 'quantity', formattedValue)
+                                        handleInputChange(index, 'jumlah', formattedValue)
                                     }
                                 }}
                                 className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
@@ -258,15 +434,15 @@ const FormLpjMarketing = () => {
                             )}
                             <input
                                 type="text"
-                                value={`Rp${item.total.toLocaleString()}`}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2"
+                                value={formatRupiah(item.jumlahBiaya)}
+                                className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2"
                                 disabled
                             />
                         </div>
 
                         <div className="flex items-end">
                             <button
-                                onClick={() => handleDelete(index)}
+                                onClick={() => handleRemoveForm(index)}
                                 className="px-4 py-2 bg-transparent text-red-500 border border-red-500 rounded hover:bg-red-100"
                             >
                                 Hapus
@@ -275,7 +451,7 @@ const FormLpjMarketing = () => {
                     </div>
                 ))}
 
-                <button onClick={handleAddItem} className="text-red-600 font-bold underline cursor-pointer">
+                <button onClick={handleAddForm} className="text-red-600 font-bold underline cursor-pointer">
                     Tambah
                 </button>
 
@@ -291,21 +467,21 @@ const FormLpjMarketing = () => {
                         <span>Sisa Kurang Dibayarkan ke Pegawai</span>
                     </div>
                     <div className="text-left ">
-                        <span>: Rp{totalCost.toLocaleString()}</span>
+                        <span>: {formatRupiah(calculatedCosts.totalBiaya || 0)}</span>
                         <br />
-                        <span>: Rp{Math.max(0, bonSementara - totalCost).toLocaleString()}</span>
+                        <span>: {formatRupiah(calculatedCosts.sisaLebih || 0)}</span>
                         <br />
-                        <span>: Rp{sisaKurang.toLocaleString()}</span>
+                        <span>: {formatRupiah(calculatedCosts.sisaKurang || 0)}</span>
                     </div>
                 </div>
 
                 <hr className="border-gray-300 my-6" />
 
                 <div className="flex justify-end mt-6">
-                    <button className="px-16 py-3 mr-4 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700">
-                        Cancel
-                    </button>
-                    <button className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200">
+                    <button
+                        className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
+                        onClick={handleSubmit}
+                    >
                         Submit
                     </button>
                 </div>

@@ -1,48 +1,108 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../firebaseConfig' 
+import { useParams } from 'react-router-dom'
+import LpjUmum from '../pages/LpjUmum'
+import LpjMarketing from '../pages/LpjMarketing'
 
 const DetailLpj = () => {
-    const lpjDetail = {
-        id: 'LPJ-01',
-        name: 'Andi Ichwan',
-        department: 'Finance',
-        businessUnit: 'PT Samudera Makassar Logistik',
-        submissionDate: '10 Oktober 2024',
-        status: 'Disetujui',
-        approver: 'Pak Budi',
-        bonNumber: 'BS0001',
-        bonAmount: 3000000,
-        joNumber: 'JO000123',
-        items: [
-            {
-                namaItem: 'Item A',
-                tanggal: '10-Okt-2024',
-                biaya: 100000,
-                jumlah: 10
-            },
-            {
-                namaItem: 'Item B',
-                tanggal: '10-Okt-2024',
-                biaya: 1000000,
-                jumlah: 2
+    const [userData, setUserData] = useState(null)
+    const [lpjDetail, setLpjDetail] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+
+    const { id } = useParams() // Get lpj ID from URL params    
+    const uid = localStorage.getItem('userUid')
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true)
+                
+                // Fetch user data
+                const userDocRef = doc(db, 'users', uid)
+                const userSnapshot = await getDoc(userDocRef)
+                
+                if (!userSnapshot.exists()) {
+                    throw new Error('User tidak ditemukan')
+                }
+                
+                // Fetch lpj data
+                const lpjDocRef = doc(db, 'lpj', id)
+                const lpjSnapshot = await getDoc(lpjDocRef)
+                
+                if (!lpjSnapshot.exists()) {
+                    throw new Error('Data LPJ tidak ditemukan')
+                }
+
+                setUserData(userSnapshot.data())
+                setLpjDetail(lpjSnapshot.data())
+                
+            } catch (error) {
+                console.error("Error fetching data:", error)
+                setError(error.message)
+            } finally {
+                setLoading(false)
             }
+        }
+
+        if (uid && id) {
+            fetchData()
+        }
+    }, [uid, id]) // Dependencies array to prevent infinite loop
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A' // Handle null/undefined
+        const date = new Date(dateString)
+        return new Intl.DateTimeFormat('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+        }).format(date);
+    }
+
+    const getColumns = (kategori) => {
+        const baseColumns = [
+            { header: 'No.', key: 'no' },
+            { header: 'Tanggal Aktivitas', key: 'tanggal' },
+            { header: 'Item', key: 'namaItem' },
         ]
+
+        const categoryColumns = {
+            umum: [
+                { header: 'Biaya', key: 'biaya' },
+                { header: 'Jumlah', key: 'jumlah' }
+            ],
+            marketing: [
+                { header: 'Biaya', key: 'biaya' },
+                { header: 'Jumlah', key: 'jumlah' }
+            ],           
+            default: []
+        }
+
+        const additionalColumns = categoryColumns[kategori?.toLowerCase()] || categoryColumns.default
+        return [...baseColumns, ...additionalColumns, { header: 'Jumlah Biaya', key: 'jumlahBiaya' }]
     }
 
-    // Hitung total biaya dengan menjumlahkan total dari 'jumlahBiaya'
-    const totalCost = lpjDetail.items.reduce((total, item) => total + item.biaya * item.jumlah, 0)
-
-    // Hitung Sisa Lebih Bon Sementara dan Sisa Kurang Dibayarkan ke Pegawai
-    const bonSementara = lpjDetail.bonAmount
-    const sisaKurang = Math.max(0, totalCost - bonSementara)
-
-    // Memformat angka menjadi format rupiah
-    const formatRupiah = (amount) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0
-        }).format(amount)
+    // Render cell berdasarkan key
+    const renderCell = (item, column, index) => {
+        switch (column.key) {
+            case 'no':
+                return index + 1
+            case 'tanggal':
+                return formatDate(item[column.key])
+            case 'biaya':
+                return item[column.key]?.toLocaleString('id-ID') || 'N/A'
+            default:
+                return item[column.key] || 'N/A'
+        }
     }
+
+    if (!userData) {
+        return <div>Loading...</div>
+    }
+    
+    const columns = getColumns(lpjDetail?.kategori)
 
     return (
         <div className="container mx-auto py-8">
@@ -51,86 +111,66 @@ const DetailLpj = () => {
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
-                <div className="grid grid-cols-2 gap-48 mb-6 font-medium">
-                    <div className="grid grid-cols-2">
-                        <div>
-                            <p>ID </p>
-                            <p>Nama Lengkap </p>
-                            <p>Department </p>
-                            <p>Bisnis Unit </p>
-                            <p>Tanggal Pengajuan </p>
-                        </div>
-                        <div>
-                            <p>: {lpjDetail.id}</p>
-                            <p>: {lpjDetail.name}</p>
-                            <p>: {lpjDetail.department}</p>
-                            <p>: {lpjDetail.businessUnit}</p>
-                            <p>: {lpjDetail.submissionDate}</p>
-                        </div>
+            <div className="grid grid-cols-2 gap-x-16 mb-6 font-medium">
+                    <div className="grid grid-cols-[auto_1fr] gap-x-16">
+                        <p>ID</p>
+                        <p>: {lpjDetail?.displayId ?? 'N/A'}</p>
+                        <p>Nama Lengkap</p>
+                        <p>: {lpjDetail?.user?.nama ?? 'N/A'}</p>
+                        <p>Department</p>
+                        <p>: {Array.isArray(lpjDetail?.user?.department) && lpjDetail.user.department.length > 0 ? lpjDetail.user.department.join(', ') : ''}</p>
+                        <p>Unit Bisnis</p>
+                        <p>: {lpjDetail?.user?.unit ?? 'N/A'}</p>
+                        <p>Tanggal Pengajuan</p>
+                        <p>: {formatDate(lpjDetail?.tanggalPengajuan) ?? 'N/A'}</p>
                     </div>
-                    <div className="grid grid-cols-2">
-                        <div>
-                            <p>Nomor Bon Sementara </p>
-                            <p>Jumlah Bon Sementara </p>
-                            <p>Nomor Job Order </p>
-                            <p>Status </p>
-                            <p>Disetujui Oleh </p>
-                        </div>
-                        <div>
-                            <p>: {lpjDetail.bonNumber}</p>
-                            <p>: {formatRupiah(lpjDetail.bonAmount)}</p>
-                            <p>: {lpjDetail.joNumber}</p>
-                            <p>: {lpjDetail.status}</p>
-                            <p>: {lpjDetail.approver}</p>
-                        </div>
+                    <div className="grid grid-cols-[auto_1fr] gap-x-16">
+                        <p>Kategori lpj</p>
+                        <p>: {lpjDetail?.kategori ?? 'N/A'}</p>
+                        <p>Nomor Rekening</p>
+                        <p>: {lpjDetail?.user?.accountNumber ?? 'N/A'}</p>
+                        <p>Nama Bank</p>
+                        <p>: {lpjDetail?.user?.bankName ?? 'N/A'}</p>
+                        <p>Status</p>
+                        <p>: {lpjDetail?.status ?? 'N/A'}</p>
+                        <p>Disetujui Oleh</p>
+                        <p>: {lpjDetail?.reviewer1?.[0] ?? ''}</p>
                     </div>
                 </div>
 
                 <div className="mb-8">
-                    <table className="min-w-full bg-white border rounded-lg text-sm">
+                <table className="min-w-full bg-white border rounded-lg text-sm">
                         <thead>
                             <tr className="bg-gray-100 text-left">
-                                <th className="px-4 py-2 border">No.</th>
-                                <th className="px-4 py-2 border">Item</th>
-                                <th className="px-4 py-2 border">Tanggal Kegiatan</th>
-                                <th className="px-4 py-2 border">Biaya</th>
-                                <th className="px-4 py-2 border">Jumlah</th>
-                                <th className="px-4 py-2 border">Jumlah Biaya</th>
+                                {columns.map((column) => (
+                                    <th key={column.key} className="px-4 py-2 border">
+                                        {column.header}
+                                    </th>
+                                ))}
                             </tr>
                         </thead>
                         <tbody>
-                            {lpjDetail.items.map((item, index) => (
+                            {lpjDetail?.lpj?.map((item, index) => (
                                 <tr key={index}>
-                                    <td className="px-4 py-2 border">{index + 1}</td>
-                                    <td className="px-4 py-2 border">{item.namaItem}</td>
-                                    <td className="px-4 py-2 border">{item.tanggal}</td>
-                                    <td className="px-4 py-2 border">{formatRupiah(item.biaya)}</td>
-                                    <td className="px-4 py-2 border">{item.jumlah}</td>
-                                    <td className="px-4 py-2 border">{formatRupiah(item.biaya * item.jumlah)}</td>
+                                    {columns.map((column) => (
+                                        <td key={column.key} className="px-4 py-2 border">
+                                            {renderCell(item, column, index)}
+                                        </td>
+                                    ))}
                                 </tr>
                             ))}
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colSpan="6" className="px-4 py-4"></td>
+                                <td colSpan={columns.length} className="px-4 py-4"></td>
                             </tr>
                             <tr className="font-semibold">
-                                <td colSpan="5" className="px-4 py-2 text-right border">
+                                <td colSpan={columns.length - 1} className="px-4 py-2 text-right border">
                                     Total Biaya :
                                 </td>
-                                <td className="px-4 py-2 border">{formatRupiah(totalCost)}</td>
-                            </tr>
-                            <tr className="font-semibold">
-                                <td colSpan="5" className="px-4 py-2 text-right border">
-                                    Sisa Lebih Bon Sementara :
+                                <td className="px-4 py-2 border">
+                                    Rp{lpjDetail?.totalBiaya?.toLocaleString('id-ID')}
                                 </td>
-                                <td className="px-4 py-2 border">{formatRupiah(Math.max(0, bonSementara - totalCost))}</td>
-                            </tr>
-                            <tr className="font-semibold">
-                                <td colSpan="5" className="px-4 py-2 text-right border">
-                                    Sisa Kurang Dibayarkan ke Pegawai :
-                                </td>
-                                <td className="px-4 py-2 border">{formatRupiah(sisaKurang)}</td>
                             </tr>
                         </tfoot>
                     </table>

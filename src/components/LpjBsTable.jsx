@@ -1,50 +1,139 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebaseConfig'; 
 import EmptyState from '../assets/images/EmptyState.png';
 
-const LpjBsTable = ({ data = { 
-    lpjBs: [
-            { id: 'LPJ-01', jenis: 'BBM', noBs: 'BS0001', tanggal: '10-Okt-2024', jumlah: 'Rp.123.000', status: 'Diproses' },
-        ] 
-    }, onCancel }) => {
+const LpjBsTable = ({ onCancel }) => {
+    const [data, setData] = useState({ lpj: [] });
+    const [userData, setUserData] = useState(null); // State untuk menyimpan data user
+    const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 5 // Jumlah item per halaman
+
+    useEffect(() => {
+        const fetchUserAndLpj = async () => {
+            try {
+                const uid = localStorage.getItem('userUid'); // Ambil UID dari localStorage
+
+                if (!uid) {
+                    console.error('UID tidak ditemukan di localStorage');
+                    setLoading(false);
+                    return;
+                }
+
+                // Fetch data user berdasarkan UID
+                const userDocRef = doc(db, 'users', uid);
+                const userDoc = await getDoc(userDocRef);                
+
+                // Query reimbursement berdasarkan UID user
+                const q = query(
+                    collection(db, 'lpj'),
+                    where('user.uid', '==', uid) // Filter data reimbursement berdasarkan UID user
+                );
+
+                const querySnapshot = await getDocs(q);
+                const lpj = querySnapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    displayId: doc.data().displayId,
+                    ...doc.data(),
+                }));
+
+                setData({ lpj });
+            } catch (error) {
+                console.error('Error fetching user or lpj data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserAndLpj();
+    }, []);
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A' // Handle null/undefined
+        const date = new Date(dateString)
+        return new Intl.DateTimeFormat('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+        }).format(date);
+    }
+
+    // Menghitung total halaman
+    const totalPages = Math.ceil(data.lpj.length / itemsPerPage)
+
+    // Mendapatkan data pengguna untuk halaman saat ini
+    const currentLpj = data.lpj.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+    // Fungsi untuk berpindah ke halaman berikutnya
+    const nextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
+
+    // Fungsi untuk berpindah ke halaman sebelumnya
+    const prevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
+
+    if (loading) {
+        return <p>Loading...</p>;
+    }
+
     return (
         <div>
-            {data.lpjBs.length === 0 ? (
-                // Jika belum ada data LPJ BS
+            {data.lpj.length === 0 ? (
+                // Jika belum ada data lpj
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                    <h3 className="text-xl font-medium mb-4">LPJ Bon Sementara Terakhir</h3>
+                    <h3 className="text-xl font-medium mb-4">lpj Terakhir</h3>
                     <div className="flex justify-center">
                         <figure className="w-44 h-44">
-                            <img src={EmptyState} alt="lpj bs icon" className="w-full h-full object-contain" />
+                            <img src={EmptyState} alt="lpj icon" className="w-full h-full object-contain" />
                         </figure>
                     </div>
                 </div>
             ) : (
-                // Jika ada data LPJ BS
+                // Jika ada data lpj
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                    <h3 className="text-xl font-medium mb-4">LPJ Bon Sementara Terakhir</h3>
+                    <h3 className="text-xl font-medium mb-4">LPJ Terakhir</h3>
                     <table className="min-w-full bg-white border rounded-lg text-sm">
                         <thead>
                             <tr className="bg-gray-100 text-left">
                                 <th className="px-4 py-2 border">ID</th>
-                                <th className="px-4 py-2 border">Jenis LPJ BS</th>
-                                <th className="px-4 py-2 border">Nomor BS</th>
-                                <th className="px-4 py-2 border">Tanggal BS</th>
-                                <th className="px-4 py-2 border">Jumlah BS</th>
+                                <th className="px-4 py-2 border">Kategori LPJ</th>
+                                <th className="px-4 py-2 border">Tanggal Pengajuan</th>
+                                <th className="px-4 py-2 border">Jumlah</th>
                                 <th className="py-2 border text-center">Status</th>
                                 <th className="py-2 border text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {data.lpjBs.map((item, index) => (
+                            {currentLpj.map((item, index) => (
                                 <tr key={index}>
-                                    <td className="px-4 py-2 border">{item.id}</td>
-                                    <td className="px-4 py-2 border">{item.jenis}</td>
-                                    <td className="px-4 py-2 border">{item.noBs}</td>
-                                    <td className="px-4 py-2 border">{item.tanggal}</td>
-                                    <td className="px-4 py-2 border">{item.jumlah}</td>
+                                    <td className="px-4 py-2 border">
+                                        <Link 
+                                            to={`/lpj/${item.id}`}
+                                            className="text-black hover:text-gray-700 hover:underline cursor-pointer"
+                                        >
+                                            {item.displayId}
+                                        </Link>                                                                            
+                                    </td>
+                                    <td className="px-4 py-2 border">{item.kategori}</td>
+                                    <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
+                                    <td className="px-4 py-2 border">Rp{item.totalBiaya.toLocaleString('id-ID')}</td>
                                     <td className="py-2 border text-center">
-                                        <span className={`px-4 py-1 rounded-full text-xs font-medium ${item.status === 'Disetujui' ? 'bg-green-200 text-green-800 border-[1px] border-green-600' : item.status === 'Diproses' ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600' : 'bg-red-200 text-red-800 border-[1px] border-red-600'}`}>
-                                            {item.status}
+                                        <span className={`px-4 py-1 rounded-full text-xs font-medium 
+                                            ${
+                                                item.status === 'Disetujui' ? 'bg-green-200 text-green-800 border-[1px] border-green-600' : 
+                                                item.status === 'Diproses' ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600' : 
+                                                item.status === 'Ditolak' ? 'bg-red-200 text-red-800 border-[1px] border-red-600' : 
+                                                'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
+                                            }`}>
+                                            {item.status || 'Tidak Diketahui'}
                                         </span>
                                     </td>
                                     <td className="py-2 border text-center">
@@ -59,6 +148,76 @@ const LpjBsTable = ({ data = {
                             ))}
                         </tbody>
                     </table>
+
+                    {/* Pagination Controls */}
+                    <div className="flex items-center justify-center gap-2 mt-6 text-xs">
+                        {/* Tombol Previous */}
+                        <button
+                            onClick={prevPage}
+                            disabled={currentPage === 1}
+                            className={`flex items-center gap-2 p-2 rounded-full ${
+                                currentPage === 1
+                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                    : 'border border-red-600 text-red-600 hover:bg-red-100'
+                            }`}
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="size-4"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15.75 19.5L8.25 12l7.5-7.5"
+                                />
+                            </svg>                            
+                        </button>
+
+                        {/* Tombol Halaman */}
+                        {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                            <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`px-3 py-2 rounded-full ${
+                                    currentPage === page
+                                        ? 'bg-red-600 text-white'
+                                        : 'border border-red-600 text-red-600 hover:bg-red-100'
+                                }`}
+                            >
+                                {page}
+                            </button>
+                        ))}
+
+                        {/* Tombol Next */}
+                        <button
+                            onClick={nextPage}
+                            disabled={currentPage === totalPages}
+                            className={`flex items-center gap-2 px-2 py-2 rounded-full ${
+                                currentPage === totalPages
+                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                    : 'border border-red-600 text-red-600 hover:bg-red-100'
+                            }`}
+                        >                        
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="size-4"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                                />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
