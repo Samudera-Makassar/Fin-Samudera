@@ -36,6 +36,20 @@ const RbsBbmForm = () => {
         }
     }, [todayDate])
 
+    const [selectedUnit, setSelectedUnit] = useState('')
+    const [isAdmin, setIsAdmin] = useState(false)
+
+    const BUSINESS_UNITS = [
+        { value: 'PT Makassar Jaya Samudera', label: 'PT Makassar Jaya Samudera' },
+        { value: 'PT Samudera Makassar Logistik', label: 'PT Samudera Makassar Logistik' },
+        { value: 'PT Kendari Jaya Samudera', label: 'PT Kendari Jaya Samudera' },
+        { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
+        { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
+        { value: 'PT Silkargo Indonesia', label: 'PT Silkargo Indonesia' },
+        { value: 'PT PAD Samudera Indonesia', label: 'PT PAD Samudera Indonesia' },
+        { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
+    ]
+
     const jenisOptions = [
         { value: 'BBM Pertalite', label: 'BBM Pertalite' },
         { value: 'BBM Pertamax', label: 'BBM Pertamax' },
@@ -65,6 +79,10 @@ const RbsBbmForm = () => {
 
                 if (userDoc.exists()) {
                     const data = userDoc.data()
+
+                    const adminStatus = data.role === 'Admin'
+                    setIsAdmin(adminStatus)
+
                     setUserData({
                         uid: data.uid || '',
                         nama: data.nama || '',
@@ -75,6 +93,12 @@ const RbsBbmForm = () => {
                         reviewer1: data.reviewer1 || [],
                         reviewer2: data.reviewer2 || []
                     })
+
+                    setSelectedUnit(
+                        isAdmin 
+                            ? null 
+                            : { value: data.unit, label: data.unit }
+                    )
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error)
@@ -189,7 +213,7 @@ const RbsBbmForm = () => {
         const month = (today.getMonth() + 1).toString().padStart(2, '0')
         const day = today.getDate().toString().padStart(2, '0')
         const sequence = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
-        const unitCode= getUnitCode(unit)
+        const unitCode = getUnitCode(selectedUnit.value)
                 
         return `RBS/BBM/${unitCode}/${year}${month}${day}/${sequence}`
     }
@@ -199,6 +223,7 @@ const RbsBbmForm = () => {
             // Validasi form
             if (
                 !userData.nama ||
+                !selectedUnit?.value ||
                 reimbursements.some((r) => {
                     if (r.isLainnya) {
                         return !r.jenisLain || !r.biaya || !r.lokasi || !r.plat || !r.tanggal 
@@ -226,8 +251,8 @@ const RbsBbmForm = () => {
                     nama: userData.nama,
                     bankName: userData.bankName,
                     accountNumber: userData.accountNumber,
-                    unit: userData.unit,
-                    unitCode: getUnitCode(userData.unit),
+                    unit: selectedUnit.value,
+                    unitCode: getUnitCode(selectedUnit.value),
                     department: userData.department,
                     reviewer1: userData.reviewer1,
                     reviewer2: userData.reviewer2
@@ -262,6 +287,11 @@ const RbsBbmForm = () => {
             // Update dengan ID dokumen
             await setDoc(doc(db, 'reimbursement', docRef.id), { ...reimbursementData, id: docRef.id });
 
+            // Reset unit bisnis ke unit awal untuk admin
+            if (isAdmin) {
+                setSelectedUnit({ value: userData.unit, label: userData.unit })
+            }
+
             console.log('Reimbursement berhasil dibuat:', {
                 firestoreId: docRef.id,
                 displayId: displayId
@@ -276,6 +306,25 @@ const RbsBbmForm = () => {
         }
     }
 
+    const customStyles = {
+        control: (base) => ({
+            ...base,
+            padding: '0 7px',
+            height: '40px',
+            minHeight: '40px',
+            borderColor: '#e5e7eb',
+            '&:hover': {
+                borderColor: '#3b82f6'
+            }
+        }),
+        valueContainer: (base) => ({
+            ...base,
+            padding: '0 7px',
+            height: '40px',
+            minHeight: '40px'
+        })
+    }
+
     return (
         <div className="container mx-auto py-8">
             <h2 className="text-xl font-medium mb-4">
@@ -283,32 +332,47 @@ const RbsBbmForm = () => {
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
-                <div className="grid grid-cols-2 gap-6 mb-4">
+                <div className="grid grid-cols-2 gap-6 mb-3">
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value={userData.nama}
                             disabled
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700 font-medium mb-2">Unit Bisnis</label>
-                        <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                            type="text"
-                            value={userData.unit}
-                            disabled
-                        />
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Unit Bisnis {isAdmin && <span className="text-red-500">*</span>}
+                        </label>
+                        {isAdmin ? (
+                            <Select
+                                options={BUSINESS_UNITS}
+                                value={selectedUnit}
+                                onChange={setSelectedUnit}
+                                placeholder="Pilih Unit Bisnis"
+                                className="basic-single"
+                                classNamePrefix="select"
+                                styles={customStyles}
+                                isSearchable={true}
+                            />
+                        ) : (
+                            <input
+                                className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                type="text"
+                                value={selectedUnit?.label || ''}
+                                disabled
+                            />
+                        )}
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6 mb-4">
+                <div className="grid grid-cols-2 gap-6 mb-3">
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value={userData.accountNumber}
                             disabled
@@ -317,7 +381,7 @@ const RbsBbmForm = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nama Bank</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value={userData.bankName}
                             disabled
@@ -325,11 +389,11 @@ const RbsBbmForm = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6 mb-4">
+                <div className="grid grid-cols-2 gap-6 mb-3">
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value={todayDate}
                             disabled
@@ -343,7 +407,7 @@ const RbsBbmForm = () => {
                             <input className="hidden" type="file" name="resume" id="file-upload" />
                             <label
                                 htmlFor="file-upload"
-                                className="px-4 py-2 bg-gray-200 border rounded cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
+                                className="h-10 px-4 py-2 bg-gray-200 border rounded-md cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
                             >
                                 Upload File
                             </label>
@@ -369,7 +433,7 @@ const RbsBbmForm = () => {
                                         placeholder="Jenis lain"
                                         value={reimbursement.jenisLain}
                                         onChange={(e) => handleJenisLainChange(index, e.target.value)}
-                                        className="w-full px-4 py-2 border rounded"
+                                        className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                                     />
                                 ) : (
                                     <Select
@@ -378,6 +442,7 @@ const RbsBbmForm = () => {
                                         onChange={(selectedOption) => handleJenisChange(index, selectedOption)}
                                         placeholder="Pilih jenis..."
                                         className="w-full"
+                                        styles={customStyles}
                                     />
                                 )}
                             </div>
@@ -390,7 +455,7 @@ const RbsBbmForm = () => {
                                 </label>
                             )}
                             <input
-                                className="w-full px-4 py-2 border rounded-md"
+                                className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                                 type="text"
                                 value={formatRupiah(reimbursement.biaya)}
                                 onChange={(e) => handleInputChange(index, 'biaya', e.target.value)}
@@ -404,7 +469,7 @@ const RbsBbmForm = () => {
                                 </label>
                             )}
                             <input
-                                className="w-full px-4 py-2 border rounded-md"
+                                className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                                 type="text"
                                 value={reimbursement.lokasi}
                                 onChange={(e) => handleInputChange(index, 'lokasi', e.target.value)}
@@ -418,7 +483,7 @@ const RbsBbmForm = () => {
                                 </label>
                             )}
                             <input
-                                className="w-full px-4 py-2 border rounded-md"
+                                className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                                 type="text"
                                 value={reimbursement.plat}
                                 onChange={(e) => {
@@ -435,7 +500,7 @@ const RbsBbmForm = () => {
                                 </label>
                             )}
                             <input
-                                className="w-full px-4 py-2 border rounded-md"
+                                className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                                 type="date"
                                 value={reimbursement.tanggal}
                                 onChange={(e) => handleInputChange(index, 'tanggal', e.target.value)}
@@ -444,7 +509,7 @@ const RbsBbmForm = () => {
 
                         <div className="flex items-end ">
                             <button
-                                className="px-4 py-2 bg-transparent text-red-500 border border-red-500 rounded hover:bg-red-100"
+                                className="h-10 px-4 py-2 bg-transparent text-red-500 border border-red-500 rounded-md hover:bg-red-100"
                                 onClick={() => handleRemoveForm(index)}
                             >
                                 Hapus
@@ -454,7 +519,7 @@ const RbsBbmForm = () => {
                 ))}
 
                 <div className="mb-4">
-                    <span className="text-red-600 font-bold underline cursor-pointer" onClick={handleAddForm}>
+                    <span className="text-red-600 font-bold underline cursor-pointer hover:text-red-700" onClick={handleAddForm}>
                         Tambah
                     </span>
                 </div>
