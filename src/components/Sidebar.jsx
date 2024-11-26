@@ -1,28 +1,28 @@
-import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import Modal from './Modal';
+import React, { useState } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
+import Modal from './Modal'
 
 const Sidebar = () => {
-    const [showModal, setShowModal] = useState(false);
-    const navigate = useNavigate();
-    const role = localStorage.getItem('userRole'); // Ambil role dari localStorage
+    const [showModal, setShowModal] = useState(false)
+    const navigate = useNavigate()
+    const role = localStorage.getItem('userRole') // Ambil role dari localStorage
 
     const onLogoutClick = () => {
-        setShowModal(true);
-    };
+        setShowModal(true)
+    }
 
     const handleCloseModal = () => {
-        setShowModal(false);
-    };
+        setShowModal(false)
+    }
 
     const handleConfirmLogout = () => {
-        setShowModal(false);
-        localStorage.removeItem('userRole'); // Hapus role dari localStorage
-        navigate('/');
-    };
+        setShowModal(false)
+        localStorage.removeItem('userRole') // Hapus role dari localStorage
+        navigate('/')
+    }
 
     if (!role) {
-        return null;
+        return null
     }
 
     return (
@@ -103,6 +103,24 @@ const Sidebar = () => {
                         </li>
                     )}
                     <li>
+                    <hr className="border-red-500" />
+                    {/* Menu Create Bon Sementara */}
+                    <span className="block w-full py-2 pl-4 text-gray-100 text-xs font-semibold cursor-default">
+                            BON SEMENTARA
+                        </span>
+                    <li>
+                        <NavLink
+                            to="/create-bs"
+                            className={({ isActive }) =>
+                                isActive
+                                    ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
+                                    : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
+                            }
+                        >
+                            Create Bon Sementara
+                        </NavLink>
+                    </li>
+                    
                         <hr className="border-red-500" />
                         {/* Menu LPJ Bon Sementara */}
                         <span className="block w-full py-2 pl-4 text-gray-100 text-xs font-semibold cursor-default">
@@ -175,8 +193,8 @@ const Sidebar = () => {
                 message="Apakah Anda yakin ingin keluar?"
                 onClose={handleCloseModal}
                 onConfirm={handleConfirmLogout}
-                cancelText='Batal'
-                confirmText='Ya, Keluar'
+                cancelText="Batal"
+                confirmText="Ya, Keluar"
             />
         </div>
     )
