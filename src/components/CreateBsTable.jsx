@@ -65,7 +65,7 @@ const CreateBsTable = ({ onCancel }) => {
 
     // Mendapatkan data pengguna untuk halaman saat ini
     const currentBonSementara = data.bonSementara.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
+    // currentBonSementara.forEach((item, index) => console.log(item.bonSementara[0].jumlahBS))
     // Fungsi untuk berpindah ke halaman berikutnya
     const nextPage = () => {
         if (currentPage < totalPages) {
@@ -113,6 +113,7 @@ const CreateBsTable = ({ onCancel }) => {
                         </thead>
                         <tbody>
                             {currentBonSementara.map((item, index) => (
+                                
                                 <tr key={index}>
                                     <td className="px-2 py-2 border text-center w-auto">
                                         {index + 1 + (currentPage - 1) * itemsPerPage}
@@ -125,7 +126,7 @@ const CreateBsTable = ({ onCancel }) => {
                                             {item.displayId}
                                         </Link>
                                     </td>
-                                    <td className="px-4 py-2 border">Rp{item.jumlahBS}</td>
+                                    <td className="px-4 py-2 border">{item.bonSementara[0].jumlahBS.toLocaleString('id-ID')}</td>
                                     <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
                                     <td className="py-2 border text-center">
                                         <span
