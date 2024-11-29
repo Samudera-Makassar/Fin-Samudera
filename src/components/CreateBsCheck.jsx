@@ -16,7 +16,7 @@ const CreateBsCheck = ({ data = {
                 {data.lpjBs.length === 0 ? (
                     // Jika belum ada data LPJ BS 
                     <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                        <h3 className="text-xl font-medium mb-4">Daftar Laporan Menunggu Review/Approve</h3>
+                        <h3 className="text-xl font-medium mb-4">Daftar Pengajuan Menunggu Review/Approve</h3>
                         <div className="flex justify-center">
                             <figure className="w-44 h-44">
                                 <img src={EmptyState} alt="lpj bs icon" className="w-full h-full object-contain" />
@@ -26,7 +26,7 @@ const CreateBsCheck = ({ data = {
                 ) : (
                     // Jika ada data LPJ BS
                     <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                        <h3 className="text-xl font-medium mb-4">Daftar Laporan Menunggu Review/Approve</h3>
+                        <h3 className="text-xl font-medium mb-4">Daftar Pengajuan Menunggu Review/Approve</h3>
                         <table className="min-w-full bg-white border rounded-lg text-sm">
                             <thead>
                                 <tr className="bg-gray-100 text-left">

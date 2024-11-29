@@ -88,7 +88,7 @@ const ReviewerDashboard = ({ userUid }) => {
                         </h2>
                         <ReportCard reimbursementCount={reimbursementCount} lpjCount={lpjCount} />
                         <ReimbursementTable reimbursements={data.reimbursements} onCancel={handleCancel} />
-                        <CreateBsTable lpjBs={data.lpjBs} onCancel={handleCancel} />
+                        <CreateBsTable bonSementara={data.bonSementara} onCancel={handleCancel} />
                         <LpjBsTable lpjBs={data.lpjBs} onCancel={handleCancel} />
                     </div>
                 </div>

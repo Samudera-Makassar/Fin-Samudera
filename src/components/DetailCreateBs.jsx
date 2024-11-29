@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 
 const DetailCreateBs = () => {
     const [userData, setUserData] = useState(null)
@@ -9,7 +9,8 @@ const DetailCreateBs = () => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
-    const { id } = useParams() // Get lpj ID from URL params
+    const { id } = useParams() 
+    const navigate = useNavigate() 
     const uid = localStorage.getItem('userUid')
 
     useEffect(() => {
@@ -58,6 +59,16 @@ const DetailCreateBs = () => {
         }).format(date)
     }
 
+    const handleBuatLaporan = () => {
+        if (bonSementaraDetail?.bonSementara?.[0]?.kategori === 'GA/Umum') {
+            navigate('/lpj/umum')
+        } else if (bonSementaraDetail?.bonSementara?.[0]?.kategori === 'Marketing/Operasional') {
+            navigate('/lpj/marketing')
+        } else {
+            alert('Kategori tidak dikenali.')
+        }
+    }
+
     if (!userData) {
         return <div>Loading...</div>
     }
@@ -85,13 +96,12 @@ const DetailCreateBs = () => {
                         <p>: {bonSementaraDetail?.user?.unit ?? 'N/A'}</p>
                         <p>Posisi</p>
                         <p>: {bonSementaraDetail?.user?.posisi ?? 'N/A'}</p>
-                        
                     </div>
                     <div className="grid grid-cols-[auto_1fr] gap-x-16">
-                    <p>Nama Bank</p>
-                    <p>: {bonSementaraDetail?.user?.bankName ?? 'N/A'}</p>
-                    <p>Nomor Rekening</p>
-                    <p>: {bonSementaraDetail?.user?.accountNumber ?? 'N/A'}</p>
+                        <p>Nama Bank</p>
+                        <p>: {bonSementaraDetail?.user?.bankName ?? 'N/A'}</p>
+                        <p>Nomor Rekening</p>
+                        <p>: {bonSementaraDetail?.user?.accountNumber ?? 'N/A'}</p>
                         <p>Status</p>
                         <p>: {bonSementaraDetail?.status ?? 'N/A'}</p>
                         <p>Disetujui Oleh</p>
@@ -100,33 +110,37 @@ const DetailCreateBs = () => {
                 </div>
 
                 <div className="mb-8">
-                <table className="min-w-full bg-white border rounded-lg text-sm table-fixed">
-    <thead>
-        <tr className="bg-gray-100 text-left">
-            <th className="px-4 py-2 border w-1/4">Nomor BS</th>
-            <th className="px-4 py-2 border w-1/4">Aktivitas</th>
-            <th className="px-4 py-2 border w-1/4">Jumlah BS</th>
-            <th className="px-4 py-2 border w-1/4">Tanggal Pengajuan</th>
-        </tr>
-    </thead>
-    <tbody>
-        {bonSementaraDetail?.bonSementara?.map((item, index) => (
-            <tr key={index}>
-                <td className="px-4 py-2 border">{item.nomorBS}</td>
-                <td className="px-4 py-2 border">{item.aktivitas}</td>
-                <td className="px-4 py-2 border">{item.jumlahBS}</td>
-                <td className="px-4 py-2 border">
-                    {formatDate(bonSementaraDetail?.tanggalPengajuan) ?? 'N/A'}
-                </td>
-            </tr>
-        ))}
-    </tbody>
-</table>
-
+                    <table className="min-w-full bg-white border rounded-lg text-sm table-auto">
+                        <thead>
+                            <tr className="bg-gray-100 text-left">
+                                <th className="px-4 py-2 border w-auto">Nomor BS</th>
+                                <th className="px-4 py-2 border w-auto">Kategori</th>
+                                <th className="px-4 py-2 border w-auto">Aktivitas</th>
+                                <th className="px-4 py-2 border w-auto">Jumlah BS</th>
+                                <th className="px-4 py-2 border w-auto">Tanggal Pengajuan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {bonSementaraDetail?.bonSementara?.map((item, index) => (
+                                <tr key={index}>
+                                    <td className="px-4 py-2 border">{item.nomorBS}</td>
+                                    <td className="px-4 py-2 border">{item.kategori}</td>
+                                    <td className="px-4 py-2 border">{item.aktivitas}</td>
+                                    <td className="px-4 py-2 border">{item.jumlahBS}</td>
+                                    <td className="px-4 py-2 border">
+                                        {formatDate(item.tanggalPengajuan) ?? 'N/A'}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
 
                 <div className="flex justify-end mt-6">
-                    <button className="px-12 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200">
+                    <button
+                        onClick={handleBuatLaporan}
+                        className="px-12 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
+                    >
                         Buat Laporan
                     </button>
                 </div>

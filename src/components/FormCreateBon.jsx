@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { doc, setDoc, getDoc, addDoc, collection, getDocs } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
+import Select from 'react-select'
 
 const CreateBonForm = () => {
     const [todayDate, setTodayDate] = useState('')
@@ -19,6 +20,7 @@ const CreateBonForm = () => {
         nomorBS: '',
         aktivitas: '',
         jumlahBS: '',
+        kategori: '',
         tanggalPengajuan: todayDate
     }
 
@@ -72,6 +74,39 @@ const CreateBonForm = () => {
         fetchUserData()
     }, [])
 
+    const kategoriOptions = [
+        { value: 'GA/Umum', label: 'GA/Umum' },
+        { value: 'Marketing/Operasional', label: 'Marketing/Operasional' }
+    ]
+
+    const [selectedKategori, setSelectedKategori] = useState(null)
+
+    const handleKategoriChange = (selectedOption) => {
+        setSelectedKategori(selectedOption)
+        setBonSementara((prevBonSementara) =>
+            prevBonSementara.map((item, index) => (index === 0 ? { ...item, kategori: selectedOption.value } : item))
+        )
+    }
+
+    const customStyles = {
+        control: (base) => ({
+            ...base,
+            padding: '0 7px',
+            height: '40px',
+            minHeight: '40px',
+            borderColor: '#e5e7eb',
+            '&:hover': {
+                borderColor: '#3b82f6'
+            }
+        }),
+        valueContainer: (base) => ({
+            ...base,
+            padding: '0 7px',
+            height: '40px',
+            minHeight: '40px'
+        })
+    }
+
     const resetForm = () => {
         // Reset bonSementara to initial state with one empty form
         setBonSementara([
@@ -100,13 +135,13 @@ const CreateBonForm = () => {
 
     const handleInputChange = (index, field, value) => {
         if (field === 'nomorBS') return // Hindari perubahan manual
-    
+
         let formattedValue = value
-    
+
         if (field === 'jumlahBS') {
             formattedValue = formatRupiah(value)
         }
-    
+
         const updatedBonSementara = bonSementara.map((item, i) =>
             i === index ? { ...item, [field]: formattedValue } : item
         )
@@ -115,59 +150,55 @@ const CreateBonForm = () => {
 
     const generateNomorBS = async () => {
         try {
-            const today = new Date();
-            const day = today.getDate().toString().padStart(2, '0');
-            const month = (today.getMonth() + 1).toString().padStart(2, '0');
-            const year = today.getFullYear().toString().slice(-2);
-            const tanggalKode = `${year}${month}${day}`; // Format tanggal: 241126
-            const kodeFormat = "9";
-    
+            const today = new Date()
+            const day = today.getDate().toString().padStart(2, '0')
+            const month = (today.getMonth() + 1).toString().padStart(2, '0')
+            const year = today.getFullYear().toString().slice(-2)
+            const tanggalKode = `${year}${month}${day}` // Format tanggal: 241126
+            const kodeFormat = '9'
+
             // Mendapatkan jumlah dokumen di koleksi
-            const collectionRef = collection(db, "bonSementara");
-            const snapshot = await getDocs(collectionRef);
-    
+            const collectionRef = collection(db, 'bonSementara')
+            const snapshot = await getDocs(collectionRef)
+
             // Urutan berikutnya berdasarkan jumlah dokumen + 1
-            const nextSequence = (snapshot.size + 1).toString().padStart(7, '0'); // Format: 0000001
-    
+            const nextSequence = (snapshot.size + 1).toString().padStart(7, '0') // Format: 0000001
+
             // Menggabungkan kode BS
-            const nomorBS = `BS${tanggalKode}${kodeFormat}${nextSequence}`;
-            return nomorBS;
+            const nomorBS = `BS${tanggalKode}${kodeFormat}${nextSequence}`
+            return nomorBS
         } catch (error) {
-            console.error("Error generating nomor BS:", error);
-            return null;
+            console.error('Error generating nomor BS:', error)
+            return null
         }
-    };    
+    }
 
     useEffect(() => {
         const fetchNomorBS = async () => {
-            const nomorBS = await generateNomorBS();
+            const nomorBS = await generateNomorBS()
             if (nomorBS) {
                 setBonSementara((prevBonSementara) =>
-                    prevBonSementara.map((item, index) =>
-                        index === 0 ? { ...item, nomorBS: nomorBS } : item
-                    )
-                );
+                    prevBonSementara.map((item, index) => (index === 0 ? { ...item, nomorBS: nomorBS } : item))
+                )
             }
-        };
-    
-        fetchNomorBS();
-    }, [todayDate]);
-    
-    
+        }
+
+        fetchNomorBS()
+    }, [todayDate])
 
     const handleSubmit = async () => {
         try {
-            // Validasi form
             if (
                 !userData.nama ||
-                bonSementara.some((r) => !r.nomorBS || !r.jumlahBS || !r.aktivitas)
+                bonSementara.some((r) => !r.nomorBS || !r.jumlahBS || !r.kategori || !r.aktivitas) ||
+                !selectedKategori
             ) {
                 alert('Mohon lengkapi semua field yang wajib diisi!')
                 return
             }
 
             // Gunakan nomorBS pertama sebagai   Id
-            const displayId = bonSementara[0]?.nomorBS;
+            const displayId = bonSementara[0]?.nomorBS
 
             // Map data bon sementara langsung saat akan disimpan
             const bonSementaraData = {
@@ -186,6 +217,7 @@ const CreateBonForm = () => {
                     nomorBS: item.nomorBS,
                     jumlahBS: item.jumlahBS,
                     aktivitas: item.aktivitas,
+                    kategori: item.kategori
                 })),
                 displayId: displayId,
                 tanggalPengajuan: todayDate,
@@ -224,7 +256,7 @@ const CreateBonForm = () => {
     return (
         <div className="container mx-auto py-8">
             <h2 className="text-xl font-medium mb-4">
-                Create <span className="font-bold">Bon Sementra</span>
+                Ajukan <span className="font-bold">Bon Sementra</span>
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
@@ -232,7 +264,7 @@ const CreateBonForm = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value={userData.nama}
                             disabled
@@ -241,7 +273,7 @@ const CreateBonForm = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Unit Bisnis</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value={userData.unit}
                             disabled
@@ -253,7 +285,7 @@ const CreateBonForm = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value={userData.accountNumber}
                             disabled
@@ -262,7 +294,7 @@ const CreateBonForm = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nama Bank</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value={userData.bankName}
                             disabled
@@ -274,10 +306,24 @@ const CreateBonForm = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                         <input
-                            className="w-full px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
                             value={todayDate}
                             disabled
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Kategori BS <span className="text-red-500">*</span>
+                        </label>
+                        <Select
+                            options={kategoriOptions}
+                            value={selectedKategori}
+                            onChange={handleKategoriChange}
+                            placeholder="Pilih Kategori..."
+                            className="w-full "
+                            styles={customStyles}
+                            isSearchable={true}
                         />
                     </div>
                 </div>
@@ -293,7 +339,7 @@ const CreateBonForm = () => {
                                 </label>
                             )}
                             <input
-                                className="w-full px-4 py-2 border rounded-md"
+                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
                                 type="text"
                                 value={bonSementara.nomorBS}
                                 onChange={(e) => handleInputChange(index, 'nomorBS', e.target.value)}
@@ -307,7 +353,7 @@ const CreateBonForm = () => {
                                 </label>
                             )}
                             <input
-                                className="w-full px-4 py-2 border rounded-md"
+                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
                                 type="text"
                                 value={bonSementara.aktivitas}
                                 onChange={(e) => handleInputChange(index, 'aktivitas', e.target.value)}
@@ -321,7 +367,7 @@ const CreateBonForm = () => {
                                 </label>
                             )}
                             <input
-                                className="w-full px-4 py-2 border rounded-md"
+                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
                                 type="text"
                                 value={formatRupiah(bonSementara.jumlahBS)}
                                 onChange={(e) => handleInputChange(index, 'jumlahBS', e.target.value)}

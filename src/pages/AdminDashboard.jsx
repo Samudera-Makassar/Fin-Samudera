@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { db } from '../firebaseConfig' // Pastikan db diimpor dari firebaseConfig
 import { doc, getDoc } from 'firebase/firestore'
 import ReimbursementTable from '../components/ReimbursementTable'
+import CreateBsTable from '../components/CreateBsTable'
 import LpjBsTable from '../components/LpjBsTable'
 import ReportCard from '../components/ReportCard'
 import Modal from '../components/Modal'
@@ -86,6 +87,7 @@ const AdminDashboard = ({ userUid }) => {
                         </h2>
                         <ReportCard reimbursementCount={reimbursementCount} lpjCount={lpjCount} />
                         <ReimbursementTable reimbursements={data.reimbursements} onCancel={handleCancel} />
+                        <CreateBsTable bonSementara={data.bonSementara} onCancel={handleCancel} />
                         <LpjBsTable lpjBs={data.lpjBs} onCancel={handleCancel} />
                     </div>
                 </div>

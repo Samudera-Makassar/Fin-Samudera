@@ -3,6 +3,7 @@ import { db } from '../firebaseConfig' // Pastikan db diimpor dari firebaseConfi
 import { doc, getDoc } from 'firebase/firestore'
 import ReimbursementTable from '../components/ReimbursementTable'
 import LpjBsTable from '../components/LpjBsTable'
+import CreateBsTable from '../components/CreateBsTable'
 import Modal from '../components/Modal'
 import Layout from './Layout'
 
@@ -81,11 +82,8 @@ const EmployeeDashboard = ({ userUid }) => {
                         <h2 className="text-xl font-medium mb-4">
                             Welcome, <span className="font-bold">{user?.name || 'User'}</span>
                         </h2>
-
-                        {/* Tabel Reimbursement */}
                         <ReimbursementTable reimbursements={data.reimbursements} onCancel={handleCancel} />
-
-                        {/* Tabel LPJ BS */}
+                        <CreateBsTable bonSementara={data.bonSementara} onCancel={handleCancel} />
                         <LpjBsTable lpjBs={data.lpjBs} onCancel={handleCancel} />
                     </div>
                 </div>

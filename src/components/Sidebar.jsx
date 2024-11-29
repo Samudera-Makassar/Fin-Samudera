@@ -117,7 +117,7 @@ const Sidebar = () => {
                                     : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
                             }
                         >
-                            Create Bon Sementara
+                            Ajukan Bon Sementara
                         </NavLink>
                     </li>
                     {(role === 'Reviewer' || role === 'Admin') && (
@@ -130,7 +130,7 @@ const Sidebar = () => {
                                         : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
                                 }
                             >
-                                Cek Laporan
+                                Cek Pengajuan
                             </NavLink>
                         </li>
                     )}
