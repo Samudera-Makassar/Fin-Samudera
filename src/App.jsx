@@ -21,6 +21,8 @@ import ManageUserPage from './pages/ManageUserPage';
 import AddUserPage from './pages/AddUserPage';
 import EditUserPage from './pages/EditUserPage';
 import CreateBon from './pages/CreateBonPage';
+import CreateBsCheckPage from './pages/CreateBsCheckPage';
+import DetailCreateBsPage from './pages/DetailCreateBsPage';
 
 const AppContent = () => {
     const userRole = localStorage.getItem('userRole'); // Ambil role dari localStorage
@@ -43,7 +45,9 @@ const AppContent = () => {
                 <Route path="/reimbursement/:id" element={<DetailReimbursementPage />} />                
                 <Route path="/reimbursement/cek-laporan" element={<RbsCheckPage />} />
 
-                <Route path="/create-bs" element={<CreateBon />} />
+                <Route path="/create-bs/create" element={<CreateBon />} />
+                <Route path="/create-bs/cek-laporan" element={<CreateBsCheckPage />} />
+                <Route path="/create-bs/:id" element={<DetailCreateBsPage />} />
 
                 <Route path="/lpj/umum" element={<LpjUmum />} />
                 <Route path="/lpj/marketing" element={<LpjMarketing />} />

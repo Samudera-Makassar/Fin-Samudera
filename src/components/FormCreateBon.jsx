@@ -10,6 +10,7 @@ const CreateBonForm = () => {
         bankName: '',
         accountNumber: '',
         unit: '',
+        posisi: '',
         reviewer1: [],
         reviewer2: []
     })
@@ -57,6 +58,7 @@ const CreateBonForm = () => {
                         bankName: data.bankName || '',
                         accountNumber: data.accountNumber || '',
                         unit: data.unit || '',
+                        posisi: data.posisi || '',
                         department: data.department || [],
                         reviewer1: data.reviewer1 || [],
                         reviewer2: data.reviewer2 || []
@@ -175,6 +177,7 @@ const CreateBonForm = () => {
                     bankName: userData.bankName,
                     accountNumber: userData.accountNumber,
                     unit: userData.unit,
+                    posisi: userData.posisi,
                     department: userData.department,
                     reviewer1: userData.reviewer1,
                     reviewer2: userData.reviewer2
@@ -334,7 +337,7 @@ const CreateBonForm = () => {
                         className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
                         onClick={handleSubmit}
                     >
-                        Create
+                        Ajukan
                     </button>
                 </div>
             </div>

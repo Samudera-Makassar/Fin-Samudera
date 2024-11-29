@@ -110,7 +110,7 @@ const Sidebar = () => {
                         </span>
                     <li>
                         <NavLink
-                            to="/create-bs"
+                            to="/create-bs/create"
                             className={({ isActive }) =>
                                 isActive
                                     ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
@@ -120,6 +120,20 @@ const Sidebar = () => {
                             Create Bon Sementara
                         </NavLink>
                     </li>
+                    {(role === 'Reviewer' || role === 'Admin') && (
+                        <li>
+                            <NavLink
+                                to="/create-bs/cek-laporan"
+                                className={({ isActive }) =>
+                                    isActive
+                                        ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
+                                        : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
+                                }
+                            >
+                                Cek Laporan
+                            </NavLink>
+                        </li>
+                    )}
                     
                         <hr className="border-red-500" />
                         {/* Menu LPJ Bon Sementara */}

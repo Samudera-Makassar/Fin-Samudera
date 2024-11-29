@@ -126,7 +126,7 @@ const CreateBsTable = ({ onCancel }) => {
                                             {item.displayId}
                                         </Link>
                                     </td>
-                                    <td className="px-4 py-2 border">{item.bonSementara[0].jumlahBS.toLocaleString('id-ID')}</td>
+                                    <td className="px-4 py-2 border">{item.bonSementara[0].jumlahBS}</td>
                                     <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
                                     <td className="py-2 border text-center">
                                         <span
