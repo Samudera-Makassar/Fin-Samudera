@@ -1,12 +1,82 @@
-import React from 'react';
-import EmptyState from '../assets/images/EmptyState.png';
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
+import { db } from '../firebaseConfig' 
+import EmptyState from '../assets/images/EmptyState.png'
 
-const ReimbursementCheck = ({ data = { 
-    reimbursements: [
-            { id: 'RBS-BBM-01', nama: 'Andi Ichwan', jenis: 'BBM', tanggal: '10-Okt-2024', jumlah: 'Rp.123.000' },
-            { id: 'RBS-MED-02', nama: 'Andi Ichwan', jenis: 'Medical', tanggal: '10-Okt-2024', jumlah: 'Rp.123.000' },
-        ] 
-    }, onApprove, onReject }) => {
+const ReimbursementCheck = ({ onApprove, onReject }) => {
+    const [data, setData] = useState({ reimbursements: [] })
+
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 5 // Jumlah item per halaman
+
+    useEffect(() => {
+        const fetchUserAndReimbursements = async () => {
+            try {
+                const uid = localStorage.getItem('userUid') // Ambil UID dari localStorage
+
+                if (!uid) {
+                    console.error('UID tidak ditemukan di localStorage')                    
+                    return
+                }
+
+                // Fetch data user berdasarkan UID
+                const userDocRef = doc(db, 'users', uid)
+                const userDoc = await getDoc(userDocRef)               
+
+                // Query reimbursement berdasarkan UID user
+                const q = query(
+                    collection(db, 'reimbursement'),
+                    where('status', '==', 'Diproses'),
+                    where('user.reviewer1', 'array-contains', uid) || where('user.reviewer2', 'array-contains', uid) // Filter data reimbursement berdasarkan UID reviewer
+                )
+
+                const querySnapshot = await getDocs(q)
+                const reimbursements = querySnapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    displayId: doc.data().displayId,
+                    ...doc.data(),
+                }))
+
+                setData({ reimbursements })
+            } catch (error) {
+                console.error('Error fetching user or reimbursements data:', error)
+            }
+        }
+
+        fetchUserAndReimbursements()
+    }, [])
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A' // Handle null/undefined
+        const date = new Date(dateString)
+        return new Intl.DateTimeFormat('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+        }).format(date)
+    }
+
+    // Menghitung total halaman
+    const totalPages = Math.ceil(data.reimbursements.length / itemsPerPage)
+
+    // Mendapatkan data pengguna untuk halaman saat ini
+    const currentReimbursements = data.reimbursements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+    // Fungsi untuk berpindah ke halaman berikutnya
+    const nextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
+
+    // Fungsi untuk berpindah ke halaman sebelumnya
+    const prevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
+
     return (
         <div className="container mx-auto py-8">
             <h2 className="text-xl font-medium mb-4">
@@ -31,9 +101,10 @@ const ReimbursementCheck = ({ data = {
                         <table className="min-w-full bg-white border rounded-lg text-sm">
                             <thead>
                                 <tr className="bg-gray-100 text-left">
+                                    <th className="px-2 py-2 border text-center w-auto">No.</th>
                                     <th className="px-4 py-2 border">ID</th>
                                     <th className="px-4 py-2 border">Nama</th>
-                                    <th className="px-4 py-2 border">Jenis Reimbursement</th>
+                                    <th className="px-4 py-2 border">Kategori Reimbursement</th>
                                     <th className="px-4 py-2 border">Tanggal Pengajuan</th>
                                     <th className="px-4 py-2 border">Jumlah</th>
                                     <th className="py-2 border text-center">Aksi</th>
@@ -42,11 +113,21 @@ const ReimbursementCheck = ({ data = {
                             <tbody>
                                 {data.reimbursements.map((item, index) => (
                                     <tr key={index}>
-                                        <td className="px-4 py-2 border">{item.id}</td>
-                                        <td className="px-4 py-2 border">{item.nama}</td>
-                                        <td className="px-4 py-2 border">{item.jenis}</td>
-                                        <td className="px-4 py-2 border">{item.tanggal}</td>
-                                        <td className="px-4 py-2 border">{item.jumlah}</td>                            
+                                        <td className="px-2 py-2 border text-center w-auto">
+                                            {index + 1 + (currentPage - 1) * itemsPerPage}
+                                        </td>    
+                                            <td className="px-4 py-2 border">
+                                            <Link 
+                                                to={`/reimbursement/${item.id}`}
+                                                className="text-black hover:text-gray-700 hover:underline cursor-pointer"
+                                            >
+                                                {item.displayId}
+                                            </Link>                                                                            
+                                        </td>
+                                        <td className="px-4 py-2 border">{item.user.nama}</td>
+                                        <td className="px-4 py-2 border">{item.kategori}</td>
+                                        <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
+                                        <td className="px-4 py-2 border">Rp{item.totalBiaya.toLocaleString('id-ID')}</td>
                                         <td className="py-2 border text-center">
                                             <div className="flex justify-center space-x-4">                        
                                                 <button 
@@ -98,7 +179,7 @@ const ReimbursementCheck = ({ data = {
                 )}
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default ReimbursementCheck;
+export default ReimbursementCheck
