@@ -64,7 +64,7 @@ const RbsOperasionalForm = () => {
         const month = today.getMonth()
         const year = today.getFullYear()
 
-        const formattedDate = `${year}-${month}-${day}`
+        const formattedDate = today.toISOString().split('T')[0]
         
         const uid = localStorage.getItem('userUid')
 
