@@ -261,6 +261,8 @@ const FormLpjUmum = () => {
                 displayId: displayId,
                 kategori: 'GA/Umum',
                 status: 'Diproses',
+                approvedByReviewer1: false,
+                approvedByReviewer2: false,
                 noBs: noBs,
                 jumlahBs: jumlahBs,                                             
                 ...calculatedCosts,

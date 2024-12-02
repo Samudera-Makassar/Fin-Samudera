@@ -277,6 +277,8 @@ const RbsUmumForm = () => {
                 displayId: displayId,
                 kategori: 'GA/Umum',
                 status: 'Diproses',
+                approvedByReviewer1: false,
+                approvedByReviewer2: false,
                 tanggalPengajuan: todayDate,
                 totalBiaya: totalBiaya,
                 statusHistory: [

@@ -231,6 +231,8 @@ const CreateBonForm = () => {
                 displayId: displayId,
                 tanggalPengajuan: todayDate,
                 status: 'Diproses',
+                approvedByReviewer1: false,
+                approvedByReviewer2: false,
                 statusHistory: [
                     {
                         status: 'Diproses',

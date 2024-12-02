@@ -231,6 +231,8 @@ const RbsMedicalForm = () => {
                 displayId: displayId,
                 kategori: 'Medical',
                 status: 'Diproses',
+                approvedByReviewer1: false,
+                approvedByReviewer2: false,
                 tanggalPengajuan: todayDate,
                 totalBiaya: totalBiaya,
                 statusHistory: [

@@ -261,6 +261,8 @@ const FormLpjMarketing = () => {
                 displayId: displayId,
                 kategori: 'Marketing/Operasional',
                 status: 'Diproses',
+                approvedByReviewer1: false,
+                approvedByReviewer2: false,
                 noBs: noBs,
                 jumlahBs: jumlahBs,                                             
                 ...calculatedCosts,

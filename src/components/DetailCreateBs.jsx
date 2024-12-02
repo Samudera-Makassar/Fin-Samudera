@@ -128,7 +128,7 @@ const DetailCreateBs = () => {
                                     <td className="px-4 py-2 border">{item.aktivitas}</td>
                                     <td className="px-4 py-2 border">{item.jumlahBS}</td>
                                     <td className="px-4 py-2 border">
-                                        {formatDate(item.tanggalPengajuan) ?? 'N/A'}
+                                        {formatDate(bonSementaraDetail.tanggalPengajuan) ?? 'N/A'}
                                     </td>
                                 </tr>
                             ))}
