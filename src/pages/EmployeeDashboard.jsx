@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { db } from '../firebaseConfig' // Pastikan db diimpor dari firebaseConfig
 import { doc, getDoc } from 'firebase/firestore'
 import ReimbursementTable from '../components/ReimbursementTable'
+import CreateBsTable from '../components/CreateBsTable'
 import LpjBsTable from '../components/LpjBsTable'
 import CreateBsTable from '../components/CreateBsTable'
 import Modal from '../components/Modal'
@@ -78,7 +79,7 @@ const EmployeeDashboard = ({ userUid }) => {
         <div>
             <Layout>
                 <div className="container mx-auto py-8">
-                    <div className="w-full">
+                <div className="w-full">
                         <h2 className="text-xl font-medium mb-4">
                             Welcome, <span className="font-bold">{user?.name || 'User'}</span>
                         </h2>

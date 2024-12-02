@@ -40,8 +40,7 @@ const CreateBonForm = () => {
         const month = today.getMonth()
         const year = today.getFullYear()
 
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
-        const formattedDate = `${day}-${monthNames[month]}-${year}`
+        const formattedDate = `${year}-${month}-${day}`
 
         const uid = localStorage.getItem('userUid')
 
@@ -80,6 +79,16 @@ const CreateBonForm = () => {
     ]
 
     const [selectedKategori, setSelectedKategori] = useState(null)
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A'
+        const date = new Date(dateString)
+        return new Intl.DateTimeFormat('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }).format(date)
+    }
 
     const handleKategoriChange = (selectedOption) => {
         setSelectedKategori(selectedOption)
@@ -190,8 +199,8 @@ const CreateBonForm = () => {
         try {
             if (
                 !userData.nama ||
-                bonSementara.some((r) => !r.nomorBS || !r.jumlahBS || !r.kategori || !r.aktivitas) ||
-                !selectedKategori
+                !selectedKategori ||
+                bonSementara.some((r) => !r.nomorBS || !r.jumlahBS || !r.kategori || !r.aktivitas) 
             ) {
                 alert('Mohon lengkapi semua field yang wajib diisi!')
                 return
@@ -306,9 +315,9 @@ const CreateBonForm = () => {
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                         <input
-                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"                            
                             type="text"
-                            value={todayDate}
+                            value={formatDate(todayDate)}
                             disabled
                         />
                     </div>
@@ -325,7 +334,7 @@ const CreateBonForm = () => {
                             styles={customStyles}
                             isSearchable={true}
                         />
-                    </div>
+                    </div>              
                 </div>
 
                 <hr className="border-gray-300 my-6" />
