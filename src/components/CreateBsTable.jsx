@@ -105,6 +105,7 @@ const CreateBsTable = ({ onCancel }) => {
                             <tr className="bg-gray-100 text-left">
                                 <th className="px-2 py-2 border text-center w-auto">No.</th>
                                 <th className="px-4 py-2 border">Nomor BS</th>
+                                <th className="px-4 py-2 border">Kategori BS</th>
                                 <th className="px-4 py-2 border">Jumlah BS</th>
                                 <th className="px-4 py-2 border">Tanggal Pengajuan</th>
                                 <th className="py-2 border text-center">Status</th>
@@ -126,6 +127,7 @@ const CreateBsTable = ({ onCancel }) => {
                                             {item.displayId}
                                         </Link>
                                     </td>
+                                    <td className="px-4 py-2 border">{item.bonSementara[0].kategori}</td>
                                     <td className="px-4 py-2 border">{item.bonSementara[0].jumlahBS}</td>
                                     <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
                                     <td className="py-2 border text-center">

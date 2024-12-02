@@ -64,9 +64,8 @@ const RbsOperasionalForm = () => {
         const month = today.getMonth()
         const year = today.getFullYear()
 
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
-        const formattedDate = `${day}-${monthNames[month]}-${year}`
-
+        const formattedDate = `${year}-${month}-${day}`
+        
         const uid = localStorage.getItem('userUid')
 
         setTodayDate(formattedDate)
@@ -106,6 +105,16 @@ const RbsOperasionalForm = () => {
 
         fetchUserData()
     }, [])
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A'
+        const date = new Date(dateString)
+        return new Intl.DateTimeFormat('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+        }).format(date)
+    }
 
     const resetForm = () => {
         // Reset reimbursements to initial state with one empty form
@@ -393,7 +402,7 @@ const RbsOperasionalForm = () => {
                         <input
                             className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                             type="text"
-                            value={todayDate}
+                            value={formatDate(todayDate)}
                             disabled
                         />
                     </div>
