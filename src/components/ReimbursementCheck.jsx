@@ -39,13 +39,13 @@ const ReimbursementCheck = () => {
                 }
     
                 // Fetch data user berdasarkan UID
-                const userDocRef = doc(db, 'users', uid)
-                const userDoc = await getDoc(userDocRef)
+                // const userDocRef = doc(db, 'users', uid)
+                // const userDoc = await getDoc(userDocRef)
     
                 // Query reimbursement berdasarkan UID user dan role
                 let reimbursements = []
-                if (userRole === 'Admin') {
-                    // Jika Admin, tampilkan semua reimbursement yang diproses
+                if (userRole === 'Super Admin') {
+                    // Jika Super Admin, tampilkan semua reimbursement yang diproses
                     const q = query(
                         collection(db, 'reimbursement'),
                         where('status', '==', 'Diproses')
@@ -69,7 +69,7 @@ const ReimbursementCheck = () => {
                         collection(db, 'reimbursement'),
                         where('status', '==', 'Diproses'),
                         where('user.reviewer2', 'array-contains', uid),
-                        where('approvedByReviewer1', '==', true)
+                        where('approvedByReviewer1Status', 'in', ['reviewer', 'superadmin'])
                     )
 
                     // Gabungkan hasil dari kedua query
@@ -114,36 +114,69 @@ const ReimbursementCheck = () => {
             onConfirm: async () => {
                 try {
                     const uid = localStorage.getItem('userUid')
+                    const userRole = localStorage.getItem('userRole')
                     const reimbursementRef = doc(db, 'reimbursement', item.id)
         
-                    // Check if user is reviewer1 or reviewer2
+                    // Cek apakah UID termasuk dalam super admin, reviewer1, atau reviewer2
+                    const isSuperAdmin = userRole === 'Super Admin'
                     const isReviewer1 = item.user.reviewer1.includes(uid)
                     const isReviewer2 = item.user.reviewer2.includes(uid)
         
                     let updateData = {}
         
-                    if (isReviewer1) {
-                        // If reviewer1, set approvedByReviewer1 to true
-                        updateData = {
-                            approvedByReviewer1: true,                    
-                            statusHistory: arrayUnion({
-                                status: "Disetujui oleh Reviewer 1",
-                                timestamp: new Date().toISOString(),
-                                actor: uid,
-                            })
+                    if (isSuperAdmin) {
+                        // Super Admin approval logic
+                        if (!item.approvedByReviewer1Status) {
+                            // If not approved by anyone, Super Admin approves as first approver
+                            updateData = {
+                                approvedByReviewer1Status: "superadmin", // New field to track approval type
+                                approvedBySuperAdmin: true,
+                                statusHistory: arrayUnion({
+                                    status: "Disetujui oleh Super Admin (Pengganti Reviewer 1)",
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        } else if (item.approvedByReviewer1Status === "superadmin" || item.approvedByReviewer1Status === "reviewer") {
+                            // If already approved by Reviewer 1 or Super Admin, finalize the approval
+                            updateData = {
+                                status: 'Disetujui',
+                                approvedByReviewer2Status: "superadmin",                                 
+                                approvedBySuperAdmin: true,
+                                statusHistory: arrayUnion({
+                                    status: "Disetujui oleh Super Admin (Pengganti Reviewer 2)",
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
                         }
-                    } 
+                    } else {
+                        if (isReviewer1) {
+                            // If reviewer1, set approvedByReviewer1 to true
+                            updateData = {
+                                approvedByReviewer1: true,
+                                approvedByReviewer1Status: "reviewer", // Mark as approved by actual reviewer
+                                statusHistory: arrayUnion({
+                                    status: "Disetujui oleh Reviewer 1",
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        } 
                     
-                    if (isReviewer2 && item.approvedByReviewer1) {
-                        // If reviewer2 and reviewer1 has approved, set status to 'Disetujui'
-                        updateData = {
-                            status: 'Disetujui',
-                            approvedByReviewer2: true,                    
-                            statusHistory: arrayUnion({
-                                status: "Disetujui oleh Reviewer 2",
-                                timestamp: new Date().toISOString(),
-                                actor: uid,
-                            })
+                        if (isReviewer2 && 
+                            (item.approvedByReviewer1Status === "reviewer" || item.approvedByReviewer1Status === "superadmin")) {
+                            // If reviewer2 and (Reviewer1 or SuperAdmin has approved), set status to 'Disetujui'
+                            updateData = {
+                                status: 'Disetujui',
+                                approvedByReviewer2: true,
+                                approvedByReviewer2Status: "reviewer",                     
+                                statusHistory: arrayUnion({
+                                    status: "Disetujui oleh Reviewer 2",
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
                         }
                     }
         
@@ -173,36 +206,78 @@ const ReimbursementCheck = () => {
             onConfirm: async () => {
                 try {
                     const uid = localStorage.getItem('userUid')
+                    const userRole = localStorage.getItem('userRole')  
+                    const reimbursementRef = doc(db, 'reimbursement', item.id)                  
 
-                    // Cek apakah UID termasuk dalam reviewer1 atau reviewer2
+                    // Cek apakah UID termasuk dalam super admin, reviewer1, atau reviewer2
+                    const isSuperAdmin = userRole === 'Super Admin'
                     const isReviewer1 = item.user.reviewer1.includes(uid)
                     const isReviewer2 = item.user.reviewer2.includes(uid)
 
-                    let reviewerRole = ''
-                    if (isReviewer1) {
-                        reviewerRole = 'Reviewer 1'
-                    } else if (isReviewer2) {
-                        reviewerRole = 'Reviewer 2'
-                    } else {
-                        throw new Error('Anda tidak memiliki akses untuk menolak reimbursement ini.')
-                    }
+                    let updateData = {}
                     
-                    // Update document to set status to 'Ditolak'
-                    const reimbursementRef = doc(db, 'reimbursement', item.id)
-                    await updateDoc(reimbursementRef, {
-                        status: 'Ditolak',                        
-                        statusHistory: arrayUnion({
-                            status: `Ditolak oleh ${reviewerRole}`,
-                            timestamp: new Date().toISOString(),
-                            actor: uid,
-                        })
-                    })
-
+                    if (isSuperAdmin) {
+                        // Super Admin rejection logic
+                        if (!item.approvedByReviewer1Status) {
+                            // If not approved by anyone, Super Admin rejects as first reviewer                            
+                            updateData = {
+                                status: 'Ditolak',
+                                approvedByReviewer1Status: "superadmin",
+                                rejectedBySuperAdmin: true,
+                                statusHistory: arrayUnion({
+                                    status: 'Ditolak oleh Super Admin (Pengganti Reviewer 1)',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        } else if (item.approvedByReviewer1Status === "superadmin" || item.approvedByReviewer1Status === "reviewer") {
+                            // If already approved by Reviewer 1 or Super Admin, reject at final stage                            
+                            updateData = {
+                                status: 'Ditolak',
+                                approvedByReviewer2Status: "superadmin",  
+                                rejectedBySuperAdmin: true,
+                                statusHistory: arrayUnion({
+                                    status: 'Ditolak oleh Super Admin (Pengganti Reviewer 2)',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        }
+                    } else {
+                        // Existing reviewer rejection logic
+                        if (isReviewer1) {                            
+                            updateData = {
+                                status: 'Ditolak',
+                                approvedByReviewer1Status: "reviewer",
+                                statusHistory: arrayUnion({
+                                    status: 'Ditolak oleh Reviewer 1',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        } else if (isReviewer2 && 
+                                   (item.approvedByReviewer1Status === "reviewer" || item.approvedByReviewer1Status === "superadmin")) {                            
+                            updateData = {
+                                status: 'Ditolak',
+                                statusHistory: arrayUnion({
+                                    status: 'Ditolak oleh Reviewer 2',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        } else {
+                            throw new Error('Anda tidak memiliki akses untuk menolak reimbursement ini.')
+                        }
+                    }
+    
+                    // Update the document
+                    await updateDoc(reimbursementRef, updateData)
+    
                     // Remove the rejected item from the list
                     setData(prevData => ({
                         reimbursements: prevData.reimbursements.filter(r => r.id !== item.id)
                     }))
-
+    
                     toast.success('Reimbursement berhasil ditolak')
                     closeModal()
                 } catch (error) {

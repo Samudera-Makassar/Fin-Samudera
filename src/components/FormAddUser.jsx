@@ -4,6 +4,8 @@ import { db } from '../firebaseConfig'
 import { collection, doc, setDoc, getDocs, query, where, or } from 'firebase/firestore'
 import Select from 'react-select'
 import { v4 as uuidv4 } from 'uuid'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const AddUserForm = () => {
     const navigate = useNavigate()
@@ -62,9 +64,15 @@ const AddUserForm = () => {
     }
 
     const handleSelectChange = (selectedOption, field) => {
-        if (field === 'role' && selectedOption?.value === 'admin') {
+        if (field === 'role' && selectedOption?.value === 'Super Admin') {
             setFormData({
                 ...formData,
+                role: 'Super Admin',
+                unit: '', 
+                posisi: '', 
+                department: [], 
+                bankName: '', 
+                accountNumber: '', 
                 reviewer1: [],
                 reviewer2: [],
                 [field]: selectedOption.value
@@ -99,40 +107,71 @@ const AddUserForm = () => {
         setIsSubmitting(true)
 
         try {
+            // Validasi untuk memastikan tidak ada field yang kosong selain reviewer2
+            let fieldsToValidate = []
+            if (formData.role === 'Super Admin') {
+                // For Super Admin, only validate these fields
+                fieldsToValidate = [
+                    { name: 'nama', label: 'Nama' },
+                    { name: 'email', label: 'Email' },
+                    { name: 'password', label: 'Password' },
+                    { name: 'role', label: 'Role' }
+                ]
+            } else {
+                // For other roles, validate all fields
+                fieldsToValidate = [
+                    { name: 'nama', label: 'Nama' },
+                    { name: 'email', label: 'Email' },
+                    { name: 'password', label: 'Password' },
+                    { name: 'posisi', label: 'Posisi' },
+                    { name: 'unit', label: 'Unit Bisnis' },
+                    { name: 'role', label: 'Role' },
+                    { name: 'department', label: 'Department' },
+                    { name: 'bankName', label: 'Nama Bank' },
+                    { name: 'accountNumber', label: 'Nomor Rekening' },
+                    { name: 'reviewer1', label: 'Reviewer 1' }
+                ]
+            }
+
+            for (let field of fieldsToValidate) {
+                if (!formData[field.name] || (Array.isArray(formData[field.name]) && formData[field.name].length === 0)) {
+                    toast.error(`${field.label} tidak boleh kosong`)
+                    setIsSubmitting(false)
+                    return
+                }
+            }
+
+            // Validasi untuk memastikan reviewer1 dan reviewer2 tidak sama
             if (formData.reviewer1.some((r) => formData.reviewer2.includes(r))) {
-                alert('Reviewer 1 dan Reviewer 2 tidak boleh sama.')
+                toast.error('Reviewer 1 dan Reviewer 2 tidak boleh sama')
                 setIsSubmitting(false)
                 return
             }
 
             const emailExists = await checkEmailExists(formData.email)
             if (emailExists) {
-                alert('Email sudah terdaftar. Gunakan email lain.')
+                toast.error('Email sudah terdaftar. Gunakan email lain')
                 setIsSubmitting(false)
                 return
-            }
-
-            // var id = uid
+            }            
 
             // Menyimpan data pengguna ke Firestore tanpa menambahkan user ke Firebase Auth
-            console.log(formData)
-
             await setDoc(doc(db, 'users', uid), {
                 uid,
                 nama: formData.nama,
                 email: formData.email,
                 password: formData.password,
-                posisi: formData.posisi,
-                unit: formData.unit,
                 role: formData.role,
-                department: formData.department,
-                bankName: formData.bankName,
-                accountNumber: formData.accountNumber,
-                reviewer1: formData.reviewer1,
-                reviewer2: formData.reviewer2
+                posisi: formData.role === 'Super Admin' ? '' : formData.posisi,
+                unit: formData.role === 'Super Admin' ? '' : formData.unit,
+                department: formData.role === 'Super Admin' ? [] : formData.department,
+                bankName: formData.role === 'Super Admin' ? '' : formData.bankName,
+                accountNumber: formData.role === 'Super Admin' ? '' : formData.accountNumber,
+                reviewer1: formData.role === 'Super Admin' ? [] : formData.reviewer1,
+                reviewer2: formData.role === 'Super Admin' ? [] : formData.reviewer2,
             })
 
-            alert('User berhasil ditambahkan.')
+            toast.success('Pengguna berhasil ditambahkan')
 
             // Reset form setelah submit
             setFormData({
@@ -151,7 +190,7 @@ const AddUserForm = () => {
             navigate(-1) // Kembali ke halaman sebelumnya
         } catch (error) {
             console.error('Error adding user:', error)
-            alert('Gagal menambahkan user. Silakan coba lagi.')
+            toast.error('Gagal menambahkan pengguna. Silakan coba lagi')
         } finally {
             setIsSubmitting(false)
         }
@@ -161,7 +200,8 @@ const AddUserForm = () => {
     const roleOptions = [
         { value: 'Employee', label: 'Employee' },
         { value: 'Reviewer', label: 'Reviewer' },
-        { value: 'Admin', label: 'Admin' }
+        { value: 'Admin', label: 'Admin' },
+        { value: 'Super Admin', label: 'Super Admin' }
     ]
 
     // Options unit
@@ -209,8 +249,7 @@ const AddUserForm = () => {
                                 type="text"
                                 name="nama"
                                 value={formData.nama}
-                                onChange={handleChange}
-                                required
+                                onChange={handleChange}                                
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
@@ -225,8 +264,7 @@ const AddUserForm = () => {
                                 classNamePrefix="select"
                                 onChange={(selectedOption) => handleSelectChange(selectedOption, 'role')}
                                 isMulti={false}
-                                isClearable
-                                required
+                                isClearable                                
                             />
                         </div>
                     </div>
@@ -239,30 +277,10 @@ const AddUserForm = () => {
                                 type="email"
                                 name="email"
                                 value={formData.email}
-                                onChange={handleChange}
-                                required
+                                onChange={handleChange}                                
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Unit Bisnis <span className="text-red-500">*</span>
-                            </label>
-                            <div className="relative">
-                                <Select
-                                    name="unit"
-                                    options={unitOptions}
-                                    className="basic-single-select mt-1"
-                                    classNamePrefix="select"
-                                    onChange={(selectedOption) => handleSelectChange(selectedOption, 'unit')}
-                                    isMulti={false}
-                                    isClearable
-                                    required
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-6">
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">
                                 Password <span className="text-red-500">*</span>
@@ -271,56 +289,78 @@ const AddUserForm = () => {
                                 type="text"
                                 name="password"
                                 value={formData.password}
-                                onChange={handleChange}
-                                required
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                            />
-                        </div>
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Nama Bank <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="bankName"
-                                value={formData.bankName}
-                                onChange={handleChange}
-                                required
+                                onChange={handleChange}                                
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-6">
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Department <span className="text-red-500">*</span>
-                            </label>
-                            <Select
-                                isMulti
-                                name="department"
-                                options={departmentOptions}
-                                className="basic-multi-select mt-1"
-                                classNamePrefix="select"
-                                onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'department')}
-                                required
-                            />
-                        </div>
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Nomor Rekening <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="accountNumber"
-                                value={formData.accountNumber}
-                                onChange={handleChange}
-                                required
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                            />
-                        </div>
+                        {formData.role !== 'Super Admin' && (
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Unit Bisnis <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <Select
+                                        name="unit"
+                                        options={unitOptions}
+                                        className="basic-single-select mt-1"
+                                        classNamePrefix="select"
+                                        onChange={(selectedOption) => handleSelectChange(selectedOption, 'unit')}
+                                        isMulti={false}
+                                        isClearable                                    
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        {formData.role !== 'Super Admin' && (
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Nama Bank <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="bankName"
+                                    value={formData.bankName}
+                                    onChange={handleChange}                                
+                                    className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                />
+                            </div>
+                        )}
                     </div>
                     <div className="grid grid-cols-2 gap-6">
-                        {formData.role !== 'admin' && (
+                        {formData.role !== 'Super Admin' && (
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Department <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    isMulti
+                                    name="department"
+                                    options={departmentOptions}
+                                    className="basic-multi-select mt-1"
+                                    classNamePrefix="select"
+                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'department')}                                
+                                />
+                            </div>
+                        )}
+                        {formData.role !== 'Super Admin' && (
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Nomor Rekening <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="accountNumber"
+                                    value={formData.accountNumber}
+                                    onChange={handleChange}                                
+                                    className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                />
+                            </div>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                        {formData.role !== 'Super Admin' && (
                             <div className="mb-2">
                                 <label className="block font-medium text-gray-700">
                                     Reviewer 1 <span className="text-red-500">*</span>
@@ -331,30 +371,30 @@ const AddUserForm = () => {
                                     options={reviewerOptions}
                                     className="basic-multi-select mt-1"
                                     classNamePrefix="select"
-                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer1')}
-                                    required
+                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer1')}                                    
                                 />
                             </div>
                         )}
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Posisi <span className="text-red-500">*</span>
-                            </label>
-                            <div className="relative">
-                                <Select
-                                    name="posisi"
-                                    options={posisiOptions}
-                                    className="basic-single-select mt-1"
-                                    classNamePrefix="select"
-                                    onChange={(selectedOption) => handleSelectChange(selectedOption, 'posisi')}
-                                    isMulti={false}
-                                    isClearable
-                                    required
-                                />
+                        {formData.role !== 'Super Admin' && (
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Posisi <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <Select
+                                        name="posisi"
+                                        options={posisiOptions}
+                                        className="basic-single-select mt-1"
+                                        classNamePrefix="select"
+                                        onChange={(selectedOption) => handleSelectChange(selectedOption, 'posisi')}
+                                        isMulti={false}
+                                        isClearable                                    
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
-                    {formData.role !== 'admin' && (
+                    {formData.role !== 'Super Admin' && (
                         <div className="grid grid-cols-2 gap-6">
                             <div className="mb-2">
                                 <label className="block font-medium text-gray-700">
@@ -390,6 +430,14 @@ const AddUserForm = () => {
                     </div>
                 </form>
             </div>
+
+            <ToastContainer
+                position="top-right"
+                autoClose={4000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+            />
         </div>
     )
 }

@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore'
 import Select from 'react-select'
+import Modal from './Modal'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const ManageUser = () => {
     const [users, setUsers] = useState([])
@@ -16,6 +19,9 @@ const ManageUser = () => {
     })
     const itemsPerPage = 5 // Jumlah item per halaman
     const navigate = useNavigate()
+
+    const [showModal, setShowModal] = useState(false) // State untuk menampilkan modal konfirmasi
+    const [userToDelete, setUserToDelete] = useState(null) // State untuk menyimpan pengguna yang akan dihapus
 
     const filterOptions = {
         posisi: [
@@ -68,28 +74,38 @@ const ManageUser = () => {
         navigate(`/manage-users/edit?uid=${uid}`)
     }
 
-    // Fungsi untuk menghapus data dari Firestore
-    const handleDelete = async (uid) => {
-        const confirmDelete = window.confirm('Apakah Anda yakin ingin menghapus pengguna ini?')
-        if (confirmDelete) {
+    const handleDelete = (uid) => {
+        const userToDelete = users.find((user) => user.uid === uid)
+        setUserToDelete(userToDelete)        
+        setShowModal(true) // Tampilkan modal konfirmasi
+    }
+
+    const confirmDelete = async () => {
+        if (userToDelete) {
             try {
                 // Mencari dokumen berdasarkan uid
                 const querySnapshot = await getDocs(collection(db, 'users'))
-                const userDoc = querySnapshot.docs.find((doc) => doc.data().uid === uid)
+                const userDoc = querySnapshot.docs.find((doc) => doc.data().uid === userToDelete.uid)
 
                 if (userDoc) {
                     // Menghapus dokumen berdasarkan ID dokumen yang ditemukan
                     await deleteDoc(doc(db, 'users', userDoc.id))
-                    setUsers(users.filter((user) => user.uid !== uid))
-                    alert('Pengguna berhasil dihapus.')
+                    setUsers(users.filter((user) => user.uid !== userToDelete.uid))
+                    toast.success('Pengguna berhasil dihapus')
+                    setShowModal(false) // Menutup modal setelah berhasil menghapus
                 } else {
-                    alert('Pengguna tidak ditemukan.')
+                    toast.error('Pengguna tidak ditemukan.')
                 }
             } catch (error) {
                 console.error('Error deleting user:', error)
-                alert('Gagal menghapus pengguna.')
+                toast.error('Gagal menghapus pengguna')
+                setShowModal(false) // Menutup modal jika gagal
             }
         }
+    }
+
+    const cancelDelete = () => {
+        setShowModal(false) // Menutup modal jika dibatalkan
     }
 
     // Fungsi untuk menangani input pencarian
@@ -129,8 +145,9 @@ const ManageUser = () => {
             }
             return user[field] === selectedOption.value
         })
-
         return matchesSearch && matchesFilters
+        // // Menyaring pengguna dengan role 'Super Admin' agar tidak ditampilkan
+        // return matchesSearch && matchesFilters && user.role !== 'Super Admin'
     })
 
     // Menghitung total halaman
@@ -351,6 +368,22 @@ const ManageUser = () => {
                     </button>
                 </div>
             </div>
+
+            <Modal
+                showModal={showModal}
+                title="Konfirmasi Hapus Pengguna"
+                message={`Apakah Anda yakin ingin menghapus pengguna ${userToDelete?.nama}?`}
+                onClose={cancelDelete}
+                onConfirm={confirmDelete}
+            />
+
+            <ToastContainer
+                position="top-right"
+                autoClose={4000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+            />
         </div>
     )
 }

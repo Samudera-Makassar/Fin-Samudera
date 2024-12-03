@@ -57,6 +57,7 @@ const LoginPage = () => {
             if (role === 'Admin') navigate('/dashboard/admin');
             else if (role === 'Reviewer') navigate('/dashboard/reviewer');
             else if (role === 'Employee') navigate('/dashboard/employee');
+            else if (role === 'Super Admin') navigate('/manage-users');
             else setError('Role tidak dikenali. Hubungi administrator.');
         } catch (err) {
             console.error('Login error:', err);
