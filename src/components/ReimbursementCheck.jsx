@@ -38,10 +38,6 @@ const ReimbursementCheck = () => {
                     return
                 }
     
-                // Fetch data user berdasarkan UID
-                // const userDocRef = doc(db, 'users', uid)
-                // const userDoc = await getDoc(userDocRef)
-    
                 // Query reimbursement berdasarkan UID user dan role
                 let reimbursements = []
                 if (userRole === 'Super Admin') {

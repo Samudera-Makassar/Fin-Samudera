@@ -1,43 +1,98 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
-import { db } from '../firebaseConfig'
+import { collection, query, where, getDocs, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { db } from '../firebaseConfig' 
+import Modal from './Modal'
 import EmptyState from '../assets/images/EmptyState.png'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
-const CreateBsCheck = ({ onApprove, onReject }) => {
+const CreateBsCheck = () => {
     const [data, setData] = useState({ bonSementara: [] })
 
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5 // Jumlah item per halaman
 
+    const [showModal, setShowModal] = useState(false)
+    const [modalProps, setModalProps] = useState({})
+
+    // Fungsi untuk membuka modal
+    const openModal = ({ title, message, onConfirm }) => {
+        setModalProps({ title, message, onConfirm })
+        setShowModal(true)
+    }
+
+    // Fungsi untuk menutup modal
+    const closeModal = () => {
+        setShowModal(false)
+    }
+
     useEffect(() => {
         const fetchUserAndBonSementara = async () => {
             try {
                 const uid = localStorage.getItem('userUid') // Ambil UID dari localStorage
+                const userRole = localStorage.getItem('userRole')
 
                 if (!uid) {
                     console.error('UID tidak ditemukan di localStorage')
                     return
                 }
 
-                // Fetch data user berdasarkan UID
-                const userDocRef = doc(db, 'users', uid)
-                const userDoc = await getDoc(userDocRef)
+                // Query bon sementara berdasarkan UID user dan role
+                let bonSementara = []
+                if (userRole === 'Super Admin') {
+                    // Jika Super Admin, tampilkan semua bon sementara yang diproses
+                    const q = query(
+                        collection(db, 'bonSementara'),
+                        where('status', '==', 'Diproses')
+                    )
+                    const querySnapshot = await getDocs(q)
+                    bonSementara = querySnapshot.docs.map((doc) => ({
+                        id: doc.id,
+                        displayId: doc.data().displayId,
+                        ...doc.data(),
+                    }))
+                } else {
+                    // Untuk reviewer
+                    const q1 = query(
+                        collection(db, 'bonSementara'),
+                        where('status', '==', 'Diproses'),
+                        where('user.reviewer1', 'array-contains', uid)                                      
+                    )
 
-                // Query reimbursement berdasarkan UID user
-                const q = query(
-                    collection(db, 'bonSementara'),
-                    where('status', '==', 'Diproses'),
-                    where('user.reviewer1', 'array-contains', uid) || where('user.reviewer2', 'array-contains', uid) // Filter data reimbursement berdasarkan UID reviewer
-                )
+                    // Query tambahan untuk reviewer2 yang memerlukan approval reviewer1
+                    const q2 = query(
+                        collection(db, 'bonSementara'),
+                        where('status', '==', 'Diproses'),
+                        where('user.reviewer2', 'array-contains', uid),
+                        where('approvedByReviewer1Status', 'in', ['reviewer', 'superadmin'])
+                    )
 
-                const querySnapshot = await getDocs(q)
-                const bonSementara = querySnapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    displayId: doc.data().displayId,
-                    ...doc.data()
-                }))
+                    // Gabungkan hasil dari kedua query
+                    const [snapshot1, snapshot2] = await Promise.all([
+                        getDocs(q1),
+                        getDocs(q2)
+                    ])
 
+                    bonSementara = [
+                        ...snapshot1.docs.map((doc) => ({
+                            id: doc.id,
+                            displayId: doc.data().displayId,
+                            ...doc.data(),
+                        })),
+                        ...snapshot2.docs.map((doc) => ({
+                            id: doc.id,
+                            displayId: doc.data().displayId,
+                            ...doc.data(),
+                        }))
+                    ]
+    
+                    // Hapus duplikasi jika ada
+                    bonSementara = Array.from(
+                        new Map(bonSementara.map(item => [item.id, item]))
+                        .values()
+                    )                    
+                }
                 setData({ bonSementara })
             } catch (error) {
                 console.error('Error fetching user or bon sementara data:', error)
@@ -47,13 +102,195 @@ const CreateBsCheck = ({ onApprove, onReject }) => {
         fetchUserAndBonSementara()
     }, [])
 
+    // Handle Approve
+    const handleApprove = (item) => {
+        openModal ({
+            title: 'Konfirmasi Approve',
+            message: `Apakah Anda yakin ingin menyetujui bon sementara dengan ID ${item.displayId}?`,
+            onConfirm: async () => {
+                try {
+                    const uid = localStorage.getItem('userUid')
+                    const userRole = localStorage.getItem('userRole')
+                    const bonSementaraRef = doc(db, 'bonSementara', item.id)
+        
+                    // Cek apakah UID termasuk dalam super admin, reviewer1, atau reviewer2
+                    const isSuperAdmin = userRole === 'Super Admin'
+                    const isReviewer1 = item.user.reviewer1.includes(uid)
+                    const isReviewer2 = item.user.reviewer2.includes(uid)
+        
+                    let updateData = {}
+        
+                    if (isSuperAdmin) {
+                        // Super Admin approval logic
+                        if (!item.approvedByReviewer1Status) {
+                            // If not approved by anyone, Super Admin approves as first approver
+                            updateData = {
+                                approvedByReviewer1Status: "superadmin", // New field to track approval type
+                                approvedBySuperAdmin: true,
+                                statusHistory: arrayUnion({
+                                    status: "Disetujui oleh Super Admin (Pengganti Reviewer 1)",
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        } else if (item.approvedByReviewer1Status === "superadmin" || item.approvedByReviewer1Status === "reviewer") {
+                            // If already approved by Reviewer 1 or Super Admin, finalize the approval
+                            updateData = {
+                                status: 'Disetujui',
+                                approvedByReviewer2Status: "superadmin",                                 
+                                approvedBySuperAdmin: true,
+                                statusHistory: arrayUnion({
+                                    status: "Disetujui oleh Super Admin (Pengganti Reviewer 2)",
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        }
+                    } else {
+                        if (isReviewer1) {
+                            // If reviewer1, set approvedByReviewer1 to true
+                            updateData = {
+                                approvedByReviewer1: true,
+                                approvedByReviewer1Status: "reviewer", // Mark as approved by actual reviewer
+                                statusHistory: arrayUnion({
+                                    status: "Disetujui oleh Reviewer 1",
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        } 
+                    
+                        if (isReviewer2 && 
+                            (item.approvedByReviewer1Status === "reviewer" || item.approvedByReviewer1Status === "superadmin")) {
+                            // If reviewer2 and (Reviewer1 or SuperAdmin has approved), set status to 'Disetujui'
+                            updateData = {
+                                status: 'Disetujui',
+                                approvedByReviewer2: true,
+                                approvedByReviewer2Status: "reviewer",                     
+                                statusHistory: arrayUnion({
+                                    status: "Disetujui oleh Reviewer 2",
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        }
+                    }
+        
+                    // Update the document
+                    await updateDoc(bonSementaraRef, updateData)
+        
+                    // Remove the approved item from the list
+                    setData(prevData => ({
+                        bonSementara: prevData.bonSementara.filter(r => r.id !== item.id)
+                    }))
+        
+                    toast.success('Bon Sementara berhasil disetujui')
+                    closeModal()
+                } catch (error) {
+                    console.error('Error approving Bon Sementara:', error)
+                    toast.error('Gagal menyetujui Bon Sementara')
+                }
+            }
+        })
+    }
+
+    // Handle Reject
+    const handleReject = (item) => {
+        openModal ({
+            title: 'Konfirmasi Reject',
+            message: `Apakah Anda yakin ingin menolak bon sementara dengan ID ${item.displayId}?`,
+            onConfirm: async () => {
+                try {
+                    const uid = localStorage.getItem('userUid')
+                    const userRole = localStorage.getItem('userRole')  
+                    const bonSementaraRef = doc(db, 'bonSementara', item.id)                  
+
+                    // Cek apakah UID termasuk dalam super admin, reviewer1, atau reviewer2
+                    const isSuperAdmin = userRole === 'Super Admin'
+                    const isReviewer1 = item.user.reviewer1.includes(uid)
+                    const isReviewer2 = item.user.reviewer2.includes(uid)
+
+                    let updateData = {}
+                    
+                    if (isSuperAdmin) {
+                        // Super Admin rejection logic
+                        if (!item.approvedByReviewer1Status) {
+                            // If not approved by anyone, Super Admin rejects as first reviewer                            
+                            updateData = {
+                                status: 'Ditolak',
+                                approvedByReviewer1Status: "superadmin",
+                                rejectedBySuperAdmin: true,
+                                statusHistory: arrayUnion({
+                                    status: 'Ditolak oleh Super Admin (Pengganti Reviewer 1)',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        } else if (item.approvedByReviewer1Status === "superadmin" || item.approvedByReviewer1Status === "reviewer") {
+                            // If already approved by Reviewer 1 or Super Admin, reject at final stage                            
+                            updateData = {
+                                status: 'Ditolak',
+                                approvedByReviewer2Status: "superadmin",  
+                                rejectedBySuperAdmin: true,
+                                statusHistory: arrayUnion({
+                                    status: 'Ditolak oleh Super Admin (Pengganti Reviewer 2)',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        }
+                    } else {
+                        // Existing reviewer rejection logic
+                        if (isReviewer1) {                            
+                            updateData = {
+                                status: 'Ditolak',
+                                approvedByReviewer1Status: "reviewer",
+                                statusHistory: arrayUnion({
+                                    status: 'Ditolak oleh Reviewer 1',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        } else if (isReviewer2 && 
+                                   (item.approvedByReviewer1Status === "reviewer" || item.approvedByReviewer1Status === "superadmin")) {                            
+                            updateData = {
+                                status: 'Ditolak',
+                                statusHistory: arrayUnion({
+                                    status: 'Ditolak oleh Reviewer 2',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid,
+                                })
+                            }
+                        } else {
+                            throw new Error('Anda tidak memiliki akses untuk menolak bon sementara ini.')
+                        }
+                    }
+    
+                    // Update the document
+                    await updateDoc(bonSementaraRef, updateData)
+    
+                    // Remove the rejected item from the list
+                    setData(prevData => ({
+                        bonSementara: prevData.bonSementara.filter(r => r.id !== item.id)
+                    }))
+    
+                    toast.success('Bon semetara berhasil ditolak')
+                    closeModal()
+                } catch (error) {
+                    console.error('Error rejecting bon semetara:', error)
+                    toast.error('Gagal menolak bon semetara')
+                }
+            }
+        })
+    }
+
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A' // Handle null/undefined
         const date = new Date(dateString)
         return new Intl.DateTimeFormat('id-ID', {
             day: 'numeric',
             month: 'long',
-            year: 'numeric'
+            year: 'numeric',
         }).format(date)
     }
 
@@ -134,7 +371,7 @@ const CreateBsCheck = ({ onApprove, onReject }) => {
                                             <div className="flex justify-center space-x-4">
                                                 <button
                                                     className="rounded-full p-1 bg-green-200 hover:bg-green-300 text-green-600 border-[1px] border-green-600"
-                                                    onClick={() => onApprove(item)}
+                                                    onClick={() => handleApprove(item)}
                                                     title="Approve"
                                                 >
                                                     <svg
@@ -154,7 +391,7 @@ const CreateBsCheck = ({ onApprove, onReject }) => {
 
                                                 <button
                                                     className="rounded-full p-1 bg-red-200 hover:bg-red-300 text-red-600 border-[1px] border-red-600"
-                                                    onClick={() => onReject(item)}
+                                                    onClick={() => handleReject(item)}
                                                     title="Reject"
                                                 >
                                                     <svg
@@ -180,6 +417,24 @@ const CreateBsCheck = ({ onApprove, onReject }) => {
                     </div>
                 )}
             </div>
+
+            <Modal
+                showModal={showModal}
+                title={modalProps.title}
+                message={modalProps.message}
+                onClose={closeModal}
+                onConfirm={modalProps.onConfirm}
+                cancelText='Batal'
+                confirmText='Ya'
+            />
+
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+            />
         </div>
     )
 }
