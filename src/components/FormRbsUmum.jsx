@@ -276,14 +276,16 @@ const RbsUmumForm = () => {
                 })),
                 displayId: displayId,
                 kategori: 'GA/Umum',
-                status: 'Diproses',
+                status: 'Diajukan',
                 approvedByReviewer1: false,
                 approvedByReviewer2: false,
+                approvedBySuperAdmin: false,
+                rejectedBySuperAdmin: false,
                 tanggalPengajuan: todayDate,
                 totalBiaya: totalBiaya,
                 statusHistory: [
                     {
-                        status: 'Diproses',
+                        status: 'Diajukan',
                         timestamp: new Date().toISOString(),
                         actor: userData.uid
                     }

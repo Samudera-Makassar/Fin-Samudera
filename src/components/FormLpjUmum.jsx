@@ -260,22 +260,22 @@ const FormLpjUmum = () => {
                 })),
                 displayId: displayId,
                 kategori: 'GA/Umum',
-                status: 'Diproses',
+                status: 'Diajukan',
                 approvedByReviewer1: false,
                 approvedByReviewer2: false,
+                approvedBySuperAdmin: false,
+                rejectedBySuperAdmin: false,
                 noBs: noBs,
                 jumlahBs: jumlahBs,                                             
                 ...calculatedCosts,
                 tanggalPengajuan: todayDate,            
                 statusHistory: [
                     {
-                        status: 'Diproses',
+                        status: 'Diajukan',
                         timestamp: new Date().toISOString(),
                         actor: userData.uid
                     }
-                ],
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
+                ]
             }
 
             // Simpan ke Firestore

@@ -44,7 +44,7 @@ const CreateBsCheck = () => {
                     // Jika Super Admin, tampilkan semua bon sementara yang diproses
                     const q = query(
                         collection(db, 'bonSementara'),
-                        where('status', '==', 'Diproses')
+                        where("status", "in", ["Diproses", "Diajukan"])
                     )
                     const querySnapshot = await getDocs(q)
                     bonSementara = querySnapshot.docs.map((doc) => ({
@@ -56,14 +56,14 @@ const CreateBsCheck = () => {
                     // Untuk reviewer
                     const q1 = query(
                         collection(db, 'bonSementara'),
-                        where('status', '==', 'Diproses'),
+                        where("status", "in", ["Diproses", "Diajukan"]),
                         where('user.reviewer1', 'array-contains', uid)                                      
                     )
 
                     // Query tambahan untuk reviewer2 yang memerlukan approval reviewer1
                     const q2 = query(
                         collection(db, 'bonSementara'),
-                        where('status', '==', 'Diproses'),
+                        where("status", "in", ["Diproses", "Diajukan"]),
                         where('user.reviewer2', 'array-contains', uid),
                         where('approvedByReviewer1Status', 'in', ['reviewer', 'superadmin'])
                     )
@@ -106,7 +106,7 @@ const CreateBsCheck = () => {
     const handleApprove = (item) => {
         openModal ({
             title: 'Konfirmasi Approve',
-            message: `Apakah Anda yakin ingin menyetujui bon sementara dengan ID ${item.displayId}?`,
+            message: `Apakah Anda yakin ingin menyetujui Bon Sementara dengan ID ${item.displayId}?`,
             onConfirm: async () => {
                 try {
                     const uid = localStorage.getItem('userUid')
@@ -125,6 +125,7 @@ const CreateBsCheck = () => {
                         if (!item.approvedByReviewer1Status) {
                             // If not approved by anyone, Super Admin approves as first approver
                             updateData = {
+                                status: 'Diproses',
                                 approvedByReviewer1Status: "superadmin", // New field to track approval type
                                 approvedBySuperAdmin: true,
                                 statusHistory: arrayUnion({
@@ -150,6 +151,7 @@ const CreateBsCheck = () => {
                         if (isReviewer1) {
                             // If reviewer1, set approvedByReviewer1 to true
                             updateData = {
+                                status: 'Diproses',
                                 approvedByReviewer1: true,
                                 approvedByReviewer1Status: "reviewer", // Mark as approved by actual reviewer
                                 statusHistory: arrayUnion({
@@ -198,7 +200,7 @@ const CreateBsCheck = () => {
     const handleReject = (item) => {
         openModal ({
             title: 'Konfirmasi Reject',
-            message: `Apakah Anda yakin ingin menolak bon sementara dengan ID ${item.displayId}?`,
+            message: `Apakah Anda yakin ingin menolak Bon Sementara dengan ID ${item.displayId}?`,
             onConfirm: async () => {
                 try {
                     const uid = localStorage.getItem('userUid')
@@ -251,8 +253,7 @@ const CreateBsCheck = () => {
                                     actor: uid,
                                 })
                             }
-                        } else if (isReviewer2 && 
-                                   (item.approvedByReviewer1Status === "reviewer" || item.approvedByReviewer1Status === "superadmin")) {                            
+                        } else if (isReviewer2 && (item.approvedByReviewer1Status === "reviewer" || item.approvedByReviewer1Status === "superadmin")) {                            
                             updateData = {
                                 status: 'Ditolak',
                                 statusHistory: arrayUnion({
@@ -274,11 +275,11 @@ const CreateBsCheck = () => {
                         bonSementara: prevData.bonSementara.filter(r => r.id !== item.id)
                     }))
     
-                    toast.success('Bon semetara berhasil ditolak')
+                    toast.success('Bon Sementara berhasil ditolak')
                     closeModal()
                 } catch (error) {
-                    console.error('Error rejecting bon semetara:', error)
-                    toast.error('Gagal menolak bon semetara')
+                    console.error('Error rejecting bon sementara:', error)
+                    toast.error('Gagal menolak Bon Sementara')
                 }
             }
         })
@@ -324,7 +325,7 @@ const CreateBsCheck = () => {
                 {data.bonSementara.length === 0 ? (
                     // Jika belum ada data LPJ BS
                     <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                        <h3 className="text-xl font-medium mb-4">Daftar Laporan Menunggu Review/Approve</h3>
+                        <h3 className="text-xl font-medium mb-4">Daftar Bon Sementara Perlu Ditanggapi</h3>
                         <div className="flex justify-center">
                             <figure className="w-44 h-44">
                                 <img
@@ -338,15 +339,17 @@ const CreateBsCheck = () => {
                 ) : (
                     // Jika ada data LPJ BS
                     <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                        <h3 className="text-xl font-medium mb-4">Daftar Pengajuan Menunggu Review/Approve</h3>
+                        <h3 className="text-xl font-medium mb-4">Daftar Bon Sementara Perlu Ditanggapi</h3>
                         <table className="min-w-full bg-white border rounded-lg text-sm">
                             <thead>
                                 <tr className="bg-gray-100 text-left">
                                     <th className="px-2 py-2 border text-center w-auto">No.</th>
                                     <th className="px-4 py-2 border">Nomor BS</th>
                                     <th className="px-4 py-2 border">Nama</th>
-                                    <th className="px-4 py-2 border">Tanggal Pengajuan</th>
+                                    <th className="px-4 py-2 border">Kategori BS</th>
                                     <th className="px-4 py-2 border">Jumlah</th>
+                                    <th className="px-4 py-2 border">Tanggal Pengajuan</th>
+                                    <th className="py-2 border text-center">Status</th>
                                     <th className="py-2 border text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -365,10 +368,24 @@ const CreateBsCheck = () => {
                                             </Link>
                                         </td>
                                         <td className="px-4 py-2 border">{item.user.nama}</td>
-                                        <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
+                                        <td className="px-4 py-2 border">{item.bonSementara[0].kategori}</td>
                                         <td className="px-4 py-2 border">{item.bonSementara[0].jumlahBS}</td>
+                                        <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
                                         <td className="py-2 border text-center">
-                                            <div className="flex justify-center space-x-4">
+                                            <span className={`px-4 py-1 rounded-full text-xs font-medium 
+                                                ${
+                                                    item.status === 'Diajukan' ? 'bg-blue-200 text-blue-800 border-[1px] border-blue-600' : 
+                                                    item.status === 'Disetujui' ? 'bg-green-200 text-green-800 border-[1px] border-green-600' : 
+                                                    item.status === 'Diproses' ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600' : 
+                                                    item.status === 'Ditolak' ? 'bg-red-200 text-red-800 border-[1px] border-red-600' : 
+                                                    'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
+                                                }`}
+                                            >
+                                                {item.status || 'Tidak Diketahui'}
+                                            </span>
+                                        </td>    
+                                        <td className="py-2 border text-center">
+                                            <div className="flex justify-center space-x-2">
                                                 <button
                                                     className="rounded-full p-1 bg-green-200 hover:bg-green-300 text-green-600 border-[1px] border-green-600"
                                                     onClick={() => handleApprove(item)}

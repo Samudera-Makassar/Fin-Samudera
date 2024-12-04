@@ -230,18 +230,18 @@ const CreateBonForm = () => {
                 })),
                 displayId: displayId,
                 tanggalPengajuan: todayDate,
-                status: 'Diproses',
+                status: 'Diajukan',
                 approvedByReviewer1: false,
                 approvedByReviewer2: false,
+                approvedBySuperAdmin: false,
+                rejectedBySuperAdmin: false,
                 statusHistory: [
                     {
-                        status: 'Diproses',
+                        status: 'Diajukan',
                         timestamp: new Date().toISOString(),
                         actor: userData.uid
                     }
-                ],
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
+                ]
             }
 
             // Simpan ke Firestore

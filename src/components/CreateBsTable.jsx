@@ -131,16 +131,13 @@ const CreateBsTable = ({ onCancel }) => {
                                     <td className="px-4 py-2 border">{item.bonSementara[0].jumlahBS}</td>
                                     <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
                                     <td className="py-2 border text-center">
-                                        <span
-                                            className={`px-4 py-1 rounded-full text-xs font-medium 
+                                        <span className={`px-4 py-1 rounded-full text-xs font-medium 
                                             ${
-                                                item.status === 'Disetujui'
-                                                    ? 'bg-green-200 text-green-800 border-[1px] border-green-600'
-                                                    : item.status === 'Diproses'
-                                                    ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600'
-                                                    : item.status === 'Ditolak'
-                                                    ? 'bg-red-200 text-red-800 border-[1px] border-red-600'
-                                                    : 'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
+                                                item.status === 'Diajukan' ? 'bg-blue-200 text-blue-800 border-[1px] border-blue-600' : 
+                                                item.status === 'Disetujui' ? 'bg-green-200 text-green-800 border-[1px] border-green-600' : 
+                                                item.status === 'Diproses' ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600' : 
+                                                item.status === 'Ditolak' ? 'bg-red-200 text-red-800 border-[1px] border-red-600' : 
+                                                'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
                                             }`}
                                         >
                                             {item.status || 'Tidak Diketahui'}
