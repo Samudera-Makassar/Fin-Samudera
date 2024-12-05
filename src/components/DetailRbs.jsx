@@ -125,6 +125,19 @@ const DetailRbs = () => {
             }
         } 
         
+        // Untuk status Diproses
+        else if (reimbursement.status === 'Diproses') {
+            // Jika disetujui oleh Super Admin
+            if (lastStatus.status.includes('Super Admin')) {
+                // Super Admin menggantikan Reviewer 1
+                return 'Super Admin'
+            } 
+            // Disetujui oleh Reviewer 1
+            else if (lastStatus.status.includes('Reviewer 1')) {
+                return `${reviewerNames[0] || 'N/A'}`
+            }
+        }
+
         // Untuk status Disetujui
         else if (reimbursement.status === 'Disetujui') {
             // Jika disetujui oleh Super Admin
@@ -132,10 +145,6 @@ const DetailRbs = () => {
                 // Super Admin menggantikan Reviewer 2
                 return 'Super Admin'
             } 
-            // Disetujui oleh Reviewer 1
-            else if (lastStatus.status.includes('Reviewer 1')) {
-                return `${reviewerNames[0] || 'N/A'}`
-            }
             // Disetujui oleh Reviewer 2
             else if (lastStatus.status.includes('Reviewer 2')) {
                 return `${reviewerNames[1] || 'N/A'}`
