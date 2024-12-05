@@ -100,9 +100,9 @@ const DetailLpj = () => {
                         <p>Kategori LPJ Bon Sementara</p>
                         <p>: {lpjDetail?.kategori ?? 'N/A'}</p>
                         <p>Nomor Bon Sementara</p>
-                        <p>: {lpjDetail?.noBs ?? 'N/A'}</p>
+                        <p>: {lpjDetail?.nomorBS ?? 'N/A'}</p>
                         <p>Jumlah Bon Sementara</p>
-                        <p>: Rp{lpjDetail?.jumlahBs.toLocaleString('id-ID') ?? 'N/A'}</p>
+                        <p>: Rp{lpjDetail?.jumlahBS.toLocaleString('id-ID') ?? 'N/A'}</p>
                         <p>Status</p>
                         <p>: {lpjDetail?.status ?? 'N/A'}</p>
                         <p>

@@ -53,6 +53,10 @@ const CreateBonForm = () => {
 
                 if (userDoc.exists()) {
                     const data = userDoc.data()
+
+                    const adminStatus = data.role === 'Admin'
+                    setIsAdmin(adminStatus)
+
                     setUserData({
                         uid: data.uid || '',
                         nama: data.nama || '',
@@ -64,6 +68,12 @@ const CreateBonForm = () => {
                         reviewer1: data.reviewer1 || [],
                         reviewer2: data.reviewer2 || []
                     })
+
+                    setSelectedUnit(
+                        isAdmin 
+                            ? null 
+                            : { value: data.unit, label: data.unit }
+                    )
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error)
@@ -72,6 +82,20 @@ const CreateBonForm = () => {
 
         fetchUserData()
     }, [])
+
+    const BUSINESS_UNITS = [
+        { value: 'PT Makassar Jaya Samudera', label: 'PT Makassar Jaya Samudera' },
+        { value: 'PT Samudera Makassar Logistik', label: 'PT Samudera Makassar Logistik' },
+        { value: 'PT Kendari Jaya Samudera', label: 'PT Kendari Jaya Samudera' },
+        { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
+        { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
+        { value: 'PT Silkargo Indonesia', label: 'PT Silkargo Indonesia' },
+        { value: 'PT PAD Samudera Indonesia', label: 'PT PAD Samudera Indonesia' },
+        { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
+    ]
+
+    const [selectedUnit, setSelectedUnit] = useState('')
+    const [isAdmin, setIsAdmin] = useState(false)
 
     const kategoriOptions = [
         { value: 'GA/Umum', label: 'GA/Umum' },
@@ -216,7 +240,7 @@ const CreateBonForm = () => {
                     nama: userData.nama,
                     bankName: userData.bankName,
                     accountNumber: userData.accountNumber,
-                    unit: userData.unit,
+                    unit: selectedUnit.value,
                     posisi: userData.posisi,
                     department: userData.department,
                     reviewer1: userData.reviewer1,
@@ -250,6 +274,11 @@ const CreateBonForm = () => {
             // Update dengan ID dokumen
             await setDoc(doc(db, 'bonSementara', docRef.id), { ...bonSementaraData, id: docRef.id })
 
+            // Reset unit bisnis ke unit awal untuk admin
+            if (isAdmin) {
+                setSelectedUnit({ value: userData.unit, label: userData.unit })
+            }
+            
             console.log('Bon Sementara berhasil dibuat:', {
                 firestoreId: docRef.id,
                 displayId: displayId
@@ -282,13 +311,28 @@ const CreateBonForm = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700 font-medium mb-2">Unit Bisnis</label>
-                        <input
-                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                            type="text"
-                            value={userData.unit}
-                            disabled
-                        />
+                    <label className="block text-gray-700 font-medium mb-2">
+                            Unit Bisnis {isAdmin && <span className="text-red-500">*</span>}
+                        </label>
+                        {isAdmin ? (
+                            <Select
+                                options={BUSINESS_UNITS}
+                                value={selectedUnit}
+                                onChange={setSelectedUnit}
+                                placeholder="Pilih Unit Bisnis"
+                                className="basic-single"
+                                classNamePrefix="select"
+                                styles={customStyles}
+                                isSearchable={true}
+                            />
+                        ) : (
+                            <input
+                                className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                type="text"
+                                value={selectedUnit?.label || ''}
+                                disabled
+                            />
+                        )}
                     </div>
                 </div>
 

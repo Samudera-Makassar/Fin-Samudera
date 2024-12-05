@@ -128,8 +128,8 @@ const LpjBsTable = ({ onCancel }) => {
                                         </Link>                                                                            
                                     </td>
                                     <td className="px-4 py-2 border">{item.kategori}</td>
-                                    <td className="px-4 py-2 border">{item.noBs}</td>
-                                    <td className="px-4 py-2 border">Rp{item.jumlahBs.toLocaleString('id-ID')}</td>
+                                    <td className="px-4 py-2 border">{item.nomorBS}</td>
+                                    <td className="px-4 py-2 border">Rp{item.jumlahBS.toLocaleString('id-ID')}</td>
                                     <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>                                    
                                     <td className="py-2 border text-center">
                                         <span className={`px-4 py-1 rounded-full text-xs font-medium 
