@@ -270,6 +270,15 @@ const DetailRbs = () => {
                             <tr>
                                 <td colSpan={columns.length} className="px-4 py-4"></td>
                             </tr>
+
+                            {reimbursementDetail?.status === 'Dibatalkan' && (
+                                <tr>
+                                    <td colSpan={columns.length} className="px-4 py-2 text-left border">
+                                        <span className='font-semibold'>Alasan Pembatalan :</span> {reimbursementDetail?.cancelReason}
+                                    </td>
+                                </tr>
+                            )}
+
                             <tr className="font-semibold">
                                 <td colSpan={columns.length - 1} className="px-4 py-2 text-right border">
                                     Total Biaya :

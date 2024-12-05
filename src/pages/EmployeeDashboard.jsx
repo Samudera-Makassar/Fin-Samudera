@@ -4,7 +4,6 @@ import { doc, getDoc } from 'firebase/firestore'
 import ReimbursementTable from '../components/ReimbursementTable'
 import CreateBsTable from '../components/CreateBsTable'
 import LpjBsTable from '../components/LpjBsTable'
-import Modal from '../components/Modal'
 import Layout from './Layout'
 
 const EmployeeDashboard = ({ userUid }) => {
@@ -53,27 +52,6 @@ const EmployeeDashboard = ({ userUid }) => {
         fetchUserData()
     }, [uid])
 
-    // State untuk mengelola modal pembatalan
-    const [showModal, setShowModal] = useState(false)
-    const [selectedReport, setSelectedReport] = useState(null)
-    const [cancelReason, setCancelReason] = useState('')
-
-    const handleCancel = (report) => {
-        setSelectedReport(report)
-        setShowModal(true)
-    }
-
-    const handleCloseModal = () => {
-        setShowModal(false)
-        setCancelReason('')
-        setSelectedReport(null)
-    }
-
-    const handleSubmitCancel = () => {
-        console.log(`Alasan pembatalan laporan ${selectedReport.displayId}: ${cancelReason}`)
-        handleCloseModal()
-    }
-
     return (
         <div>
             <Layout>
@@ -82,28 +60,11 @@ const EmployeeDashboard = ({ userUid }) => {
                         <h2 className="text-xl font-medium mb-4">
                             Welcome, <span className="font-bold">{user?.name || 'User'}</span>
                         </h2>
-                        <ReimbursementTable reimbursements={data.reimbursements} onCancel={handleCancel} />
-                        <CreateBsTable bonSementara={data.bonSementara} onCancel={handleCancel} />
-                        <LpjBsTable lpjBs={data.lpjBs} onCancel={handleCancel} />
+                        <ReimbursementTable reimbursements={data.reimbursements} />
+                        <CreateBsTable bonSementara={data.bonSementara} />
+                        <LpjBsTable lpjBs={data.lpjBs} />
                     </div>
                 </div>
-
-                {/* Modal Konfirmasi Pembatalan */}
-                {showModal && (
-                    <Modal
-                        showModal={showModal}
-                        selectedReport={selectedReport}
-                        cancelReason={cancelReason}
-                        setCancelReason={setCancelReason}
-                        onClose={handleCloseModal}
-                        onSubmit={handleSubmitCancel}
-                        title="Konfirmasi Pembatalan"
-                        message={`Apakah Anda yakin ingin membatalkan laporan ${selectedReport?.displayId || 'ini'}?`}
-                        cancelText="Tidak"
-                        confirmText="Ya, Batalkan"
-                        showCancelReason={true}
-                    />
-                )}
             </Layout>
         </div>
     )

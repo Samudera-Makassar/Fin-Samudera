@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import EmptyState from '../assets/images/EmptyState.png'
+import Modal from '../components/Modal';
 
 const CreateBsTable = ({ onCancel }) => {
     const [data, setData] = useState({ bonSementara: [] })
@@ -10,6 +11,10 @@ const CreateBsTable = ({ onCancel }) => {
     const [loading, setLoading] = useState(true)
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5 // Jumlah item per halaman
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedReport, setSelectedReport] = useState(null);
+    const [cancelReason, setCancelReason] = useState('');
 
     useEffect(() => {
         const fetchUserAndBonSementara = async () => {
@@ -26,10 +31,10 @@ const CreateBsTable = ({ onCancel }) => {
                 const userDocRef = doc(db, 'users', uid)
                 const userDoc = await getDoc(userDocRef)
 
-                // Query reimbursement berdasarkan UID user
+                // Query bon sementara berdasarkan UID user
                 const q = query(
                     collection(db, 'bonSementara'),
-                    where('user.uid', '==', uid) // Filter data reimbursement berdasarkan UID user
+                    where('user.uid', '==', uid) // Filter data bon sementara berdasarkan UID user
                 )
 
                 const querySnapshot = await getDocs(q)
@@ -80,6 +85,49 @@ const CreateBsTable = ({ onCancel }) => {
         }
     }
 
+    const handleCancel = (report) => {
+        setSelectedReport(report);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setCancelReason('');
+        setSelectedReport(null);
+    };
+
+    const handleSubmitCancel = async () => {
+        if (!selectedReport || !cancelReason) return;  // Pastikan cancelReason ada
+    
+        try {
+            const bonSemetaraDocRef = doc(db, 'bonSementara', selectedReport.id);
+            
+            // Memperbarui data di Firestore
+            await updateDoc(bonSemetaraDocRef, {
+                status: 'Dibatalkan',
+                cancelReason: cancelReason || 'Alasan tidak diberikan',
+            });
+    
+            // Menyegarkan data bon semetara setelah pembatalan
+            const uid = localStorage.getItem('userUid');
+            const q = query(collection(db, 'bonSementara'), where('user.uid', '==', uid));
+            const querySnapshot = await getDocs(q);
+            const bonSementara = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                displayId: doc.data().displayId,
+                ...doc.data(),
+            }));
+    
+            setData({ bonSementara });  // Mengupdate state dengan data baru
+    
+            // Menutup modal setelah pembatalan
+            handleCloseModal();
+        } catch (error) {
+            console.error('Error cancelling bon sementara:', error);
+            alert('Gagal membatalkan bon sementara. Silakan coba lagi.');
+        }
+    };
+    
     if (loading) {
         return <p>Loading...</p>
     }
@@ -146,7 +194,7 @@ const CreateBsTable = ({ onCancel }) => {
                                     <td className="py-2 border text-center">
                                     <button 
                                             className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed hover"
-                                            onClick={() => onCancel(item)} 
+                                            onClick={() => handleCancel(item)}
                                             disabled={item.status !== 'Diajukan'}
                                         >
                                             Batalkan
@@ -220,6 +268,19 @@ const CreateBsTable = ({ onCancel }) => {
                     </div>
                 </div>
             )}
+            <Modal
+                    showModal={isModalOpen}
+                    selectedReport={selectedReport}
+                    cancelReason={cancelReason}
+                    setCancelReason={setCancelReason}
+                    onClose={handleCloseModal}
+                    onSubmit={handleSubmitCancel}
+                    title="Konfirmasi Pembatalan"
+                    message={`Apakah Anda yakin ingin membatalkan laporan ${selectedReport?.displayId || 'ini'}?`}
+                    cancelText="Tidak"
+                    confirmText="Ya, Batalkan"
+                    showCancelReason={true}
+                />
         </div>
     )
 }

@@ -170,6 +170,19 @@ const DetailCreateBs = () => {
                                 </tr>
                             ))}
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td className="px-4 py-4"></td>
+                            </tr>
+
+                            {bonSementaraDetail?.status === 'Dibatalkan' && (
+                                <tr>
+                                    <td colSpan="5" className="px-4 py-2 text-left border">
+                                        <span className='font-semibold'>Alasan Pembatalan :</span> {bonSementaraDetail?.cancelReason}
+                                    </td>
+                                </tr>
+                            )}
+                        </tfoot>
                     </table>
                 </div>
 

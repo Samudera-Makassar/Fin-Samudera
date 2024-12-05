@@ -1,21 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig'; 
 import EmptyState from '../assets/images/EmptyState.png';
+import Modal from '../components/Modal';
 
-const ReimbursementTable = ({ onCancel }) => {
+const ReimbursementTable = () => {
     const [data, setData] = useState({ reimbursements: [] });
-    const [userData, setUserData] = useState(null); // State untuk menyimpan data user
     const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 5 // Jumlah item per halaman
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedReport, setSelectedReport] = useState(null);
+    const [cancelReason, setCancelReason] = useState('');
 
     useEffect(() => {
         const fetchUserAndReimbursements = async () => {
             try {
-                const uid = localStorage.getItem('userUid'); // Ambil UID dari localStorage
-
+                const uid = localStorage.getItem('userUid');
                 if (!uid) {
                     console.error('UID tidak ditemukan di localStorage');
                     setLoading(false);
@@ -24,12 +27,12 @@ const ReimbursementTable = ({ onCancel }) => {
 
                 // Fetch data user berdasarkan UID
                 const userDocRef = doc(db, 'users', uid);
-                const userDoc = await getDoc(userDocRef);                
+                const userDoc = await getDoc(userDocRef);
 
                 // Query reimbursement berdasarkan UID user
                 const q = query(
                     collection(db, 'reimbursement'),
-                    where('user.uid', '==', uid) // Filter data reimbursement berdasarkan UID user
+                    where('user.uid', '==', uid)
                 );
 
                 const querySnapshot = await getDocs(q);
@@ -51,34 +54,72 @@ const ReimbursementTable = ({ onCancel }) => {
     }, []);
 
     const formatDate = (dateString) => {
-        if (!dateString) return 'N/A' // Handle null/undefined
-        const date = new Date(dateString)
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
         return new Intl.DateTimeFormat('id-ID', {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
         }).format(date);
-    }
+    };
 
-    // Menghitung total halaman
-    const totalPages = Math.ceil(data.reimbursements.length / itemsPerPage)
+    const totalPages = Math.ceil(data.reimbursements.length / itemsPerPage);
+    const currentReimbursements = data.reimbursements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-    // Mendapatkan data pengguna untuk halaman saat ini
-    const currentReimbursements = data.reimbursements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
-    // Fungsi untuk berpindah ke halaman berikutnya
     const nextPage = () => {
         if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1)
+            setCurrentPage(currentPage + 1);
         }
-    }
+    };
 
-    // Fungsi untuk berpindah ke halaman sebelumnya
     const prevPage = () => {
         if (currentPage > 1) {
-            setCurrentPage(currentPage - 1)
+            setCurrentPage(currentPage - 1);
         }
-    }
+    };
+
+    const handleCancel = (report) => {
+        setSelectedReport(report);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setCancelReason('');
+        setSelectedReport(null);
+    };
+
+    const handleSubmitCancel = async () => {
+        if (!selectedReport || !cancelReason) return;  // Pastikan cancelReason ada
+    
+        try {
+            const reimbursementDocRef = doc(db, 'reimbursement', selectedReport.id);
+            
+            // Memperbarui data di Firestore
+            await updateDoc(reimbursementDocRef, {
+                status: 'Dibatalkan',
+                cancelReason: cancelReason || 'Alasan tidak diberikan',
+            });
+    
+            // Menyegarkan data reimbursement setelah pembatalan
+            const uid = localStorage.getItem('userUid');
+            const q = query(collection(db, 'reimbursement'), where('user.uid', '==', uid));
+            const querySnapshot = await getDocs(q);
+            const reimbursements = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                displayId: doc.data().displayId,
+                ...doc.data(),
+            }));
+    
+            setData({ reimbursements });  // Mengupdate state dengan data baru
+    
+            // Menutup modal setelah pembatalan
+            handleCloseModal();
+        } catch (error) {
+            console.error('Error cancelling reimbursement:', error);
+            alert('Gagal membatalkan reimbursement. Silakan coba lagi.');
+        }
+    };
 
     if (loading) {
         return <p>Loading...</p>;
@@ -145,7 +186,7 @@ const ReimbursementTable = ({ onCancel }) => {
                                     <td className="py-2 border text-center">
                                         <button 
                                             className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed hover"
-                                            onClick={() => onCancel(item)} 
+                                            onClick={() => handleCancel(item)} 
                                             disabled={item.status !== 'Diajukan'}
                                         >
                                             Batalkan
@@ -227,6 +268,19 @@ const ReimbursementTable = ({ onCancel }) => {
                     </div>
                 </div>
             )}
+            <Modal
+                    showModal={isModalOpen}
+                    selectedReport={selectedReport}
+                    cancelReason={cancelReason}
+                    setCancelReason={setCancelReason}
+                    onClose={handleCloseModal}
+                    onSubmit={handleSubmitCancel}
+                    title="Konfirmasi Pembatalan"
+                    message={`Apakah Anda yakin ingin membatalkan laporan ${selectedReport?.displayId || 'ini'}?`}
+                    cancelText="Tidak"
+                    confirmText="Ya, Batalkan"
+                    showCancelReason={true}
+                />
         </div>
     );
 };

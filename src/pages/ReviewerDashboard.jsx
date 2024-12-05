@@ -5,7 +5,6 @@ import ReimbursementTable from '../components/ReimbursementTable'
 import LpjBsTable from '../components/LpjBsTable'
 import CreateBsTable from '../components/CreateBsTable'
 import ReportCard from '../components/ReportCard'
-import Modal from '../components/Modal'
 import Layout from './Layout'
 
 const ReviewerDashboard = ({ userUid }) => {
@@ -54,29 +53,8 @@ const ReviewerDashboard = ({ userUid }) => {
         fetchUserData()
     }, [uid])
 
-    // State untuk mengelola modal
-    const [showModal, setShowModal] = useState(false)
-    const [selectedReport, setSelectedReport] = useState(null)
-    const [cancelReason, setCancelReason] = useState('')
-
     const reimbursementCount = data.reimbursements.filter((item) => item.status === 'Diproses').length
     const lpjCount = data.lpjBs.filter((item) => item.status === 'Diproses').length
-
-    const handleCancel = (report) => {
-        setSelectedReport(report)
-        setShowModal(true)
-    }
-
-    const handleCloseModal = () => {
-        setShowModal(false)
-        setCancelReason('')
-        setSelectedReport(null)
-    }
-
-    const handleSubmitCancel = () => {
-        console.log(`Alasan pembatalan laporan ${selectedReport.displayId}: ${cancelReason}`)
-        handleCloseModal()
-    }
 
     return (
         <div>
@@ -87,25 +65,11 @@ const ReviewerDashboard = ({ userUid }) => {
                             Welcome, <span className="font-bold">{user?.name || 'User'}</span>
                         </h2>
                         <ReportCard reimbursementCount={reimbursementCount} lpjCount={lpjCount} />
-                        <ReimbursementTable reimbursements={data.reimbursements} onCancel={handleCancel} />
-                        <CreateBsTable bonSementara={data.bonSementara} onCancel={handleCancel} />
-                        <LpjBsTable lpjBs={data.lpjBs} onCancel={handleCancel} />
+                        <ReimbursementTable reimbursements={data.reimbursements} />
+                        <CreateBsTable bonSementara={data.bonSementara} />
+                        <LpjBsTable lpjBs={data.lpjBs} />
                     </div>
                 </div>
-
-                <Modal
-                    showModal={showModal}
-                    selectedReport={selectedReport}
-                    cancelReason={cancelReason}
-                    setCancelReason={setCancelReason}
-                    onClose={handleCloseModal}
-                    onSubmit={handleSubmitCancel}
-                    title="Konfirmasi Pembatalan"
-                    message={`Apakah Anda yakin ingin membatalkan laporan ${selectedReport?.displayId || 'ini'}?`}
-                    cancelText="Tidak"
-                    confirmText="Ya, Batalkan"
-                    showCancelReason={true}
-                />
             </Layout>
         </div>
     )

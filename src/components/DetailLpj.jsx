@@ -225,6 +225,15 @@ const DetailLpj = () => {
                             <tr>
                                 <td colSpan="6" className="px-4 py-4"></td>
                             </tr>
+
+                            {lpjDetail?.status === 'Dibatalkan' && (
+                                <tr>
+                                    <td colSpan="6" className="px-4 py-2 text-left border">
+                                        <span className='font-semibold'>Alasan Pembatalan :</span> {lpjDetail?.cancelReason}
+                                    </td>
+                                </tr>
+                            )}
+
                             <tr className="font-semibold">
                                 <td colSpan="5"className="px-4 py-2 text-right border">
                                     Total Biaya :

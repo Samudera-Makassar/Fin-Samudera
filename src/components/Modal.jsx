@@ -5,7 +5,7 @@ const Modal = ({
     title,
     message,
     onClose,
-    onConfirm,
+    onSubmit,
     cancelText = 'Batal',
     confirmText = 'Hapus',
     cancelReason,
@@ -40,7 +40,7 @@ const Modal = ({
                     </button>
                     <button
                         className="bg-red-600 text-white px-8 py-2 rounded hover:bg-red-700 hover:text-gray-200"
-                        onClick={onConfirm}
+                        onClick={() => onSubmit()}
                     >
                         {confirmText}
                     </button>
