@@ -127,7 +127,7 @@ const CreateBsTable = ({ onCancel }) => {
             alert('Gagal membatalkan bon sementara. Silakan coba lagi.');
         }
     };
-    
+
     if (loading) {
         return <p>Loading...</p>
     }
@@ -274,7 +274,7 @@ const CreateBsTable = ({ onCancel }) => {
                     cancelReason={cancelReason}
                     setCancelReason={setCancelReason}
                     onClose={handleCloseModal}
-                    onSubmit={handleSubmitCancel}
+                    onConfirm={handleSubmitCancel}
                     title="Konfirmasi Pembatalan"
                     message={`Apakah Anda yakin ingin membatalkan laporan ${selectedReport?.displayId || 'ini'}?`}
                     cancelText="Tidak"

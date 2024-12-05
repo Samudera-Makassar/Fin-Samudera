@@ -284,7 +284,7 @@ const LpjBsTable = ({ onCancel }) => {
                     cancelReason={cancelReason}
                     setCancelReason={setCancelReason}
                     onClose={handleCloseModal}
-                    onSubmit={handleSubmitCancel}
+                    onConfirm={handleSubmitCancel}
                     title="Konfirmasi Pembatalan"
                     message={`Apakah Anda yakin ingin membatalkan laporan ${selectedReport?.displayId || 'ini'}?`}
                     cancelText="Tidak"
