@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom'
 const DetailRbs = () => {
     const [userData, setUserData] = useState(null)
     const [reimbursementDetail, setReimbursementDetail] = useState(null)
+    const [reviewers, setReviewers] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
@@ -33,9 +34,21 @@ const DetailRbs = () => {
                     throw new Error('Data reimbursement tidak ditemukan')
                 }
 
+                const reimbursementData = reimbursementSnapshot.data()
                 setUserData(userSnapshot.data())
-                setReimbursementDetail(reimbursementSnapshot.data())
+                setReimbursementDetail(reimbursementData)
                 
+                // Fetch names for all reviewers in reviewer2 array
+                if (Array.isArray(reimbursementData?.user?.reviewer2) && reimbursementData.user.reviewer2.length > 0) {
+                    const reviewerPromises = reimbursementData.user.reviewer2.map(async (reviewerUid) => {
+                        const reviewerDocRef = doc(db, 'users', reviewerUid)
+                        const reviewerSnapshot = await getDoc(reviewerDocRef)
+                        return reviewerSnapshot.exists() ? reviewerSnapshot.data().nama : null
+                    })
+
+                    const reviewerNames = await Promise.all(reviewerPromises)
+                    setReviewers(reviewerNames.filter(Boolean)) // Simpan hanya reviewer yang valid
+                }
             } catch (error) {
                 console.error("Error fetching data:", error)
                 setError(error.message)
@@ -56,7 +69,7 @@ const DetailRbs = () => {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
-        }).format(date);
+        }).format(date)
     }
 
     const getColumns = (kategori) => {
@@ -104,7 +117,7 @@ const DetailRbs = () => {
         }
     }
 
-    if (!userData) {
+    if (loading) {
         return <div>Loading...</div>
     }
     
@@ -139,8 +152,18 @@ const DetailRbs = () => {
                         <p>: {reimbursementDetail?.user?.bankName ?? 'N/A'}</p>
                         <p>Status</p>
                         <p>: {reimbursementDetail?.status ?? 'N/A'}</p>
-                        <p>Disetujui Oleh</p>
-                        <p>: {reimbursementDetail?.reviewer1?.[0] ?? ''}</p>
+                        <p>
+                            {reimbursementDetail?.status === 'Ditolak' 
+                                ? 'Ditolak Oleh' 
+                                : 'Disetujui Oleh'}
+                        </p>
+                        <p>
+                            : {reimbursementDetail?.status === 'Disetujui' 
+                                ? (reviewers.length > 0 ? reviewers.join(', ') : 'N/A') 
+                                : reimbursementDetail?.status === 'Ditolak' 
+                                ? (reviewers.length > 0 ? reviewers.join(', ') : 'N/A') 
+                                : '-'}
+                        </p>  
                     </div>
                 </div>
 

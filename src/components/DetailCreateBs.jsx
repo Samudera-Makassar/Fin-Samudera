@@ -6,6 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 const DetailCreateBs = () => {
     const [userData, setUserData] = useState(null)
     const [bonSementaraDetail, setBonSementaraDetail] = useState(null)
+    const [reviewers, setReviewers] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
@@ -34,8 +35,22 @@ const DetailCreateBs = () => {
                     throw new Error('Data Bon Sementara tidak ditemukan')
                 }
 
+                const bonSementaraData = bonSementaraSnapshot.data()
                 setUserData(userSnapshot.data())
-                setBonSementaraDetail(bonSementaraSnapshot.data())
+                setBonSementaraDetail(bonSementaraData)
+
+                // Fetch names for all reviewers in reviewer2 array
+                if (Array.isArray(bonSementaraData?.user?.reviewer2) && bonSementaraData.user.reviewer2.length > 0) {
+                    const reviewerPromises = bonSementaraData.user.reviewer2.map(async (reviewerUid) => {
+                        const reviewerDocRef = doc(db, 'users', reviewerUid)
+                        const reviewerSnapshot = await getDoc(reviewerDocRef)
+                        return reviewerSnapshot.exists() ? reviewerSnapshot.data().nama : null
+                    })
+
+                    const reviewerNames = await Promise.all(reviewerPromises)
+                    setReviewers(reviewerNames.filter(Boolean)) // Simpan hanya reviewer yang valid
+                }
+
             } catch (error) {
                 console.error('Error fetching data:', error)
                 setError(error.message)
@@ -104,8 +119,18 @@ const DetailCreateBs = () => {
                         <p>: {bonSementaraDetail?.user?.accountNumber ?? 'N/A'}</p>
                         <p>Status</p>
                         <p>: {bonSementaraDetail?.status ?? 'N/A'}</p>
-                        <p>Disetujui Oleh</p>
-                        <p>: {bonSementaraDetail?.reviewer1?.[0] ?? ''}</p>
+                        <p>
+                            {bonSementaraDetail?.status === 'Ditolak' 
+                                ? 'Ditolak Oleh' 
+                                : 'Disetujui Oleh'}
+                        </p>
+                        <p>
+                            : {bonSementaraDetail?.status === 'Disetujui' 
+                                ? (reviewers.length > 0 ? reviewers.join(', ') : 'N/A') 
+                                : bonSementaraDetail?.status === 'Ditolak' 
+                                ? (reviewers.length > 0 ? reviewers.join(', ') : 'N/A') 
+                                : '-'}
+                        </p>  
                     </div>
                 </div>
 

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../firebaseConfig' 
+import { db } from '../firebaseConfig'
 import { useParams } from 'react-router-dom'
 
 const DetailLpj = () => {
     const [userData, setUserData] = useState(null)
     const [lpjDetail, setLpjDetail] = useState(null)
+    const [reviewers, setReviewers] = useState([]) 
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
@@ -16,26 +17,38 @@ const DetailLpj = () => {
         const fetchData = async () => {
             try {
                 setLoading(true)
-                
+
                 // Fetch user data
                 const userDocRef = doc(db, 'users', uid)
                 const userSnapshot = await getDoc(userDocRef)
-                
+
                 if (!userSnapshot.exists()) {
                     throw new Error('User tidak ditemukan')
                 }
-                
+
                 // Fetch lpj data
                 const lpjDocRef = doc(db, 'lpj', id)
                 const lpjSnapshot = await getDoc(lpjDocRef)
-                
+
                 if (!lpjSnapshot.exists()) {
-                    throw new Error('Data LPJ tidak ditemukan')
+                    throw new Error('Data LPJ Bon Sementara tidak ditemukan')
                 }
 
+                const lpjData = lpjSnapshot.data()
                 setUserData(userSnapshot.data())
-                setLpjDetail(lpjSnapshot.data())
-                
+                setLpjDetail(lpjData)
+
+                // Fetch names for all reviewers in reviewer2 array
+                if (Array.isArray(lpjData?.user?.reviewer2) && lpjData.user.reviewer2.length > 0) {
+                    const reviewerPromises = lpjData.user.reviewer2.map(async (reviewerUid) => {
+                        const reviewerDocRef = doc(db, 'users', reviewerUid)
+                        const reviewerSnapshot = await getDoc(reviewerDocRef)
+                        return reviewerSnapshot.exists() ? reviewerSnapshot.data().nama : null
+                    })
+
+                    const reviewerNames = await Promise.all(reviewerPromises)
+                    setReviewers(reviewerNames.filter(Boolean)) // Simpan hanya reviewer yang valid
+                }
             } catch (error) {
                 console.error("Error fetching data:", error)
                 setError(error.message)
@@ -56,12 +69,12 @@ const DetailLpj = () => {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
-        }).format(date);
+        }).format(date)
     }
 
-    if (!userData) {
+    if (loading) {
         return <div>Loading...</div>
-    }    
+    }
 
     return (
         <div className="container mx-auto py-8">
@@ -70,7 +83,7 @@ const DetailLpj = () => {
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
-            <div className="grid grid-cols-2 gap-x-16 mb-6 font-medium">
+                <div className="grid grid-cols-2 gap-x-16 mb-6 font-medium">
                     <div className="grid grid-cols-[auto_1fr] gap-x-16">
                         <p>ID</p>
                         <p>: {lpjDetail?.displayId ?? 'N/A'}</p>
@@ -92,8 +105,18 @@ const DetailLpj = () => {
                         <p>: Rp{lpjDetail?.jumlahBs.toLocaleString('id-ID') ?? 'N/A'}</p>
                         <p>Status</p>
                         <p>: {lpjDetail?.status ?? 'N/A'}</p>
-                        <p>Disetujui Oleh</p>
-                        <p>: {lpjDetail?.reviewer1?.[0] ?? ''}</p>
+                        <p>
+                            {lpjDetail?.status === 'Ditolak' 
+                                ? 'Ditolak Oleh' 
+                                : 'Disetujui Oleh'}
+                        </p>
+                        <p>
+                            : {lpjDetail?.status === 'Disetujui' 
+                                ? (reviewers.length > 0 ? reviewers.join(', ') : 'N/A') 
+                                : lpjDetail?.status === 'Ditolak' 
+                                ? (reviewers.length > 0 ? reviewers.join(', ') : 'N/A') 
+                                : '-'}
+                        </p>
                     </div>
                 </div>
 
