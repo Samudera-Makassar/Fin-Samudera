@@ -38,17 +38,49 @@ const DetailRbs = () => {
                 setUserData(userSnapshot.data())
                 setReimbursementDetail(reimbursementData)
                 
-                // Fetch names for all reviewers in reviewer2 array
-                if (Array.isArray(reimbursementData?.user?.reviewer2) && reimbursementData.user.reviewer2.length > 0) {
-                    const reviewerPromises = reimbursementData.user.reviewer2.map(async (reviewerUid) => {
-                        const reviewerDocRef = doc(db, 'users', reviewerUid)
-                        const reviewerSnapshot = await getDoc(reviewerDocRef)
-                        return reviewerSnapshot.exists() ? reviewerSnapshot.data().nama : null
-                    })
+                // Fetch names for all reviewers in reviewer1 and reviewer2 arrays
+                const fetchReviewerNames = async () => {
+                    const reviewerPromises = [];
+
+                    // Tambahkan reviewer1 jika ada
+                    if (Array.isArray(reimbursementData?.user?.reviewer1)) {
+                        reviewerPromises.push(
+                            ...reimbursementData.user.reviewer1.map(async (reviewerUid) => {
+                                try {
+                                    const reviewerDocRef = doc(db, 'users', reviewerUid)
+                                    const reviewerSnapshot = await getDoc(reviewerDocRef)
+                                    return reviewerSnapshot.exists() ? reviewerSnapshot.data().nama : null
+                                } catch (error) {
+                                    console.error('Error fetching Reviewer 1:', error)
+                                    return null
+                                }
+                            })
+                        )
+                    }
+
+                    // Tambahkan reviewer2 jika ada
+                    if (Array.isArray(reimbursementData?.user?.reviewer2)) {
+                        reviewerPromises.push(
+                            ...reimbursementData.user.reviewer2.map(async (reviewerUid) => {
+                                try {
+                                    const reviewerDocRef = doc(db, 'users', reviewerUid)
+                                    const reviewerSnapshot = await getDoc(reviewerDocRef)
+                                    return reviewerSnapshot.exists() ? reviewerSnapshot.data().nama : null
+                                } catch (error) {
+                                    console.error('Error fetching Reviewer 2:', error)
+                                    return null
+                                }
+                            })
+                        )
+                    }
 
                     const reviewerNames = await Promise.all(reviewerPromises)
-                    setReviewers(reviewerNames.filter(Boolean)) // Simpan hanya reviewer yang valid
+                    const validReviewerNames = reviewerNames.filter(name => name !== null)
+                    setReviewers(validReviewerNames)
                 }
+
+                // Panggil fungsi fetch reviewer names
+                await fetchReviewerNames()
             } catch (error) {
                 console.error("Error fetching data:", error)
                 setError(error.message)
@@ -61,6 +93,57 @@ const DetailRbs = () => {
             fetchData()
         }
     }, [uid, id]) // Dependencies array to prevent infinite loop
+
+    // Fungsi untuk mendapatkan status approval dengan nama reviewer
+    const getDetailedApprovalStatus = (reimbursement, reviewerNames) => {
+        if (!reimbursement || !reimbursement.statusHistory || reimbursement.statusHistory.length === 0) {
+            return '-'
+        }
+
+        const lastStatus = reimbursement.statusHistory[reimbursement.statusHistory.length - 1]
+
+        // Untuk status Ditolak
+        if (reimbursement.status === 'Ditolak') {
+            // Jika ditolak oleh Super Admin
+            if (lastStatus.status.includes('Super Admin')) {
+                // Super Admin menggantikan Reviewer 1
+                if (lastStatus.status.includes('Reviewer 1')) {
+                    return 'Super Admin'
+                } 
+                // Super Admin menggantikan Reviewer 2
+                else {
+                    return 'Super Admin'
+                }
+            } 
+            // Ditolak oleh Reviewer 1
+            else if (lastStatus.status.includes('Reviewer 1')) {
+                return `${reviewerNames[0] || 'N/A'}`
+            } 
+            // Ditolak oleh Reviewer 2
+            else if (lastStatus.status.includes('Reviewer 2')) {
+                return `${reviewerNames[1] || 'N/A'}`
+            }
+        } 
+        
+        // Untuk status Disetujui
+        else if (reimbursement.status === 'Disetujui') {
+            // Jika disetujui oleh Super Admin
+            if (lastStatus.status.includes('Super Admin')) {
+                // Super Admin menggantikan Reviewer 2
+                return 'Super Admin'
+            } 
+            // Disetujui oleh Reviewer 1
+            else if (lastStatus.status.includes('Reviewer 1')) {
+                return `${reviewerNames[0] || 'N/A'}`
+            }
+            // Disetujui oleh Reviewer 2
+            else if (lastStatus.status.includes('Reviewer 2')) {
+                return `${reviewerNames[1] || 'N/A'}`
+            }
+        }
+
+        return '-'
+    }
 
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A' // Handle null/undefined
@@ -157,13 +240,7 @@ const DetailRbs = () => {
                                 ? 'Ditolak Oleh' 
                                 : 'Disetujui Oleh'}
                         </p>
-                        <p>
-                            : {reimbursementDetail?.status === 'Disetujui' 
-                                ? (reviewers.length > 0 ? reviewers.join(', ') : 'N/A') 
-                                : reimbursementDetail?.status === 'Ditolak' 
-                                ? (reviewers.length > 0 ? reviewers.join(', ') : 'N/A') 
-                                : '-'}
-                        </p>  
+                        <p>: {getDetailedApprovalStatus(reimbursementDetail, reviewers)}</p>
                     </div>
                 </div>
 
