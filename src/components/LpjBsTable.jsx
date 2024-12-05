@@ -145,9 +145,10 @@ const LpjBsTable = ({ onCancel }) => {
                                         </span>
                                     </td>
                                     <td className="py-2 border text-center">
-                                        <button 
-                                            className="text-red-500 hover:text-red-700"
+                                    <button 
+                                            className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed hover"
                                             onClick={() => onCancel(item)} 
+                                            disabled={item.status !== 'Diajukan'}
                                         >
                                             Batalkan
                                         </button>

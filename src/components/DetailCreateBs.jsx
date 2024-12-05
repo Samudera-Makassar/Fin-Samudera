@@ -75,14 +75,26 @@ const DetailCreateBs = () => {
     }
 
     const handleBuatLaporan = () => {
-        if (bonSementaraDetail?.bonSementara?.[0]?.kategori === 'GA/Umum') {
-            navigate('/lpj/umum')
-        } else if (bonSementaraDetail?.bonSementara?.[0]?.kategori === 'Marketing/Operasional') {
-            navigate('/lpj/marketing')
+        const bonSementara = bonSementaraDetail?.bonSementara?.[0]
+        if (bonSementara?.kategori === 'GA/Umum') {
+            navigate('/lpj/umum', {
+                state: {
+                    nomorBS: bonSementara.nomorBS,
+                    jumlahBS: bonSementara.jumlahBS,
+                },
+            })
+        } else if (bonSementara?.kategori === 'Marketing/Operasional') {
+            navigate('/lpj/marketing', {
+                state: {
+                    nomorBS: bonSementara.nomorBS,
+                    jumlahBS: bonSementara.jumlahBS,
+                },
+            })
         } else {
             alert('Kategori tidak dikenali.')
         }
     }
+    
 
     if (!userData) {
         return <div>Loading...</div>

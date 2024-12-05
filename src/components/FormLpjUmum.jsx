@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { doc, setDoc, getDoc, addDoc, collection } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import Select from 'react-select'
+import { useLocation } from 'react-router-dom'
 
 const FormLpjUmum = () => {
     const [todayDate, setTodayDate] = useState('')
@@ -14,8 +15,8 @@ const FormLpjUmum = () => {
     })
 
     const initialLpjState = {
-        noBs: '',
-        jumlahBs: '',
+        nomorBS: '',
+        jumlahBS: '',
         tanggal: '',
         namaItem: '',
         biaya: '',
@@ -27,9 +28,10 @@ const FormLpjUmum = () => {
         tanggalPengajuan: todayDate
     }
 
+    const location = useLocation()
     const [lpj, setLpj] = useState([initialLpjState])
-    const [noBs, setNoBs] = useState('')    
-    const [jumlahBs, setJumlahBs] = useState(0)
+    const [nomorBS, setNomorBS] = useState(location.state?.nomorBS || '')    
+    const [jumlahBS, setJumlahBS] = useState(location.state?.jumlahBS || '')
 
     const [calculatedCosts, setCalculatedCosts] = useState({
         totalBiaya: 0,
@@ -117,7 +119,7 @@ const FormLpjUmum = () => {
         }).format(date)
     }
 
-    const calculateCosts = (lpjItems, jumlahBs) => {
+    const calculateCosts = (lpjItems, jumlahBS) => {
         // Calculate total biaya
         const totalBiaya = lpjItems.reduce((acc, item) => {
             const biaya = Number(item.biaya) || 0
@@ -126,8 +128,8 @@ const FormLpjUmum = () => {
         }, 0)
 
         // Calculate sisa lebih atau kurang
-        const sisaLebih = Math.max(0, jumlahBs - totalBiaya)
-        const sisaKurang = Math.max(0, totalBiaya - jumlahBs)
+        const sisaLebih = Math.max(0, jumlahBS - totalBiaya)
+        const sisaKurang = Math.max(0, totalBiaya - jumlahBS)
 
         return {
             totalBiaya,
@@ -137,9 +139,9 @@ const FormLpjUmum = () => {
     }
 
     useEffect(() => {
-        const costs = calculateCosts(lpj, jumlahBs)
+        const costs = calculateCosts(lpj, jumlahBS)
         setCalculatedCosts(costs)
-    }, [lpj, jumlahBs])
+    }, [lpj, jumlahBS])
 
     const formatRupiah = (value) => {
         // Memastikan bahwa value adalah string
@@ -228,8 +230,8 @@ const FormLpjUmum = () => {
             if (
                 !userData.nama ||
                 !selectedUnit?.value ||
-                !noBs || 
-                !jumlahBs ||
+                !nomorBS || 
+                !jumlahBS ||
                 lpj.some((r) => !r.tanggal || !r.namaItem || !r.biaya || !r.jumlah)
             ) {
                 alert('Mohon lengkapi semua field yang wajib diisi!')
@@ -265,8 +267,8 @@ const FormLpjUmum = () => {
                 approvedByReviewer2: false,
                 approvedBySuperAdmin: false,
                 rejectedBySuperAdmin: false,
-                noBs: noBs,
-                jumlahBs: jumlahBs,                                             
+                nomorBS: nomorBS,
+                jumlahBS: jumlahBS,                                             
                 ...calculatedCosts,
                 tanggalPengajuan: todayDate,            
                 statusHistory: [
@@ -305,8 +307,8 @@ const FormLpjUmum = () => {
 
     const resetForm = () => {
         setLpj([initialLpjState])
-        setNoBs('')
-        setJumlahBs(0)
+        setNomorBS('')
+        setJumlahBS(0)
         setCalculatedCosts({
             totalBiaya: 0,
             sisaLebih: 0,
@@ -384,8 +386,8 @@ const FormLpjUmum = () => {
                         <input
                             className="w-full h-10 px-4 py-2 border text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             type="text"
-                            value={noBs}
-                            onChange={(e) => setNoBs(e.target.value)}
+                            value={nomorBS}
+                            onChange={(e) => setNomorBS(e.target.value)}
                             placeholder="Masukkan nomor bon sementara"
                         />
                     </div>
@@ -396,12 +398,12 @@ const FormLpjUmum = () => {
                         <input
                             className="w-full h-10 px-4 py-2 border text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             type="text"
-                            value={jumlahBs ? formatRupiah(jumlahBs) : ''}
+                            value={jumlahBS ? formatRupiah(jumlahBS) : ''}
                             onChange={(e) => {
                                 const cleanValue = e.target.value.replace(/\D/g, '')
                                 const value = Number(cleanValue)
                                 if (value >= 0) {
-                                    setJumlahBs(value)
+                                    setJumlahBS(value)
                                 }
                             }}
                             placeholder="Masukkan jumlah bon sementara tanpa Rp"
