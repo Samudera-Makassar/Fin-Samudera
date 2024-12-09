@@ -19,10 +19,16 @@ const FormLpjMarketing = () => {
     const initialLpjState = {
         nomorBS: '',
         jumlahBS: '',
+        project: '',
+        nomorJO: '',
+        customer: '',
+        lokasi: '',
+        lampiran: '',
         tanggal: '',
         namaItem: '',
         biaya: '',
         jumlah: '',
+        keterangan: '',
         jumlahBiaya: 0,
         totalBiaya: '',
         sisaLebih: '',
@@ -34,6 +40,10 @@ const FormLpjMarketing = () => {
     const [lpj, setLpj] = useState([initialLpjState])
     const [nomorBS, setNomorBS] = useState(location.state?.nomorBS || '')    
     const [jumlahBS, setJumlahBS] = useState(location.state?.jumlahBS || '')
+    const [project, setProject] = useState(location.state?.project || '')
+    const [nomorJO, setNomorJO] = useState(location.state?.nomorJO || '')
+    const [customer, setCustomer] = useState(location.state?.customer || '')
+    const [lokasi, setLokasi] = useState(location.state?.lokasi || '')
 
     const [calculatedCosts, setCalculatedCosts] = useState({
         totalBiaya: 0,
@@ -65,15 +75,11 @@ const FormLpjMarketing = () => {
 
     useEffect(() => {
         const today = new Date()
-        const day = today.getDate()
-        const month = today.getMonth()
-        const year = today.getFullYear()
-
         const formattedDate = today.toISOString().split('T')[0]
         
-        const uid = localStorage.getItem('userUid')
-
         setTodayDate(formattedDate)
+
+        const uid = localStorage.getItem('userUid')
 
         const fetchUserData = async () => {
             try {
@@ -230,10 +236,7 @@ const FormLpjMarketing = () => {
         try {
             // Validasi form
             if (
-                !userData.nama ||
-                !selectedUnit?.value ||
-                !nomorBS || 
-                !jumlahBS ||
+                !userData.nama || !selectedUnit?.value || !nomorBS || !jumlahBS || !project || !nomorJO || !customer || !lokasi ||
                 lpj.some((r) => !r.tanggal || !r.namaItem || !r.biaya || !r.jumlah)
             ) {
                 toast.warning('Mohon lengkapi semua field yang wajib diisi!')
@@ -271,6 +274,10 @@ const FormLpjMarketing = () => {
                 rejectedBySuperAdmin: false,
                 nomorBS: nomorBS,
                 jumlahBS: jumlahBS,                                             
+                project: project,                                             
+                nomorJO: nomorJO,                                             
+                customer: customer,                                             
+                lokasi: lokasi,                                             
                 ...calculatedCosts,
                 tanggalPengajuan: todayDate,            
                 statusHistory: [
@@ -311,6 +318,10 @@ const FormLpjMarketing = () => {
         setLpj([initialLpjState])
         setNomorBS('')
         setJumlahBS(0)
+        setProject('')
+        setNomorJO('')
+        setCustomer('')
+        setLokasi('')
         setCalculatedCosts({
             totalBiaya: 0,
             sisaLebih: 0,
@@ -381,7 +392,7 @@ const FormLpjMarketing = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-6 mb-3">
-                <div>
+                    <div>
                         <label className="block text-gray-700 font-medium mb-2">
                             Nomor Bon Sementara <span className="text-red-500">*</span>
                         </label>
@@ -409,6 +420,60 @@ const FormLpjMarketing = () => {
                                 }
                             }}
                             placeholder="Masukkan jumlah bon sementara tanpa Rp"
+                        />
+                    </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-6 mb-3">
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Project <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            className="w-full h-10 px-4 py-2 border text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                            type="text"
+                            value={project}
+                            onChange={(e) => setProject(e.target.value)}
+                            placeholder="Masukkan nama project"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Nomor Job Order <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            className="w-full h-10 px-4 py-2 border text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                            type="text"
+                            value={nomorJO}
+                            onChange={(e) => setNomorJO(e.target.value)}
+                            placeholder="Masukkan nomor job order"
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 mb-3">
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Customer <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            className="w-full h-10 px-4 py-2 border text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                            type="text"
+                            value={customer}
+                            onChange={(e) => setCustomer(e.target.value)}
+                            placeholder="Masukkan nama customer"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Lokasi <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            className="w-full h-10 px-4 py-2 border text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                            type="text"
+                            value={lokasi}
+                            onChange={(e) => setLokasi(e.target.value)}
+                            placeholder="Masukkan lokasi"
                         />
                     </div>
                 </div>
@@ -486,7 +551,7 @@ const FormLpjMarketing = () => {
                             />
                         </div>
 
-                        <div>
+                        <div className='max-w-24'>
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Jumlah <span className="text-red-500">*</span>
@@ -503,6 +568,17 @@ const FormLpjMarketing = () => {
                                         handleInputChange(index, 'jumlah', formattedValue)
                                     }
                                 }}
+                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
+                            />
+                        </div>
+
+                        <div>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">Keterangan</label>
+                            )}
+                            <input
+                                type="text"
+                                value={item.keterangan}
                                 className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
                             />
                         </div>

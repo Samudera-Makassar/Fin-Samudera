@@ -185,6 +185,14 @@ const DetailLpj = () => {
                         <p>: {Array.isArray(lpjDetail?.user?.department) && lpjDetail.user.department.length > 0 ? lpjDetail.user.department.join(', ') : ''}</p>
                         <p>Unit Bisnis</p>
                         <p>: {lpjDetail?.user?.unit ?? 'N/A'}</p>
+                        {lpjDetail?.kategori?.toLowerCase() === "marketing/operasional" && (
+                            <>
+                                <p>Project</p>
+                                <p>: {lpjDetail?.project ?? 'N/A'}</p>
+                                <p>Customer</p>
+                                <p>: {lpjDetail?.customer ?? 'N/A'}</p>
+                            </>
+                        )}
                         <p>Tanggal Pengajuan</p>
                         <p>: {formatDate(lpjDetail?.tanggalPengajuan) ?? 'N/A'}</p>
                     </div>
@@ -195,6 +203,14 @@ const DetailLpj = () => {
                         <p>: {lpjDetail?.nomorBS ?? 'N/A'}</p>
                         <p>Jumlah Bon Sementara</p>
                         <p>: Rp{lpjDetail?.jumlahBS.toLocaleString('id-ID') ?? 'N/A'}</p>
+                        {lpjDetail?.kategori?.toLowerCase() === "marketing/operasional" && (
+                            <>
+                                <p>Nomor Job Order</p>
+                                <p>: {lpjDetail?.nomorJO ?? 'N/A'}</p>
+                                <p>Lokasi</p>
+                                <p>: {lpjDetail?.lokasi ?? 'N/A'}</p>
+                            </>
+                        )}
                         <p>Status</p>
                         <p>: {lpjDetail?.status ?? 'N/A'}</p>
                         <p>
@@ -215,6 +231,7 @@ const DetailLpj = () => {
                                 <th className="px-4 py-2 border">Tanggal Kegiatan</th>
                                 <th className="px-4 py-2 border">Biaya</th>
                                 <th className="px-4 py-2 border">Jumlah</th>
+                                <th className="px-4 py-2 border">Keterangan</th>
                                 <th className="px-4 py-2 border">Jumlah Biaya</th>
                             </tr>
                         </thead>
@@ -226,25 +243,26 @@ const DetailLpj = () => {
                                     <td className="px-4 py-2 border">{formatDate(item.tanggal)}</td>
                                     <td className="px-4 py-2 border">Rp{item.biaya.toLocaleString('id-ID')}</td>
                                     <td className="px-4 py-2 border">{item.jumlah}</td>
+                                    <td className="px-4 py-2 border">{item.keterangan ?? '-'}</td>
                                     <td className="px-4 py-2 border">Rp{item.jumlahBiaya.toLocaleString('id-ID')}</td>
                                 </tr>
                             ))}
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colSpan="6" className="px-4 py-4"></td>
+                                <td colSpan="7" className="px-4 py-4"></td>
                             </tr>
 
                             {lpjDetail?.status === 'Dibatalkan' && (
                                 <tr>
-                                    <td colSpan="6" className="px-4 py-2 text-left border">
+                                    <td colSpan="7" className="px-4 py-2 text-left border">
                                         <span className='font-semibold'>Alasan Pembatalan :</span> {lpjDetail?.cancelReason}
                                     </td>
                                 </tr>
                             )}
 
                             <tr className="font-semibold">
-                                <td colSpan="5"className="px-4 py-2 text-right border">
+                                <td colSpan="6"className="px-4 py-2 text-right border">
                                     Total Biaya :
                                 </td>
                                 <td className="px-4 py-2 border">
@@ -252,7 +270,7 @@ const DetailLpj = () => {
                                 </td>
                             </tr>                            
                             <tr className="font-semibold">
-                                <td colSpan="5" className="px-4 py-2 text-right border">
+                                <td colSpan="6" className="px-4 py-2 text-right border">
                                     Sisa Lebih Bon Sementara :
                                 </td>
                                 <td className="px-4 py-2 border">
@@ -260,7 +278,7 @@ const DetailLpj = () => {
                                 </td>
                             </tr>
                             <tr className="font-semibold">
-                                <td colSpan="5" className="px-4 py-2 text-right border">
+                                <td colSpan="6" className="px-4 py-2 text-right border">
                                     Sisa Kurang Dibayarkan ke Pegawai :
                                 </td>
                                 <td className="px-4 py-2 border">

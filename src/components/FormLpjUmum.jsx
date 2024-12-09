@@ -23,6 +23,7 @@ const FormLpjUmum = () => {
         namaItem: '',
         biaya: '',
         jumlah: '',
+        keterangan: '',
         jumlahBiaya: 0,
         totalBiaya: '',
         sisaLebih: '',
@@ -486,7 +487,7 @@ const FormLpjUmum = () => {
                             />
                         </div>
 
-                        <div>
+                        <div className='max-w-24'>
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Jumlah <span className="text-red-500">*</span>
@@ -503,6 +504,17 @@ const FormLpjUmum = () => {
                                         handleInputChange(index, 'jumlah', formattedValue)
                                     }
                                 }}
+                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
+                            />
+                        </div>
+
+                        <div>
+                            {index === 0 && (
+                                <label className="block text-gray-700 font-medium mb-2">Keterangan</label>
+                            )}
+                            <input
+                                type="text"
+                                value={item.keterangan}
                                 className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
                             />
                         </div>
