@@ -3,6 +3,8 @@ import { doc, setDoc, getDoc, addDoc, collection } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import Select from 'react-select'
 import { useLocation } from 'react-router-dom'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const FormLpjMarketing = () => {
     const [todayDate, setTodayDate] = useState('')
@@ -234,7 +236,7 @@ const FormLpjMarketing = () => {
                 !jumlahBS ||
                 lpj.some((r) => !r.tanggal || !r.namaItem || !r.biaya || !r.jumlah)
             ) {
-                alert('Mohon lengkapi semua field yang wajib diisi!')
+                toast.warning('Mohon lengkapi semua field yang wajib diisi!')
                 return
             }
 
@@ -295,13 +297,13 @@ const FormLpjMarketing = () => {
                 firestoreId: docRef.id,
                 displayId: displayId
             })
-            alert('LPJ Marketing berhasil dibuat')
+            toast.success('LPJ Marketing berhasil dibuat')
 
             // Reset form setelah berhasil submit
             resetForm()
         } catch (error) {
             console.error('Error submitting lpj:', error)
-            alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
+            toast.error('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
         }
     }
 
@@ -563,6 +565,13 @@ const FormLpjMarketing = () => {
                     </button>
                 </div>
             </div>
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+            />
         </div>
     )
 }

@@ -301,7 +301,14 @@ const DetailRbs = () => {
                 </div>
 
                 <div className="flex justify-end mt-6">
-                    <button className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200">
+                    <button
+                        className={`px-16 py-3 rounded text-white ${
+                            reimbursementDetail?.status === 'Disetujui'
+                                ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                                : 'bg-gray-400 cursor-not-allowed'
+                        }`}
+                        disabled={reimbursementDetail?.status !== 'Disetujui'}
+                    >
                         Download
                     </button>
                 </div>

@@ -4,6 +4,8 @@ import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'fireb
 import { db } from '../firebaseConfig'
 import EmptyState from '../assets/images/EmptyState.png'
 import Modal from '../components/Modal';
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const CreateBsTable = ({ onCancel }) => {
     const [data, setData] = useState({ bonSementara: [] })
@@ -120,11 +122,12 @@ const CreateBsTable = ({ onCancel }) => {
     
             setData({ bonSementara });  // Mengupdate state dengan data baru
     
+            toast.success('Pengajuan Bon Sementara berhasil dibatalkan.');
             // Menutup modal setelah pembatalan
             handleCloseModal();
         } catch (error) {
             console.error('Error cancelling bon sementara:', error);
-            alert('Gagal membatalkan bon sementara. Silakan coba lagi.');
+            toast.error('Gagal membatalkan bon sementara. Silakan coba lagi.');
         }
     };
 
@@ -281,6 +284,14 @@ const CreateBsTable = ({ onCancel }) => {
                     confirmText="Ya, Batalkan"
                     showCancelReason={true}
                 />
+            
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+            />
         </div>
     )
 }

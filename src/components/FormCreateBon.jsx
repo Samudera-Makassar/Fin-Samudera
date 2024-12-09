@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { doc, setDoc, getDoc, addDoc, collection, getDocs } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import Select from 'react-select'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const CreateBonForm = () => {
     const [todayDate, setTodayDate] = useState('')
@@ -226,7 +228,7 @@ const CreateBonForm = () => {
                 !selectedKategori ||
                 bonSementara.some((r) => !r.nomorBS || !r.jumlahBS || !r.kategori || !r.aktivitas) 
             ) {
-                alert('Mohon lengkapi semua field yang wajib diisi!')
+                toast.warning('Mohon lengkapi semua field yang wajib diisi!')
                 return
             }
 
@@ -283,13 +285,13 @@ const CreateBonForm = () => {
                 firestoreId: docRef.id,
                 displayId: displayId
             })
-            alert('Bon Sementara berhasil diajukan!')
+            toast.success('Bon Sementara berhasil diajukan!')
 
             // Reset form setelah berhasil submit
             resetForm()
         } catch (error) {
             console.error('Error submitting bon sementara:', error)
-            alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
+            toast.error('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
         }
     }
 
@@ -442,6 +444,14 @@ const CreateBonForm = () => {
                     </button>
                 </div>
             </div>
+            
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+            />
         </div>
     )
 }

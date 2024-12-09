@@ -260,7 +260,7 @@ const EditUserForm = () => {
 
             for (let field of fieldsToValidate) {
                 if (!formData[field.name] || (Array.isArray(formData[field.name]) && formData[field.name].length === 0)) {
-                    toast.error(`${field.label} tidak boleh kosong`)
+                    toast.warning(`${field.label} tidak boleh kosong`)
                     setIsSubmitting(false)
                     return
                 }
@@ -268,7 +268,7 @@ const EditUserForm = () => {
 
             // Validasi untuk memastikan reviewer1 dan reviewer2 tidak sama
             if (formData.reviewer1.some((r) => formData.reviewer2.includes(r))) {
-                toast.error('Reviewer 1 dan Reviewer 2 tidak boleh sama')
+                toast.warning('Reviewer 1 dan Reviewer 2 tidak boleh sama')
                 setIsSubmitting(false)
                 return
             }
@@ -276,7 +276,7 @@ const EditUserForm = () => {
             // Cek apakah email sudah terdaftar
             const emailExists = await checkEmailExists(formData.email, uid)
             if (emailExists) {
-                toast.error('Email sudah terdaftar. Gunakan email lain')
+                toast.warning('Email sudah terdaftar. Gunakan email lain')
                 setIsSubmitting(false)
                 return
             }

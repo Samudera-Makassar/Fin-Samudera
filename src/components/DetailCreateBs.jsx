@@ -274,7 +274,12 @@ const DetailCreateBs = () => {
                 <div className="flex justify-end mt-6">
                     <button
                         onClick={handleBuatLaporan}
-                        className="px-12 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
+                        className={`px-12 py-3 rounded text-white ${
+                            bonSementaraDetail?.status === 'Disetujui'
+                                ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                                : 'bg-gray-400 cursor-not-allowed'
+                        }`}
+                        disabled={bonSementaraDetail?.status !== 'Disetujui'}
                     >
                         Buat Laporan
                     </button>

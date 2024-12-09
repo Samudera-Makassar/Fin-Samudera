@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { doc, setDoc, getDoc, addDoc, collection } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import Select from 'react-select'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const RbsMedicalForm = () => {
     const [todayDate, setTodayDate] = useState('')
@@ -195,7 +197,7 @@ const RbsMedicalForm = () => {
                 !selectedUnit?.value ||
                 reimbursements.some((r) => !r.jenis || !r.biaya || !r.dokter || !r.klinik || !r.tanggal)
             ) {
-                alert('Mohon lengkapi semua field yang wajib diisi!')
+                toast.warning('Mohon lengkapi semua field yang wajib diisi!')
                 return
             }
 
@@ -261,13 +263,13 @@ const RbsMedicalForm = () => {
                 firestoreId: docRef.id,
                 displayId: displayId
             })
-            alert('Reimbursement Medical berhasil diajukan!')
+            toast.success('Reimbursement Medical berhasil diajukan!')
 
             // Reset form setelah berhasil submit
             resetForm()
         } catch (error) {
             console.error('Error submitting reimbursement:', error)
-            alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
+            toast.error('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
         }
     }
 
@@ -483,6 +485,14 @@ const RbsMedicalForm = () => {
                     </button>
                 </div>
             </div>
+
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+            />
         </div>
     )
 }

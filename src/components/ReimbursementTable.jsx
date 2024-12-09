@@ -4,6 +4,8 @@ import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'fireb
 import { db } from '../firebaseConfig'; 
 import EmptyState from '../assets/images/EmptyState.png';
 import Modal from '../components/Modal';
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const ReimbursementTable = () => {
     const [data, setData] = useState({ reimbursements: [] });
@@ -113,11 +115,12 @@ const ReimbursementTable = () => {
     
             setData({ reimbursements });  // Mengupdate state dengan data baru
     
+            toast.success('Reimbursement berhasil dibatalkan.');
             // Menutup modal setelah pembatalan
             handleCloseModal();
         } catch (error) {
             console.error('Error cancelling reimbursement:', error);
-            alert('Gagal membatalkan reimbursement. Silakan coba lagi.');
+            toast.error('Gagal membatalkan reimbursement. Silakan coba lagi.');
         }
     };
 
@@ -280,6 +283,14 @@ const ReimbursementTable = () => {
                     cancelText="Tidak"
                     confirmText="Ya, Batalkan"
                     showCancelReason={true}
+                />
+
+                <ToastContainer
+                    position="top-right"
+                    autoClose={3000}
+                    hideProgressBar={false}
+                    closeOnClick
+                    pauseOnHover
                 />
         </div>
     );
