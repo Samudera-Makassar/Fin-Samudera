@@ -53,17 +53,18 @@ const ReimbursementCheck = () => {
                         ...doc.data(),
                     }))
                 } else {
-                    // Untuk reviewer
+                    // Untuk reviewer 1: hanya tampilkan reimbursement dengan status 'Diajukan'
                     const q1 = query(
                         collection(db, 'reimbursement'),
-                        where("status", "in", ["Diproses", "Diajukan"]),
+                        where("status", "==", "Diajukan"),
                         where('user.reviewer1', 'array-contains', uid)                                      
                     )
 
-                    // Query tambahan untuk reviewer2 yang memerlukan approval reviewer1
+                    // Untuk reviewer 2: tampilkan reimbursement dengan status 'Diproses' 
+                    // yang sudah disetujui oleh reviewer 1
                     const q2 = query(
                         collection(db, 'reimbursement'),
-                        where("status", "in", ["Diproses", "Diajukan"]),
+                        where("status", "==", "Diproses"),
                         where('user.reviewer2', 'array-contains', uid),
                         where('approvedByReviewer1Status', 'in', ['reviewer', 'superadmin'])
                     )
