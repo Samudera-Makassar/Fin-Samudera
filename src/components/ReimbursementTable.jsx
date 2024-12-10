@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig'; 
 import EmptyState from '../assets/images/EmptyState.png';
+import Select from 'react-select'
 import Modal from '../components/Modal';
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -11,11 +12,31 @@ const ReimbursementTable = () => {
     const [data, setData] = useState({ reimbursements: [] });
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
+    const [filters, setFilters] = useState({
+        status: '',
+        kategori: ''
+    })
     const itemsPerPage = 5;
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedReport, setSelectedReport] = useState(null);
     const [cancelReason, setCancelReason] = useState('');
+
+    const filterOptions = {
+        status: [
+            { value: 'Diajukan', label: 'Diajukan' },
+            { value: 'Diproses', label: 'Diproses' },
+            { value: 'Disetujui', label: 'Disetujui' },
+            { value: 'Ditolak', label: 'Ditolak' },
+            { value: 'Dibatalkan', label: 'Dibatalkan' }
+        ],
+        kategori: [
+            { value: 'Medical', label: 'Medical' },
+            { value: 'BBM', label: 'BBM' },
+            { value: 'Operasional', label: 'Operasional' },
+            { value: 'GA/umum', label: 'GA/Umum' }
+        ]
+    }
 
     useEffect(() => {
         const fetchUserAndReimbursements = async () => {
@@ -65,8 +86,24 @@ const ReimbursementTable = () => {
         }).format(date);
     };
 
-    const totalPages = Math.ceil(data.reimbursements.length / itemsPerPage);
-    const currentReimbursements = data.reimbursements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const handleFilterChange = (field, selectedOption) => {
+        setFilters(prev => ({
+            ...prev,
+            [field]: selectedOption
+        }))
+        setCurrentPage(1)
+    }
+
+    // Filter data berdasarkan status, kategori, dan bulan
+    const filteredReimbursements = data.reimbursements.filter((item) => {
+        const matchesStatus = filters.status ? item.status === filters.status.value : true;
+        const matchesCategory = filters.kategori ? item.kategori === filters.kategori.value : true;
+
+        return matchesStatus && matchesCategory;
+    });
+
+    const totalPages = Math.ceil(filteredReimbursements.length / itemsPerPage);
+    const currentReimbursements = filteredReimbursements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     const nextPage = () => {
         if (currentPage < totalPages) {
@@ -124,6 +161,46 @@ const ReimbursementTable = () => {
         }
     };
 
+    const selectStyles = {
+        control: (base) => ({
+            ...base,
+            display: 'flex', // Menggunakan Flexbox
+            alignItems: 'center', // Teks berada di tengah vertikal
+            justifyContent: 'space-between', // Menjaga ikon dropdown di kanan
+            borderColor: '#e5e7eb',
+            fontSize: '12px', // Ukuran teks
+            height: '32px', // Tinggi field tetap
+            padding: '0 4px', // Padding horizontal
+            lineHeight: 'normal', // Pastikan line-height default
+            '&:hover': {
+                borderColor: '#3b82f6',
+            },
+            borderRadius: '8px', // Sudut melengkung
+        }),
+        menu: (base) => ({
+            ...base,
+            zIndex: 100,
+        }),
+        option: (base) => ({
+            ...base,
+            fontSize: '12px',
+            padding: '6px 12px',
+            cursor: 'pointer',
+        }),
+    };
+
+    const FilterSelect = ({ field, label }) => (
+        <Select
+            value={filters[field]}
+            onChange={(option) => handleFilterChange(field, option)}
+            options={filterOptions[field]}
+            placeholder={label}
+            isClearable
+            className="w-40"
+            styles={selectStyles}
+        />
+    )
+
     if (loading) {
         return <p>Loading...</p>;
     }
@@ -143,7 +220,13 @@ const ReimbursementTable = () => {
             ) : (
                 // Jika ada data reimbursement
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                    <h3 className="text-xl font-medium mb-4">Reimbursement Diajukan</h3>
+                    <div className='flex items-center justify-between mb-2'>
+                        <h3 className="text-xl font-medium mb-4 items-center">Reimbursement Diajukan</h3>
+                        <div className='flex space-x-2'>
+                            <FilterSelect field="status" label="Status" />
+                            <FilterSelect field="kategori" label="Kategori" />                        
+                        </div>
+                    </div>
                     <table className="min-w-full bg-white border rounded-lg text-sm">
                         <thead>
                             <tr className="bg-gray-100 text-left">
