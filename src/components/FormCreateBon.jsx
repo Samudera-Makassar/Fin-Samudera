@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { doc, setDoc, getDoc, addDoc, collection, getDocs } from 'firebase/firestore'
+import React, { useState, useEffect, useRef } from 'react'
+import { doc, setDoc, getDoc, addDoc, collection, getDocs, runTransaction } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import Select from 'react-select'
 import { toast, ToastContainer } from 'react-toastify'
@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css'
 
 const CreateBonForm = () => {
     const [todayDate, setTodayDate] = useState('')
+    const [alreadyFetchBS, setAlreadyFetchBS] = useState(false)
     const [userData, setUserData] = useState({
         uid: '',
         nama: '',
@@ -185,21 +186,50 @@ const CreateBonForm = () => {
 
     const generateNomorBS = async () => {
         try {
+            if (alreadyFetchBS) return
+            setAlreadyFetchBS(true)
+
+            console.log(alreadyFetchBS)
+
             const today = new Date()
             const day = today.getDate().toString().padStart(2, '0')
             const month = (today.getMonth() + 1).toString().padStart(2, '0')
             const year = today.getFullYear().toString().slice(-2)
-            const tanggalKode = `${year}${month}${day}` // Format tanggal: 241126
+            const tanggalKode = `${year}${month}${day}`
             const kodeFormat = '9'
+    
+            const counterRef = doc(db, 'counters', 'bonSementaraCounter')
 
-            // Mendapatkan jumlah dokumen di koleksi
-            const collectionRef = collection(db, 'bonSementara')
-            const snapshot = await getDocs(collectionRef)
-
-            // Urutan berikutnya berdasarkan jumlah dokumen + 1
-            const nextSequence = (snapshot.size + 1).toString().padStart(7, '0') // Format: 0000001
-
-            // Menggabungkan kode BS
+            // Gunakan transaction untuk update nomor secara aman
+            const nextSequence = await runTransaction(db, async (transaction) => {
+                const counterDoc = await transaction.get(counterRef)
+                
+                if (!counterDoc.exists()) {
+                    transaction.set(counterRef, { 
+                        lastNumber: 0,
+                        lastResetMonth: month
+                    })
+                    return '0000001'
+                }
+                
+                const lastResetMonth = counterDoc.data().lastResetMonth || '00'
+                
+                // Cek apakah bulan berbeda, jika ya reset nomor
+                if (lastResetMonth !== month) {
+                    transaction.update(counterRef, { 
+                        lastNumber: 0,
+                        lastResetMonth: month
+                    })
+                    return '0000001'
+                }
+                
+                // Jika masih di bulan yang sama, increment nomor
+                const newLastNumber = counterDoc.data().lastNumber + 1
+                // transaction.update(counterRef, { lastNumber: newLastNumber })
+                
+                return newLastNumber.toString().padStart(7, '0')
+            })
+    
             const nomorBS = `BS${tanggalKode}${kodeFormat}${nextSequence}`
             return nomorBS
         } catch (error) {
@@ -210,6 +240,7 @@ const CreateBonForm = () => {
 
     useEffect(() => {
         const fetchNomorBS = async () => {
+            if (alreadyFetchBS) return
             const nomorBS = await generateNomorBS()
             if (nomorBS) {
                 setBonSementara((prevBonSementara) =>
@@ -217,9 +248,10 @@ const CreateBonForm = () => {
                 )
             }
         }
+        console.log('tes')
 
         fetchNomorBS()
-    }, [todayDate])
+    }, [todayDate, alreadyFetchBS])
 
     const handleSubmit = async () => {
         try {
@@ -280,6 +312,16 @@ const CreateBonForm = () => {
             if (isAdmin) {
                 setSelectedUnit({ value: userData.unit, label: userData.unit })
             }
+
+            // update nilai di collection counter
+            await runTransaction(db, async (transaction) => {
+                const counterRef = doc(db, 'counters', 'bonSementaraCounter')
+
+                const counterDoc = await transaction.get(counterRef)
+                
+                const newLastNumber = counterDoc.data().lastNumber + 1
+                transaction.update(counterRef, { lastNumber: newLastNumber })
+            })
             
             console.log('Bon Sementara berhasil dibuat:', {
                 firestoreId: docRef.id,
