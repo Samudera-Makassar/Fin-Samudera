@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig' 
 import { useParams } from 'react-router-dom'
+// import { downloadReimbursementPDF } from '../utils/RbsPdf'
+import { downloadReimbursementPDF } from '../utils/ReimbursementPdf';
 
 const DetailRbs = () => {
     const [userData, setUserData] = useState(null)
@@ -307,6 +309,7 @@ const DetailRbs = () => {
                                 ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
                                 : 'bg-gray-400 cursor-not-allowed'
                         }`}
+                        onClick={() => downloadReimbursementPDF(reimbursementDetail)}
                         disabled={reimbursementDetail?.status !== 'Disetujui'}
                     >
                         Download
