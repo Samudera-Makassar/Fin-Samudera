@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { doc, setDoc, getDoc, addDoc, collection } from 'firebase/firestore'
-import { db } from '../firebaseConfig'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { db, storage } from '../firebaseConfig'
 import Select from 'react-select'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -23,6 +24,8 @@ const RbsMedicalForm = () => {
         dokter: '',
         klinik: '',
         tanggal: '',
+        lampiran: null,
+        lampiranFile: null,
         tanggalPengajuan: todayDate
     }
 
@@ -117,11 +120,9 @@ const RbsMedicalForm = () => {
             }
         ])
 
-        // // Reset file input if you have one
-        // const fileInput = document.getElementById('file-upload')
-        // if (fileInput) {
-        //     fileInput.value = ''
-        // }
+        // Reset file inputs
+        const fileInputs = document.querySelectorAll('input[type="file"]')
+        fileInputs.forEach(input => input.value = '')
     }
 
     const formatRupiah = (number) => {
@@ -188,6 +189,60 @@ const RbsMedicalForm = () => {
                 
         return `RBS/MED/${unitCode}/${year}${month}${day}/${sequence}`
     }
+
+    const handleFileUpload = (index, event) => {
+        const file = event.target.files[0]
+        if (!file) return
+
+        // Validate file size (250MB limit)
+        if (file.size > 250 * 1024 * 1024) {
+            toast.error('Ukuran file maksimal 250MB')
+            event.target.value = '' // Clear the file input
+            return
+        }
+
+        // Validate file type (PDF only)
+        if (file.type !== 'application/pdf') {
+            toast.error('Hanya file PDF yang diperbolehkan')
+            event.target.value = '' // Clear the file input
+            return
+        }
+
+        const updatedReimbursements = reimbursements.map((item, i) =>
+            i === index 
+                ? { 
+                    ...item, 
+                    lampiran: file.name, 
+                    lampiranFile: file 
+                } 
+                : item
+        )
+        setReimbursements(updatedReimbursements)
+    }
+
+    const uploadAttachment = async (file, displayId) => {
+        if (!file) return null
+
+        try {
+            // Create a reference to the storage location
+            const storageRef = ref(
+                storage, 
+                `Lampiran_Reimbursement/Medical/${displayId}/${file.name}`
+            )
+
+            // Upload the file
+            const snapshot = await uploadBytes(storageRef, file)
+            
+            // Get the download URL
+            const downloadURL = await getDownloadURL(snapshot.ref)
+            
+            return downloadURL
+        } catch (error) {
+            console.error('Error uploading file:', error)
+            toast.error('Gagal mengunggah lampiran')
+            return null
+        }
+    }
     
     const handleSubmit = async () => {
         try {
@@ -195,21 +250,35 @@ const RbsMedicalForm = () => {
             if (
                 !userData.nama ||
                 !selectedUnit?.value ||
-                reimbursements.some((r) => !r.jenis || !r.biaya || !r.dokter || !r.klinik || !r.tanggal)
+                reimbursements.some((r) => 
+                    !r.jenis || !r.biaya || !r.dokter || !r.klinik || !r.tanggal ||!r.lampiranFile
+                )
             ) {
                 toast.warning('Mohon lengkapi semua field yang wajib diisi!')
                 return
             }
-
+    
             // Generate display ID untuk user
             const displayId = generateDisplayId(userData.unit)
-
+    
+            // Upload attachments and collect download URLs
+            const reimbursementsWithUrls = await Promise.all(
+                reimbursements.map(async (item) => {
+                    const lampiranUrl = await uploadAttachment(item.lampiranFile, displayId)
+                    return {
+                        ...item,
+                        lampiranUrl: lampiranUrl || '', 
+                        lampiran: item.lampiran || '' 
+                    }
+                })
+            )
+    
             // Hitung total biaya
             const totalBiaya = reimbursements.reduce((total, item) => {
                 const biayaNumber = parseInt(item.biaya.replace(/[^0-9]/g, ''))
                 return total + biayaNumber
             }, 0)
-
+    
             // Map data reimbursement langsung saat akan disimpan
             const reimbursementData = {
                 user: {
@@ -223,12 +292,14 @@ const RbsMedicalForm = () => {
                     reviewer1: userData.reviewer1,
                     reviewer2: userData.reviewer2
                 },
-                reimbursements: reimbursements.map((item) => ({
+                reimbursements: reimbursementsWithUrls.map((item) => ({
                     jenis: item.jenis,
                     biaya: item.biaya,
                     dokter: item.dokter,
                     klinik: item.klinik,
-                    tanggal: item.tanggal
+                    tanggal: item.tanggal,
+                    lampiran: item.lampiran,
+                    lampiranUrl: item.lampiranUrl
                 })),
                 displayId: displayId,
                 kategori: 'Medical',
@@ -247,7 +318,10 @@ const RbsMedicalForm = () => {
                     }
                 ]
             }
-
+    
+            // Remove any undefined values
+            const ReimbursementData = JSON.parse(JSON.stringify(reimbursementData))
+    
             // Simpan ke Firestore
             const docRef = await addDoc(collection(db, 'reimbursement'), reimbursementData)
 
@@ -271,6 +345,33 @@ const RbsMedicalForm = () => {
             console.error('Error submitting reimbursement:', error)
             toast.error('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
         }
+    }
+
+    // Render file upload section for each reimbursement form
+    const renderFileUpload = (index) => {
+        const reimbursement = reimbursements[index]
+        return (
+            <div className="flex items-center">
+                <input 
+                    type="file" 
+                    id={`file-upload-${index}`}
+                    className="hidden" 
+                    accept=".pdf"
+                    onChange={(e) => handleFileUpload(index, e)}
+                />
+                <label
+                    htmlFor={`file-upload-${index}`}
+                    className="h-10 px-4 py-2 bg-gray-200 border rounded-md cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
+                >
+                    Upload File
+                </label>
+                <span className="ml-4 text-gray-500">
+                    {reimbursement.lampiran 
+                        ? `File: ${reimbursement.lampiran}` 
+                        : 'Format .pdf Max Size: 250MB'}
+                </span>
+            </div>
+        )
     }
 
     const customStyles = {
@@ -367,19 +468,18 @@ const RbsMedicalForm = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700 font-medium mb-2">
-                            Lampiran <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex items-center">
-                            <input className="hidden" type="file" name="resume" id="file-upload" />
-                            <label
-                                htmlFor="file-upload"
-                                className="h-10 px-4 py-2 bg-gray-200 border rounded-md cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
-                            >
-                                Upload File
-                            </label>
-                            <span className="ml-4 text-gray-500">Format .pdf Max Size: 250MB</span>
-                        </div>
+                        {reimbursements.map((reimbursement, index) => (
+                            <div key={index} className="flex justify-stretch gap-2 mb-2">
+                                <div className="flex-1">
+                                    {index === 0 && (
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Lampiran <span className="text-red-500">*</span>
+                                        </label>
+                                    )}
+                                    {renderFileUpload(index)}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
@@ -469,7 +569,10 @@ const RbsMedicalForm = () => {
                 ))}
 
                 <div className="mb-4">
-                    <span className="text-red-600 font-bold underline cursor-pointer hover:text-red-700" onClick={handleAddForm}>
+                    <span
+                        className="text-red-600 font-bold underline cursor-pointer hover:text-red-700"
+                        onClick={handleAddForm}
+                    >
                         Tambah
                     </span>
                 </div>
@@ -486,12 +589,12 @@ const RbsMedicalForm = () => {
                 </div>
             </div>
 
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                closeOnClick
-                pauseOnHover
+            <ToastContainer 
+                position="top-right" 
+                autoClose={3000} 
+                hideProgressBar={false} 
+                closeOnClick 
+                pauseOnHover 
             />
         </div>
     )

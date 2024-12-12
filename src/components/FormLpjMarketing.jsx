@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { doc, setDoc, getDoc, addDoc, collection } from 'firebase/firestore'
-import { db } from '../firebaseConfig'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { db, storage } from '../firebaseConfig'
 import Select from 'react-select'
 import { useLocation } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify'
@@ -25,6 +26,8 @@ const FormLpjMarketing = () => {
         lokasi: '',
         lampiran: '',
         tanggal: '',
+        lampiran: null,
+        lampiranFile: null,
         namaItem: '',
         biaya: '',
         jumlah: '',
@@ -232,12 +235,66 @@ const FormLpjMarketing = () => {
         return `LPJ/MRO/${unitCode}/${year}${month}${day}/${sequence}`
     }
 
+    const handleFileUpload = (index, event) => {
+        const file = event.target.files[0]
+        if (!file) return
+
+        // Validate file size (250MB limit)
+        if (file.size > 250 * 1024 * 1024) {
+            toast.error('Ukuran file maksimal 250MB')
+            event.target.value = '' // Clear the file input
+            return
+        }
+
+        // Validate file type (PDF only)
+        if (file.type !== 'application/pdf') {
+            toast.error('Hanya file PDF yang diperbolehkan')
+            event.target.value = '' // Clear the file input
+            return
+        }
+
+        const updatedLpj = lpj.map((item, i) =>
+            i === index 
+                ? { 
+                    ...item, 
+                    lampiran: file.name, 
+                    lampiranFile: file 
+                } 
+                : item
+        )
+        setLpj(updatedLpj)
+    }
+
+    const uploadAttachment = async (file, displayId) => {
+        if (!file) return null
+
+        try {
+            // Create a reference to the storage location
+            const storageRef = ref(
+                storage, 
+                `Lampiran_LPJ/MarketingOperasional/${displayId}/${file.name}`
+            )
+
+            // Upload the file
+            const snapshot = await uploadBytes(storageRef, file)
+            
+            // Get the download URL
+            const downloadURL = await getDownloadURL(snapshot.ref)
+            
+            return downloadURL
+        } catch (error) {
+            console.error('Error uploading file:', error)
+            toast.error('Gagal mengunggah lampiran')
+            return null
+        }
+    }
+
     const handleSubmit = async () => {
         try {
             // Validasi form
             if (
                 !userData.nama || !selectedUnit?.value || !nomorBS || !jumlahBS || !project || !nomorJO || !customer || !lokasi ||
-                lpj.some((r) => !r.tanggal || !r.namaItem || !r.biaya || !r.jumlah)
+                lpj.some((r) => !r.tanggal || !r.namaItem || !r.biaya || !r.jumlah || !r.lampiranFile)
             ) {
                 toast.warning('Mohon lengkapi semua field yang wajib diisi!')
                 return
@@ -246,6 +303,18 @@ const FormLpjMarketing = () => {
             // Generate display ID untuk user
             const displayId = generateDisplayId(userData.unit)
             
+            // Upload attachments and collect download URLs
+            const lpjWithUrls = await Promise.all(
+                lpj.map(async (item) => {
+                    const lampiranUrl = await uploadAttachment(item.lampiranFile, displayId)
+                    return {
+                        ...item,
+                        lampiranUrl: lampiranUrl || '', 
+                        lampiran: item.lampiran || '' 
+                    }
+                })
+            )
+
             const lpjData = {
                 user: {
                     uid: userData.uid,
@@ -258,12 +327,15 @@ const FormLpjMarketing = () => {
                     reviewer1: userData.reviewer1,
                     reviewer2: userData.reviewer2
                 },
-                lpj: lpj.map((item) => ({
+                lpj: lpjWithUrls.map((item) => ({
                     tanggal: item.tanggal,                    
                     namaItem: item.namaItem,
                     biaya: item.biaya,
                     jumlah: item.jumlah,
-                    jumlahBiaya: Number(item.biaya) * Number(item.jumlah)
+                    jumlahBiaya: Number(item.biaya) * Number(item.jumlah),
+                    keterangan: item.keterangan,
+                    lampiran: item.lampiran,
+                    lampiranUrl: item.lampiranUrl
                 })),
                 displayId: displayId,
                 kategori: 'Marketing/Operasional',
@@ -327,6 +399,33 @@ const FormLpjMarketing = () => {
             sisaLebih: 0,
             sisaKurang: 0
         })
+    }
+
+    // Render file upload section for each lpj form
+    const renderFileUpload = (index) => {
+        const currentLpj = lpj[index]
+        return (
+            <div className="flex items-center">
+                <input 
+                    type="file" 
+                    id={`file-upload-${index}`}
+                    className="hidden" 
+                    accept=".pdf"
+                    onChange={(e) => handleFileUpload(index, e)}
+                />
+                <label
+                    htmlFor={`file-upload-${index}`}
+                    className="h-10 px-4 py-2 bg-gray-200 border rounded-md cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
+                >
+                    Upload File
+                </label>
+                <span className="ml-4 text-gray-500">
+                    {currentLpj.lampiran 
+                        ? `File: ${currentLpj.lampiran}` 
+                        : 'Format .pdf Max Size: 250MB'}
+                </span>
+            </div>
+        )
     }
 
     const customStyles = {
@@ -489,19 +588,18 @@ const FormLpjMarketing = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700 font-medium mb-2">
-                            Lampiran <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex items-center">
-                            <input className="hidden" type="file" name="resume" id="file-upload" />
-                            <label
-                                htmlFor="file-upload"
-                                className="h-10 px-4 py-2 bg-gray-200 border rounded-md cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
-                            >
-                                Upload File
-                            </label>
-                            <span className="ml-4 text-gray-500">Format .pdf Max Size: 250MB</span>
-                        </div>
+                        {lpj.map((lpj, index) => (
+                            <div key={index} className="flex justify-stretch gap-2 mb-2">
+                                <div className="flex-1">
+                                    {index === 0 && (
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Lampiran <span className="text-red-500">*</span>
+                                        </label>
+                                    )}
+                                    {renderFileUpload(index)}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
 

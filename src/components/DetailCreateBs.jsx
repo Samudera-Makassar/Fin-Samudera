@@ -222,11 +222,7 @@ const DetailCreateBs = () => {
                         <p>: {bonSementaraDetail?.user?.accountNumber ?? 'N/A'}</p>
                         <p>Status</p>
                         <p>: {bonSementaraDetail?.status ?? 'N/A'}</p>
-                        <p>
-                            {bonSementaraDetail?.status === 'Ditolak' 
-                                ? 'Ditolak Oleh' 
-                                : 'Disetujui Oleh'}
-                        </p>
+                        <p>{bonSementaraDetail?.status === 'Ditolak' ? 'Ditolak Oleh' : 'Disetujui Oleh'}</p>
                         <p>: {getDetailedApprovalStatus(bonSementaraDetail, reviewers)}</p>
                     </div>
                 </div>
@@ -263,7 +259,8 @@ const DetailCreateBs = () => {
                             {bonSementaraDetail?.status === 'Dibatalkan' && (
                                 <tr>
                                     <td colSpan="5" className="px-4 py-2 text-left border">
-                                        <span className='font-semibold'>Alasan Pembatalan :</span> {bonSementaraDetail?.cancelReason}
+                                        <span className="font-semibold">Alasan Pembatalan :</span>{' '}
+                                        {bonSementaraDetail?.cancelReason}
                                     </td>
                                 </tr>
                             )}
@@ -271,18 +268,34 @@ const DetailCreateBs = () => {
                     </table>
                 </div>
 
-                <div className="flex justify-end mt-6">
-                    <button
-                        onClick={handleBuatLaporan}
-                        className={`px-12 py-3 rounded text-white ${
-                            bonSementaraDetail?.status === 'Disetujui'
-                                ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
-                                : 'bg-gray-400 cursor-not-allowed'
-                        }`}
-                        disabled={bonSementaraDetail?.status !== 'Disetujui'}
-                    >
-                        Buat Laporan
-                    </button>
+                {/* Tombol Buat Laporan dan Download hanya  tampil jika user adalah pembuat nomor bs */}
+                <div className="flex justify-end mt-6 space-x-2">
+                    {userData?.uid === bonSementaraDetail?.user.uid && (
+                        <button
+                            onClick={handleBuatLaporan}
+                            className={`px-12 py-3 rounded text-white ${
+                                bonSementaraDetail?.status === 'Disetujui'
+                                    ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                                    : 'bg-gray-400 cursor-not-allowed'
+                            }`}
+                            disabled={bonSementaraDetail?.status !== 'Disetujui'}
+                        >
+                            Buat Laporan
+                        </button>
+                    )}
+
+                    {userData?.uid === bonSementaraDetail?.user.uid && (
+                        <button
+                            className={`px-16 py-3 rounded text-white ${
+                                bonSementaraDetail?.status === 'Disetujui'
+                                    ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                                    : 'bg-gray-400 cursor-not-allowed'
+                            }`}
+                            disabled={bonSementaraDetail?.status !== 'Disetujui'}
+                        >
+                            Download
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

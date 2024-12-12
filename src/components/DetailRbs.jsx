@@ -4,6 +4,9 @@ import { db } from '../firebaseConfig'
 import { useParams } from 'react-router-dom'
 // import { downloadReimbursementPDF } from '../utils/RbsPdf'
 import { downloadReimbursementPDF } from '../utils/ReimbursementPdf';
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import ModalPDF from './ModalPDF'
 
 const DetailRbs = () => {
     const [userData, setUserData] = useState(null)
@@ -156,6 +159,20 @@ const DetailRbs = () => {
         return '-'
     }
 
+    const [previewUrl, setPreviewUrl] = useState(null)
+
+    const handleViewAttachment = (lampiranUrl) => {
+        if (lampiranUrl) {
+            setPreviewUrl(lampiranUrl) // Set URL untuk preview
+        } else {
+            toast.error('Lampiran tidak tersedia')
+        }
+    }
+
+    const closePreview = () => {
+        setPreviewUrl(null) // Reset URL untuk menutup preview
+    }
+
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A' // Handle null/undefined
         const date = new Date(dateString)
@@ -231,7 +248,13 @@ const DetailRbs = () => {
                         <p>Nama Lengkap</p>
                         <p>: {reimbursementDetail?.user?.nama ?? 'N/A'}</p>
                         <p>Department</p>
-                        <p>: {Array.isArray(reimbursementDetail?.user?.department) && reimbursementDetail.user.department.length > 0 ? reimbursementDetail.user.department.join(', ') : ''}</p>
+                        <p>
+                            :{' '}
+                            {Array.isArray(reimbursementDetail?.user?.department) &&
+                            reimbursementDetail.user.department.length > 0
+                                ? reimbursementDetail.user.department.join(', ')
+                                : ''}
+                        </p>
                         <p>Unit Bisnis</p>
                         <p>: {reimbursementDetail?.user?.unit ?? 'N/A'}</p>
                         <p>Tanggal Pengajuan</p>
@@ -246,11 +269,7 @@ const DetailRbs = () => {
                         <p>: {reimbursementDetail?.user?.bankName ?? 'N/A'}</p>
                         <p>Status</p>
                         <p>: {reimbursementDetail?.status ?? 'N/A'}</p>
-                        <p>
-                            {reimbursementDetail?.status === 'Ditolak' 
-                                ? 'Ditolak Oleh' 
-                                : 'Disetujui Oleh'}
-                        </p>
+                        <p>{reimbursementDetail?.status === 'Ditolak' ? 'Ditolak Oleh' : 'Disetujui Oleh'}</p>
                         <p>: {getDetailedApprovalStatus(reimbursementDetail, reviewers)}</p>
                     </div>
                 </div>
@@ -285,7 +304,8 @@ const DetailRbs = () => {
                             {reimbursementDetail?.status === 'Dibatalkan' && (
                                 <tr>
                                     <td colSpan={columns.length} className="px-4 py-2 text-left border">
-                                        <span className='font-semibold'>Alasan Pembatalan :</span> {reimbursementDetail?.cancelReason}
+                                        <span className="font-semibold">Alasan Pembatalan :</span>{' '}
+                                        {reimbursementDetail?.cancelReason}
                                     </td>
                                 </tr>
                             )}
@@ -302,21 +322,50 @@ const DetailRbs = () => {
                     </table>
                 </div>
 
-                <div className="flex justify-end mt-6">
+                <div className="flex justify-end mt-6 space-x-2">
+                    {/* Tombol untuk melihat lampiran */}
                     <button
-                        className={`px-16 py-3 rounded text-white ${
-                            reimbursementDetail?.status === 'Disetujui'
-                                ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
-                                : 'bg-gray-400 cursor-not-allowed'
+                        className={`px-12 py-3 rounded ${
+                            userData?.uid === reimbursementDetail?.user.uid
+                            ? 'text-red-600 bg-transparent hover:text-red-800 border border-red-600 hover:border-red-800'
+                            : 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
                         }`}
-                        onClick={() => downloadReimbursementPDF(reimbursementDetail)}
-                        disabled={reimbursementDetail?.status !== 'Disetujui'}
+                        onClick={() => handleViewAttachment(reimbursementDetail?.reimbursements[0]?.lampiranUrl)}
                     >
-                        Download
+                        Lihat Lampiran
                     </button>
+
+                    {/* Hanya tampilkan tombol Download jika user adalah pembuat reimbursement */}
+                    {userData?.uid === reimbursementDetail?.user.uid && (
+                        <button
+                            className={`px-16 py-3 rounded text-white ${
+                                reimbursementDetail?.status === 'Disetujui'
+                                    ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                                    : 'bg-gray-400 cursor-not-allowed'
+                            }`}
+                        onClick={() => downloadReimbursementPDF(reimbursementDetail)}
+                            disabled={reimbursementDetail?.status !== 'Disetujui'}
+                        >
+                            Download
+                        </button>
+                    )}
                 </div>
             </div>
-        </div>    
+
+            <ModalPDF
+                showModal={!!previewUrl}
+                previewUrl={previewUrl}
+                onClose={closePreview}
+            />
+            
+            <ToastContainer 
+                position="top-right" 
+                autoClose={3000} 
+                hideProgressBar={false} 
+                closeOnClick 
+                pauseOnHover 
+            />
+        </div>
     )
 }
 

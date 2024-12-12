@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { useParams } from 'react-router-dom'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import ModalPDF from './ModalPDF'
 
 const DetailLpj = () => {
     const [userData, setUserData] = useState(null)
@@ -154,6 +157,20 @@ const DetailLpj = () => {
         return '-'
     }
 
+    const [previewUrl, setPreviewUrl] = useState(null)
+
+    const handleViewAttachment = (lampiranUrl) => {
+        if (lampiranUrl) {
+            setPreviewUrl(lampiranUrl) // Set URL untuk preview
+        } else {
+            toast.error('Lampiran tidak tersedia')
+        }
+    }
+
+    const closePreview = () => {
+        setPreviewUrl(null) // Reset URL untuk menutup preview
+    }
+    
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A' // Handle null/undefined
         const date = new Date(dateString)
@@ -289,19 +306,48 @@ const DetailLpj = () => {
                     </table>
                 </div>
 
-                <div className="flex justify-end mt-6">
-                <button
-                        className={`px-16 py-3 rounded text-white ${
-                            lpjDetail?.status === 'Disetujui'
-                                ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
-                                : 'bg-gray-400 cursor-not-allowed'
+                <div className="flex justify-end mt-6 space-x-2">
+                    {/* Tombol untuk melihat lampiran */}
+                    <button
+                        className={`px-12 py-3 rounded ${
+                            userData?.uid === lpjDetail?.user.uid
+                            ? 'text-red-600 bg-transparent hover:text-red-800 border border-red-600 hover:border-red-800'
+                            : 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
                         }`}
-                        disabled={lpjDetail?.status !== 'Disetujui'}
+                        onClick={() => handleViewAttachment(lpjDetail?.reimbursements[0]?.lampiranUrl)}
                     >
-                        Download
+                        Lihat Lampiran
                     </button>
+
+                    {/* Hanya tampilkan tombol Download jika user adalah pembuat lpj */}
+                    {userData?.uid === lpjDetail?.user.uid && (
+                        <button
+                            className={`px-16 py-3 rounded text-white ${
+                                lpjDetail?.status === 'Disetujui'
+                                    ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                                    : 'bg-gray-400 cursor-not-allowed'
+                            }`}
+                            disabled={lpjDetail?.status !== 'Disetujui'}
+                        >
+                            Download
+                        </button>
+                    )}
                 </div>
             </div>
+
+            <ModalPDF
+                showModal={!!previewUrl}
+                previewUrl={previewUrl}
+                onClose={closePreview}
+            />
+            
+            <ToastContainer 
+                position="top-right" 
+                autoClose={3000} 
+                hideProgressBar={false} 
+                closeOnClick 
+                pauseOnHover 
+            />
         </div>
     )
 }

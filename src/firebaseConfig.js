@@ -25,4 +25,4 @@ const storage = getStorage(app)
 // Initialize Firebase Authentication and export it
 export default app;
 
-export { auth, db };  // Ekspor auth dan db
+export { auth, db, storage };  
