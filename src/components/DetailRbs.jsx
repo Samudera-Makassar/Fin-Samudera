@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig' 
 import { useParams } from 'react-router-dom'
-// import { downloadReimbursementPDF } from '../utils/RbsPdf'
 import { downloadReimbursementPDF } from '../utils/ReimbursementPdf';
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'

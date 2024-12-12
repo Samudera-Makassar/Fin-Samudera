@@ -613,6 +613,7 @@ const FormLpjUmum = () => {
                             <input
                                 type="text"
                                 value={item.keterangan}
+                                onChange={(e) => handleInputChange(index, 'keterangan', e.target.value)}
                                 className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
                             />
                         </div>

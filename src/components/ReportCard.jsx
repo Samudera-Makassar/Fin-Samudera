@@ -223,7 +223,7 @@ const ReportCard = () => {
                 <div className="flex-1">
                     <p className="text-lg font-medium text-gray-500">Reimbursement</p>
                     <div className="text-4xl font-bold">{reimbursementCount || 0}</div>
-                    <p className="text-sm text-gray-500">Laporan Perlu Diapprove/Review</p>
+                    <p className="text-sm text-gray-500">Laporan Perlu Ditanggapi</p>
                 </div>
             </div>
 
@@ -247,7 +247,7 @@ const ReportCard = () => {
                 <div className="flex-1">
                     <p className="text-lg font-medium text-gray-500">Nomor Bon Sementara</p>
                     <div className="text-4xl font-bold">{bonSementaraCount || 0}</div>
-                    <p className="text-sm text-gray-500">Pengajuan Perlu Diapprove/Review</p>
+                    <p className="text-sm text-gray-500">Pengajuan Perlu Ditanggapi</p>
                 </div>
             </div>
 
@@ -271,7 +271,7 @@ const ReportCard = () => {
                 <div className="flex-1">
                     <p className="text-lg font-medium text-gray-500">LPJ Bon Sementara</p>
                     <div className="text-4xl font-bold">{lpjCount || 0}</div>
-                    <p className="text-sm text-gray-500">Laporan Perlu Diapprove/Review</p>
+                    <p className="text-sm text-gray-500">Laporan Perlu Ditanggapi</p>
                 </div>
             </div>
         </div>
