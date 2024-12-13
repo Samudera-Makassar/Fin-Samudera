@@ -24,7 +24,6 @@ const FormLpjMarketing = () => {
         nomorJO: '',
         customer: '',
         lokasi: '',
-        lampiran: '',
         tanggal: '',
         lampiran: null,
         lampiranFile: null,
