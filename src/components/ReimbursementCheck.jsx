@@ -11,7 +11,6 @@ const ReimbursementCheck = () => {
     const [data, setData] = useState({ reimbursements: [] })
 
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 5 // Jumlah item per halaman
 
     const [showModal, setShowModal] = useState(false)
     const [modalProps, setModalProps] = useState({})
@@ -94,6 +93,14 @@ const ReimbursementCheck = () => {
                         .values()
                     )                    
                 }
+
+                // Sort reimbursements from oldest to newest based on tanggalPengajuan
+                reimbursements.sort((a, b) => {
+                    const dateA = new Date(a.tanggalPengajuan)
+                    const dateB = new Date(b.tanggalPengajuan)
+                    return dateA - dateB
+                })
+
                 setData({ reimbursements })
             } catch (error) {
                 console.error('Error fetching user or reimbursements data:', error)
@@ -296,26 +303,6 @@ const ReimbursementCheck = () => {
         }).format(date)
     }
 
-    // Menghitung total halaman
-    const totalPages = Math.ceil(data.reimbursements.length / itemsPerPage)
-
-    // Mendapatkan data pengguna untuk halaman saat ini
-    const currentReimbursements = data.reimbursements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
-    // Fungsi untuk berpindah ke halaman berikutnya
-    const nextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1)
-        }
-    }
-
-    // Fungsi untuk berpindah ke halaman sebelumnya
-    const prevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1)
-        }
-    }
-
     return (
         <div className="container mx-auto py-8">
             <h2 className="text-xl font-medium mb-4">
@@ -354,7 +341,7 @@ const ReimbursementCheck = () => {
                                 {data.reimbursements.map((item, index) => (
                                     <tr key={index}>
                                         <td className="px-2 py-2 border text-center w-auto">
-                                            {index + 1 + (currentPage - 1) * itemsPerPage}
+                                            {index + 1 + (currentPage - 1)}
                                         </td>    
                                             <td className="px-4 py-2 border">
                                             <Link 
