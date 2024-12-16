@@ -53,15 +53,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  headerLeft: {
-    flexDirection: 'column',
-    width: '60%',
-  },
-  headerRight: {
-    flexDirection: 'column',
-    width: '40%',
-    alignItems: 'flex-end',
-  },
   tableContainer: {
     border: 2,
     borderColor: '#000',
@@ -208,7 +199,7 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
         <View style={styles.header}>
           {lpjDetail.kategori === "GA/Umum" ? (
             <View style={{ flexDirection: 'row' }}>
-              <View style={[styles.lpjInfo, { flexDirection: "column", marginRight: 12 }]}>
+              <View style={{ flexDirection: "column", marginRight: 12 }}>
                 <Text style={{ marginBottom: 4 }}>Bisnis Unit</Text>
                 <Text style={{ marginBottom: 4 }}>PIC</Text>
               </View>
@@ -223,7 +214,7 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
             </View>
           ) : lpjDetail.kategori === "Marketing/Operasional" ? (
             <View style={{ flexDirection: 'row' }}>
-              <View style={[styles.lpjInfo, { flexDirection: "column", marginRight: 12 }]}>
+              <View style={{ flexDirection: "column", marginRight: 12 }}>
                 <Text style={{ marginBottom: 4 }}>Bisnis Unit</Text>
                 <Text style={{ marginBottom: 4 }}>Project</Text>
                 <Text style={{ marginBottom: 4 }}>Customer</Text>
@@ -253,16 +244,16 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
 
           {lpjDetail.kategori === "GA/Umum" && lpjDetail.lpj?.map((item, index) => (
             <View key={index} style={{ flexDirection: 'row' }}>
-              <View style={[styles.lpjInfo, { flexDirection: "column", marginRight: 12 }]}>                
-                <Text style={{ marginBottom: 4 }}>No. BS</Text>                
-                <Text style={{ marginBottom: 4 }}>Tgl. Kegiatan</Text>                
+              <View style={{ flexDirection: "column", marginRight: 12 }}>
+                <Text style={{ marginBottom: 4 }}>No. BS</Text>
+                <Text style={{ marginBottom: 4 }}>Tgl. Kegiatan</Text>
               </View>
               <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4 }}>
                 <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>                
+                <Text style={{ marginBottom: 4 }}>:</Text>
               </View>
               <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase' }}>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.nomorBS || "-"}</Text>                
+                <Text style={{ marginBottom: 4 }}>{lpjDetail.nomorBS || "-"}</Text>
                 <Text style={{ marginBottom: 4 }}>
                   {item.tanggal
                     ? new Date(item.tanggal).toLocaleDateString("id-ID", {
@@ -278,7 +269,7 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
 
           {lpjDetail.kategori === "Marketing/Operasional" && lpjDetail.lpj?.map((item, index) => (
             <View key={index} style={{ flexDirection: 'row' }}>
-              <View style={[styles.lpjInfo, { flexDirection: "column", marginRight: 12 }]}>
+              <View style={{ flexDirection: "column", marginRight: 12 }}>
                 <Text style={{ marginBottom: 4 }}> </Text>
                 <Text style={{ marginBottom: 4 }}>No. BS</Text>
                 <Text style={{ marginBottom: 4 }}>No. Job Order</Text>
@@ -310,65 +301,6 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
             </View>
           ))}
         </View>
-
-        {/* <View style={styles.header}>
-          <View style={{ flexDirection: 'row' }}>
-            <View style={[styles.lpjInfo, { flexDirection: "column", marginRight: 12 }]}>
-              <Text style={{ marginBottom: 4 }}>Bisnis Unit</Text>
-              <Text style={{ marginBottom: 4 }}>Project</Text>
-              <Text style={{ marginBottom: 4 }}>Customer</Text>
-              <Text style={{ marginBottom: 4 }}>Location</Text>
-              <Text style={{ marginBottom: 4 }}>PIC</Text>
-            </View>
-            <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4 }}>
-              <Text style={{ marginBottom: 4 }}>:</Text>
-              <Text style={{ marginBottom: 4 }}>:</Text>
-              <Text style={{ marginBottom: 4 }}>:</Text>
-              <Text style={{ marginBottom: 4 }}>:</Text>
-              <Text style={{ marginBottom: 4 }}>:</Text>
-            </View>
-            <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase' }}>
-              <Text style={{ marginBottom: 4 }}>{lpjDetail.user?.unit || "-"}</Text>
-              <Text style={{ marginBottom: 4 }}>{lpjDetail.project || "-"}</Text>
-              <Text style={{ marginBottom: 4 }}>{lpjDetail.customer || "-"}</Text>
-              <Text style={{ marginBottom: 4 }}>{lpjDetail.lokasi || "-"}</Text>
-              <Text style={{ marginBottom: 4 }}>{lpjDetail.user?.nama || "-"}</Text>
-            </View>
-          </View>
-          {lpjDetail.lpj?.map((item) => (
-            <View style={{ flexDirection: 'row' }}>
-              <View style={[styles.lpjInfo, { flexDirection: "column", marginRight: 12 }]}>
-                <Text style={{ marginBottom: 4 }}> </Text>
-                <Text style={{ marginBottom: 4 }}>No. BS</Text>
-                <Text style={{ marginBottom: 4 }}>No. Job Order</Text>
-                <Text style={{ marginBottom: 4 }}>Tgl. Kegiatan</Text>
-                <Text style={{ marginBottom: 4 }}> </Text>
-              </View>
-              <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4 }}>
-                <Text style={{ marginBottom: 4 }}> </Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}> </Text>
-              </View>
-              <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase' }}>
-                <Text style={{ marginBottom: 4 }}> </Text>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.nomorBS || "-"}</Text>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.nomorJO || "-"}</Text>
-                <Text style={{ marginBottom: 4 }}>
-                  {item.tanggal
-                    ? new Date(item.tanggal).toLocaleDateString("id-ID", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })
-                    : "-"}
-                </Text>
-                <Text style={{ marginBottom: 4 }}> </Text>
-              </View>
-            </View>
-          ))}
-        </View> */}
 
         {/* Table */}
         <View style={styles.tableContainer}>
