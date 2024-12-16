@@ -19,6 +19,8 @@ const CreateBonForm = () => {
         reviewer2: []
     })
 
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
     const initialBonSementaraState = {
         nomorBS: '',
         aktivitas: '',
@@ -258,6 +260,8 @@ const CreateBonForm = () => {
 
     const handleSubmit = async () => {
         try {
+            setIsSubmitting(true)
+
             // Validasi form dengan pesan spesifik
             const missingFields = []
 
@@ -290,11 +294,18 @@ const CreateBonForm = () => {
                         </>
                     )
                 })
+
+                setIsSubmitting(false)
                 return
             }
 
-            // Gunakan nomorBS pertama sebagai   Id
+            // Gunakan nomorBS pertama sebagai Id
             const displayId = bonSementara[0]?.nomorBS
+
+            // Fungsi untuk mengonversi format Rupiah ke angka
+            const parseRupiah = (value) => {
+                return Number(value.replace(/[^,\d]/g, '').replace(',', '.')) || 0
+            }
 
             // Map data bon sementara langsung saat akan disimpan
             const bonSementaraData = {
@@ -311,7 +322,7 @@ const CreateBonForm = () => {
                 },
                 bonSementara: bonSementara.map((item) => ({
                     nomorBS: item.nomorBS,
-                    jumlahBS: item.jumlahBS,
+                    jumlahBS: parseRupiah(item.jumlahBS),
                     aktivitas: item.aktivitas,
                     kategori: item.kategori
                 })),
@@ -360,9 +371,12 @@ const CreateBonForm = () => {
 
             // Reset form setelah berhasil submit
             resetForm()
+            setIsSubmitting(false)
         } catch (error) {
             console.error('Error submitting bon sementara:', error)
             toast.error('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
+            
+            setIsSubmitting(false)
         }
     }
 
@@ -508,10 +522,39 @@ const CreateBonForm = () => {
 
                 <div className="flex justify-end mt-6">
                     <button
-                        className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
+                        className={`rounded text-white py-3 
+                        ${isSubmitting ? 'px-8 bg-red-700 cursor-not-allowed' : 'px-16 bg-red-600 hover:bg-red-700 hover:text-gray-200'}
+                        flex items-center justify-center relative`}
                         onClick={handleSubmit}
+                        disabled={isSubmitting}
                     >
-                        Ajukan
+                        {isSubmitting ? (
+                            <div className="flex items-center gap-2 text-gray-200">
+                                <svg
+                                    className="animate-spin h-5 w-5"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    ></circle>
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    ></path>
+                                </svg>
+                                <span>Submitting...</span>
+                            </div>
+                        ) : (
+                            'Submit'
+                        )}
                     </button>
                 </div>
             </div>

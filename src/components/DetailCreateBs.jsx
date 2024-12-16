@@ -246,7 +246,7 @@ const DetailCreateBs = () => {
                                     <td className="px-4 py-2 border">{item.nomorBS}</td>
                                     <td className="px-4 py-2 border">{item.kategori}</td>
                                     <td className="px-4 py-2 border">{item.aktivitas}</td>
-                                    <td className="px-4 py-2 border">{item.jumlahBS}</td>
+                                    <td className="px-4 py-2 border">Rp{item.jumlahBS.toLocaleString('id-ID')}</td>
                                     <td className="px-4 py-2 border">
                                         {formatDate(bonSementaraDetail.tanggalPengajuan) ?? 'N/A'}
                                     </td>
@@ -278,7 +278,7 @@ const DetailCreateBs = () => {
                             className={`px-12 py-3 rounded ${
                                 bonSementaraDetail?.status === 'Disetujui'
                                     ? 'text-red-600 bg-transparent hover:text-red-800 border border-red-600 hover:border-red-800'
-                                    : 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                                    : 'text-white bg-gray-400 cursor-not-allowed'
                             }`}
                             disabled={bonSementaraDetail?.status !== 'Disetujui'}
                         >

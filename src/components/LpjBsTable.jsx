@@ -7,6 +7,8 @@ import Select from 'react-select'
 import Modal from '../components/Modal';
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 const LpjBsTable = ({ onCancel }) => {
     const [data, setData] = useState({ lpj: [] })
@@ -257,7 +259,20 @@ const LpjBsTable = ({ onCancel }) => {
     }
 
     if (loading) {
-        return <p>Loading...</p>
+        return (
+            <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xl font-medium mb-4 items-center">Reimbursement Diajukan</h3>
+                    <div className="flex space-x-2">
+                        <Skeleton width={100} height={32} />
+                        <Skeleton width={100} height={32} />
+                        <Skeleton width={100} height={32} />
+                        <Skeleton width={100} height={32} />
+                    </div>
+                </div>
+                <Skeleton count={5} height={40} />
+            </div>
+        )
     }
 
     const shouldShowEmptyState = 

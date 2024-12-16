@@ -7,6 +7,8 @@ import Select from 'react-select'
 import Modal from '../components/Modal';
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 const ReimbursementTable = () => {
     const [data, setData] = useState({ reimbursements: [] })
@@ -65,54 +67,55 @@ const ReimbursementTable = () => {
 
     useEffect(() => {
         const fetchUserAndReimbursements = async () => {
+            setLoading(true); // Set loading to true before fetching data
             try {
-                const uid = localStorage.getItem('userUid')
+                const uid = localStorage.getItem('userUid');
                 if (!uid) {
-                    console.error('UID tidak ditemukan di localStorage')
-                    setLoading(false)
-                    return
+                    console.error('UID tidak ditemukan di localStorage');
+                    setLoading(false);
+                    return;
                 }
 
                 // Fetch data user berdasarkan UID
-                const userDocRef = doc(db, 'users', uid)
-                const userDoc = await getDoc(userDocRef)
-
+                const userDocRef = doc(db, 'users', uid);
+                const userDoc = await getDoc(userDocRef);
+    
                 // Query reimbursement berdasarkan UID user
-                const q = query(collection(db, 'reimbursement'), where('user.uid', '==', uid))
-
-                const querySnapshot = await getDocs(q)
+                const q = query(collection(db, 'reimbursement'), where('user.uid', '==', uid));
+    
+                const querySnapshot = await getDocs(q);
                 const reimbursements = querySnapshot.docs.map((doc) => ({
                     id: doc.id,
                     displayId: doc.data().displayId,
                     ...doc.data()
-                }))
-
+                }));
+    
                 // Dynamically update year options based on existing reimbursements
                 const existingYears = new Set(
                     reimbursements.map((item) => new Date(item.tanggalPengajuan).getFullYear())
-                )
-
+                );
+    
                 const updatedYearOptions = [
                     ...Array.from(existingYears)
                         .filter((year) => !yearOptions.some((option) => option.value === year))
                         .map((year) => ({ value: year, label: `${year}` }))
-                ]
-
+                ];
+    
                 // Only update if new years are found
                 if (updatedYearOptions.length > 1) {
-                    setYearOptions((prev) => [...prev, ...updatedYearOptions.slice(1)])
+                    setYearOptions((prev) => [...prev, ...updatedYearOptions.slice(1)]);
                 }
-
-                setData({ reimbursements })
+    
+                setData({ reimbursements });
             } catch (error) {
-                console.error('Error fetching user or reimbursements data:', error)
+                console.error('Error fetching user or reimbursements data:', error);
             } finally {
-                setLoading(false)
+                setLoading(false); // Set loading to false after fetching data
             }
-        }
-
-        fetchUserAndReimbursements()
-    }, [])
+        };
+    
+        fetchUserAndReimbursements();
+    }, []);
 
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A'
@@ -260,7 +263,22 @@ const ReimbursementTable = () => {
     }
 
     if (loading) {
-        return <p>Loading...</p>
+        return (
+            <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xl font-medium mb-4 items-center">
+                        Reimbursement Diajukan
+                    </h3>
+                    <div className="flex space-x-2">
+                        <Skeleton width={100} height={32} />
+                        <Skeleton width={100} height={32} />
+                        <Skeleton width={100} height={32} />
+                        <Skeleton width={100} height={32} />
+                    </div>
+                </div>
+                <Skeleton count={5} height={40} />
+            </div>
+        );
     }
 
     const shouldShowEmptyState = 
@@ -271,9 +289,7 @@ const ReimbursementTable = () => {
             {shouldShowEmptyState ? (
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-xl font-medium mb-4 items-center">
-                        Reimbursement Diajukan
-                        </h3>
+                        <h3 className="text-xl font-medium mb-4 items-center">Reimbursement Diajukan</h3>
                         <div className="flex space-x-2">
                             <FilterSelect field="status" label="Status" />
                             <FilterSelect field="kategori" label="Kategori" />
