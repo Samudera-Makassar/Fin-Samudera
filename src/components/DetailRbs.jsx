@@ -342,7 +342,7 @@ const DetailRbs = () => {
                                     ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
                                     : 'bg-gray-400 cursor-not-allowed'
                             }`}
-                        onClick={() => downloadReimbursementPDF(reimbursementDetail)}
+                            onClick={() => downloadReimbursementPDF(reimbursementDetail)}
                             disabled={reimbursementDetail?.status !== 'Disetujui'}
                         >
                             Download

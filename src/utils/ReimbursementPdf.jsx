@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     // fontWeight: 'bold',
   },
   tableCell: {
-    fontSize: 10,
+    fontSize: 8,
     padding: 4,
     flex: 1,
     textAlign: "left",
@@ -127,7 +127,7 @@ const getApprovedReviewerNames = async (reimbursementDetail) => {
   const { statusHistory } = reimbursementDetail;
 
   const findApprovedReviewer = async (reviewers, backupRole) => {
-    for (const reviewerUid of reviewers) {      
+    for (const reviewerUid of reviewers) {
 
       const approved = statusHistory.find(
         (history) =>
@@ -135,13 +135,13 @@ const getApprovedReviewerNames = async (reimbursementDetail) => {
           history.status.toLowerCase().includes("disetujui"), // Cek apakah status mengandung 'disetujui'
       );
 
-      if (approved) {        
+      if (approved) {
         try {
           const reviewerDocRef = doc(db, "users", reviewerUid);
           const reviewerSnapshot = await getDoc(reviewerDocRef);
 
           if (reviewerSnapshot.exists()) {
-            const nama = reviewerSnapshot.data().nama;            
+            const nama = reviewerSnapshot.data().nama;
             return nama; // Ambil nama reviewer
           }
         } catch (error) {
@@ -308,7 +308,7 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
             <Text
               style={[
                 styles.tableCell,
-                { flex: 0.1, textAlign: "center", borderRight: 1 },
+                { flex: 0.05, textAlign: "center", borderRight: 1 },
               ]}
             >
               NO.
@@ -316,13 +316,13 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
             <Text
               style={[
                 styles.tableCell,
-                { flex: 0.7, textAlign: "center", borderRight: 1 },
+                { flex: 0.8, textAlign: "center", borderRight: 1 },
               ]}
             >
               ACTIVITIES NAME
             </Text>
             <Text
-              style={[styles.tableCell, { flex: 0.2, textAlign: "center" }]}
+              style={[styles.tableCell, { flex: 0.15, textAlign: "center" }]}
             >
               JUMLAH (IDR)
             </Text>
@@ -330,14 +330,12 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
 
           {/* Baris untuk deskripsi Biaya Reimburse */}
           <View style={[styles.tableRow]}>
-            <Text style={[styles.tableCell, { flex: 0.1, borderRight: 1 }]}>
-              {" "}
-            </Text>
+            <Text style={[styles.tableCell, { flex: 0.05, borderRight: 1 }]}> </Text>
             <Text
               style={[
                 styles.tableCell,
                 {
-                  flex: 0.7,
+                  flex: 0.8,
                   fontWeight: "semibold",
                   textTransform: "uppercase",
                   borderRight: 1,
@@ -347,7 +345,7 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
               BIAYA REIMBURSE {reimbursementDetail.user?.nama || "-"} UNTUK
               KEGIATAN {reimbursementDetail.kategori || "-"}
             </Text>
-            <Text style={[styles.tableCell, { flex: 0.2 }]}> </Text>
+            <Text style={[styles.tableCell, { flex: 0.15 }]}> </Text>
           </View>
 
           {/* Baris Data */}
@@ -356,7 +354,7 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
               <Text
                 style={[
                   styles.tableCell,
-                  { flex: 0.1, textAlign: "center", borderRight: 1 },
+                  { flex: 0.05, textAlign: "center", borderRight: 1 },
                 ]}
               >
                 {index + 1}
@@ -364,25 +362,25 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
               <View
                 style={[
                   styles.tableCell,
-                  { flex: 0.7, flexDirection: "row", borderRight: 1 },
+                  { flex: 0.8, flexDirection: "row", borderRight: 1 },
                 ]}
               >
                 <Text style={{ width: 100 }}>
                   {item.tanggal
                     ? new Date(item.tanggal)
-                        .toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "2-digit",
-                        })
-                        .replace(/\./g, "")
-                        .replace(/\s/g, "-")
+                      .toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "2-digit",
+                      })
+                      .replace(/\./g, "")
+                      .replace(/\s/g, "-")
                     : "-"}
                 </Text>
                 <Text style={{ marginLeft: 10 }}>{item.jenis || "-"}</Text>
               </View>
               <Text
-                style={[styles.tableCell, { flex: 0.2, textAlign: "right" }]}
+                style={[styles.tableCell, { flex: 0.15, textAlign: "right" }]}
               >
                 {(item.biaya || 0).toLocaleString("id-ID")}
               </Text>
@@ -390,18 +388,16 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
           ))}
 
           <View style={styles.tableRow}>
-            <Text style={[styles.tableCell, { flex: 0.1, borderRight: 1 }]}>
-              {" "}
-            </Text>
+            <Text style={[styles.tableCell, { flex: 0.05, borderRight: 1 }]}> </Text>
             <Text
               style={[
                 styles.tableCell,
-                { flex: 0.7, textAlign: "right", borderRight: 1 },
+                { flex: 0.8, textAlign: "right", borderRight: 1 },
               ]}
             >
               TOTAL
             </Text>
-            <Text style={[styles.tableCell, { flex: 0.2, textAlign: "right" }]}>
+            <Text style={[styles.tableCell, { flex: 0.15, textAlign: "right" }]}>
               Rp{reimbursementDetail.totalBiaya?.toLocaleString("id-ID") || "-"}
             </Text>
           </View>
@@ -480,7 +476,7 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
                 },
               ]}
             >
-              Approved By {approvedReviewers.reviewer1Name} 
+              Approved By {approvedReviewers.reviewer1Name}
               {approvedReviewers.reviewer2Name ? ` & ${approvedReviewers.reviewer2Name}` : ""}
             </Text>
           </View>
@@ -521,12 +517,12 @@ const downloadReimbursementPDF = async (reimbursementDetail) => {
   }
 };
 
-<ToastContainer 
-  position="top-right" 
-  autoClose={3000} 
-  hideProgressBar={false} 
-  closeOnClick 
-  pauseOnHover 
+<ToastContainer
+  position="top-right"
+  autoClose={3000}
+  hideProgressBar={false}
+  closeOnClick
+  pauseOnHover
 />
 
 export { ReimbursementPDF, downloadReimbursementPDF };

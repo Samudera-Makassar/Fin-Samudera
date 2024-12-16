@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { useParams } from 'react-router-dom'
+import { downloadLpjPDF } from '../utils/LpjPdf';
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import ModalPDF from './ModalPDF'
@@ -327,6 +328,7 @@ const DetailLpj = () => {
                                     ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
                                     : 'bg-gray-400 cursor-not-allowed'
                             }`}
+                            onClick={() => downloadLpjPDF(lpjDetail)}
                             disabled={lpjDetail?.status !== 'Disetujui'}
                         >
                             Download
