@@ -151,6 +151,9 @@ const CreateBonForm = () => {
                 tanggalPengajuan: todayDate
             }
         ])
+    
+        // Reset the category selection
+        setSelectedKategori(null)
     }
 
     const formatRupiah = (number) => {
@@ -255,12 +258,38 @@ const CreateBonForm = () => {
 
     const handleSubmit = async () => {
         try {
-            if (
-                !userData.nama ||
-                !selectedKategori ||
-                bonSementara.some((r) => !r.nomorBS || !r.jumlahBS || !r.kategori || !r.aktivitas) 
-            ) {
-                toast.warning('Mohon lengkapi semua field yang wajib diisi!')
+            // Validasi form dengan pesan spesifik
+            const missingFields = []
+
+            // Validasi data pengguna
+            if (!userData.nama) missingFields.push('Nama')
+            if (!selectedUnit?.value) missingFields.push('Unit')
+
+            // Tentukan apakah ada lebih dari satu item bon sementara
+            const multipleItems = bonSementara.length > 1
+
+            // Validasi setiap bon sementara
+            bonSementara.forEach((r, index) => {
+                // Fungsi untuk menambahkan keterangan item dengan kondisional
+                const getFieldLabel = (baseLabel) => {
+                    return multipleItems ? `${baseLabel} (Item ${index + 1})` : baseLabel
+                }
+
+                if (!r.nomorBS) missingFields.push(getFieldLabel('Nomor BS'))
+                if (!r.jumlahBS) missingFields.push(getFieldLabel('Jumlah BS'))
+                if (!r.kategori) missingFields.push(getFieldLabel('Kategori'))
+                if (!r.aktivitas) missingFields.push(getFieldLabel('Aktivitas'))
+            })
+
+            // Tampilkan pesan warning jika ada field yang kosong
+            if (missingFields.length > 0) {
+                missingFields.forEach((field) => {
+                    toast.warning(
+                        <>
+                            Mohon lengkapi <b>{field}</b>
+                        </>
+                    )
+                })
                 return
             }
 
@@ -318,11 +347,11 @@ const CreateBonForm = () => {
                 const counterRef = doc(db, 'counters', 'bonSementaraCounter')
 
                 const counterDoc = await transaction.get(counterRef)
-                
+
                 const newLastNumber = counterDoc.data().lastNumber + 1
                 transaction.update(counterRef, { lastNumber: newLastNumber })
             })
-            
+
             console.log('Bon Sementara berhasil dibuat:', {
                 firestoreId: docRef.id,
                 displayId: displayId
@@ -344,7 +373,7 @@ const CreateBonForm = () => {
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
-                <div className="grid grid-cols-2 gap-6 mb-4">
+                <div className="grid grid-cols-2 gap-6 mb-3">
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
                         <input
@@ -380,7 +409,7 @@ const CreateBonForm = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6 mb-4">
+                <div className="grid grid-cols-2 gap-6 mb-3">
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
                         <input
@@ -401,7 +430,7 @@ const CreateBonForm = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6 mb-4">
+                <div className="grid grid-cols-2 gap-6 mb-3">
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                         <input

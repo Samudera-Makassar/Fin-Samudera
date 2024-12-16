@@ -7,23 +7,7 @@ import LpjBsTable from '../components/LpjBsTable'
 import Layout from './Layout'
 
 const EmployeeDashboard = ({ userUid }) => {
-    const [user, setUser] = useState(null) // State untuk menyimpan data user yang sedang login
-    const [data, setData] = useState({
-        reimbursements: [
-            { id: 'RBS-BBM-01', jenis: 'BBM', tanggal: '10-Okt-2024', jumlah: 'Rp.123.000', status: 'Disetujui' },
-            { id: 'RBS-MED-02', jenis: 'Medical', tanggal: '10-Okt-2024', jumlah: 'Rp.123.000', status: 'Ditolak' }
-        ],
-        lpjBs: [
-            {
-                id: 'LPJ-01',
-                jenis: 'BBM',
-                noBs: 'BS0001',
-                tanggal: '10-Okt-2024',
-                jumlah: 'Rp.123.000',
-                status: 'Diproses'
-            }
-        ]
-    })
+    const [user, setUser] = useState(null)
 
     // Ambil email dari localStorage jika tidak dikirim melalui prop
     const uid = userUid || localStorage.getItem('userUid')
@@ -60,9 +44,9 @@ const EmployeeDashboard = ({ userUid }) => {
                         <h2 className="text-xl font-medium mb-4">
                             Welcome, <span className="font-bold">{user?.name || 'User'}</span>
                         </h2>
-                        <ReimbursementTable reimbursements={data.reimbursements} />
-                        <CreateBsTable bonSementara={data.bonSementara} />
-                        <LpjBsTable lpjBs={data.lpjBs} />
+                        <ReimbursementTable />
+                        <CreateBsTable />
+                        <LpjBsTable />
                     </div>
                 </div>
             </Layout>

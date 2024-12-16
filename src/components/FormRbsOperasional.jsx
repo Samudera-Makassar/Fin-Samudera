@@ -41,6 +41,9 @@ const RbsOperasionalForm = () => {
         }
     }, [todayDate])
 
+    const [attachmentFile, setAttachmentFile] = useState(null)
+    const [attachmentFileName, setAttachmentFileName] = useState('')
+    
     const [selectedUnit, setSelectedUnit] = useState('')
     const [isAdmin, setIsAdmin] = useState(false)
 
@@ -133,6 +136,10 @@ const RbsOperasionalForm = () => {
         // Reset file inputs
         const fileInputs = document.querySelectorAll('input[type="file"]')
         fileInputs.forEach(input => input.value = '')
+
+        // Reset attachment state
+        setAttachmentFile(null)
+        setAttachmentFileName('')
     }
 
     const formatRupiah = (number) => {
@@ -228,7 +235,7 @@ const RbsOperasionalForm = () => {
         return `RBS/OPR/${unitCode}/${year}${month}${day}/${sequence}`
     }
 
-    const handleFileUpload = (index, event) => {
+    const handleFileUpload = (event) => {
         const file = event.target.files[0]
         if (!file) return
 
@@ -246,16 +253,9 @@ const RbsOperasionalForm = () => {
             return
         }
 
-        const updatedReimbursements = reimbursements.map((item, i) =>
-            i === index 
-                ? { 
-                    ...item, 
-                    lampiran: file.name, 
-                    lampiranFile: file 
-                } 
-                : item
-        )
-        setReimbursements(updatedReimbursements)
+        // Set single file for all items
+        setAttachmentFile(file)
+        setAttachmentFileName(file.name)
     }
 
     const uploadAttachment = async (file, displayId) => {
@@ -263,17 +263,14 @@ const RbsOperasionalForm = () => {
 
         try {
             // Create a reference to the storage location
-            const storageRef = ref(
-                storage, 
-                `Lampiran_Reimbursement/Operasional/${displayId}/${file.name}`
-            )
+            const storageRef = ref(storage, `Lampiran_Reimbursement/Operasional/${displayId}/${file.name}`)
 
             // Upload the file
             const snapshot = await uploadBytes(storageRef, file)
-            
+
             // Get the download URL
             const downloadURL = await getDownloadURL(snapshot.ref)
-            
+
             return downloadURL
         } catch (error) {
             console.error('Error uploading file:', error)
@@ -284,35 +281,61 @@ const RbsOperasionalForm = () => {
 
     const handleSubmit = async () => {
         try {
-            // Validasi form
-            if (
-                !userData.nama ||
-                !selectedUnit?.value ||
-                reimbursements.some((r) => {
-                    if (r.isLainnya) {
-                        return !r.jenisLain || !r.biaya || !r.kebutuhan || !r.tanggal || !r.lampiranFile
-                    }
-                    return !r.jenis || !r.biaya || !r.kebutuhan || !r.tanggal || !r.lampiranFile
+            // Validasi form dengan pesan spesifik
+            const missingFields = []
+
+            // Validasi data pengguna
+            if (!userData.nama) missingFields.push('Nama')
+            if (!selectedUnit?.value) missingFields.push('Unit')
+
+            // Tentukan apakah ada lebih dari satu item reimbursement
+            const multipleItems = reimbursements.length > 1
+
+            // Validasi setiap reimbursement
+            reimbursements.forEach((r, index) => {
+                // Fungsi untuk menambahkan keterangan item dengan kondisional
+                const getFieldLabel = (baseLabel) => {
+                    return multipleItems ? `${baseLabel} (Item ${index + 1})` : baseLabel
+                }
+
+                // Logika validasi tergantung pada apakah isLainnya bernilai true atau false
+                if (r.isLainnya) {
+                    if (!r.jenisLain) missingFields.push(getFieldLabel('Jenis Reimbursement'))
+                    if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
+                    if (!r.kebutuhan) missingFields.push(getFieldLabel('Kebutuhan'))
+                    if (!r.keterangan) missingFields.push(getFieldLabel('Keterangan'))
+                    if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Aktivitas'))
+                } else {
+                    if (!r.jenis) missingFields.push(getFieldLabel('Jenis Reimbursement'))
+                    if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
+                    if (!r.kebutuhan) missingFields.push(getFieldLabel('Kebutuhan'))
+                    if (!r.keterangan) missingFields.push(getFieldLabel('Keterangan'))
+                    if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Aktivitas'))
+                }
+            })
+
+            // Validasi lampiran file global (jika ada)
+            if (!attachmentFile) {
+                missingFields.push('File Lampiran')
+            }
+
+            // Tampilkan pesan warning jika ada field yang kosong
+            if (missingFields.length > 0) {
+                missingFields.forEach((field) => {
+                    toast.warning(
+                        <>
+                            Mohon lengkapi <b>{field}</b>
+                        </>
+                    )
                 })
-            ) {
-                toast.warning('Mohon lengkapi semua field yang wajib diisi!')
                 return
             }
 
             // Generate display ID untuk user
             const displayId = generateDisplayId(userData.unit)
 
-            // Upload attachments and collect download URLs
-            const reimbursementsWithUrls = await Promise.all(
-                reimbursements.map(async (item) => {
-                    const lampiranUrl = await uploadAttachment(item.lampiranFile, displayId)
-                    return {
-                        ...item,
-                        lampiranUrl: lampiranUrl || '', 
-                        lampiran: item.lampiran || '' 
-                    }
-                })
-            )
+            // Upload attachment
+            const lampiranUrl = await uploadAttachment(attachmentFile, displayId)
 
             // Hitung total biaya
             const totalBiaya = reimbursements.reduce((total, item) => {
@@ -333,15 +356,13 @@ const RbsOperasionalForm = () => {
                     reviewer1: userData.reviewer1,
                     reviewer2: userData.reviewer2
                 },
-                reimbursements: reimbursementsWithUrls.map((item) => ({
+                reimbursements: reimbursements.map((item) => ({
                     biaya: item.biaya,
                     kebutuhan: item.kebutuhan,
                     keterangan: item.keterangan,
                     tanggal: item.tanggal,
                     isLainnya: item.isLainnya,
                     jenis: item.isLainnya ? item.jenisLain : item.jenis.value,
-                    lampiran: item.lampiran,
-                    lampiranUrl: item.lampiranUrl 
                 })),
                 displayId: displayId,
                 kategori: 'Operasional',
@@ -351,6 +372,8 @@ const RbsOperasionalForm = () => {
                 approvedBySuperAdmin: false,
                 rejectedBySuperAdmin: false,
                 tanggalPengajuan: todayDate,
+                lampiran: attachmentFileName,
+                lampiranUrl: lampiranUrl,
                 totalBiaya: totalBiaya,
                 statusHistory: [
                     {
@@ -387,26 +410,25 @@ const RbsOperasionalForm = () => {
     }
 
     // Render file upload section for each reimbursement form
-    const renderFileUpload = (index) => {
-        const reimbursement = reimbursements[index]
+    const renderFileUpload = () => {
         return (
             <div className="flex items-center">
                 <input 
                     type="file" 
-                    id={`file-upload-${index}`}
+                    id="file-upload"
                     className="hidden" 
                     accept=".pdf"
-                    onChange={(e) => handleFileUpload(index, e)}
+                    onChange={handleFileUpload}
                 />
                 <label
-                    htmlFor={`file-upload-${index}`}
+                    htmlFor="file-upload"
                     className="h-10 px-4 py-2 bg-gray-200 border rounded-md cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
                 >
                     Upload File
                 </label>
                 <span className="ml-4 text-gray-500">
-                    {reimbursement.lampiran 
-                        ? `File: ${reimbursement.lampiran}` 
+                    {attachmentFileName 
+                        ? `File: ${attachmentFileName}` 
                         : 'Format .pdf Max Size: 250MB'}
                 </span>
             </div>
@@ -507,18 +529,10 @@ const RbsOperasionalForm = () => {
                         />
                     </div>
                     <div>
-                        {reimbursements.map((reimbursement, index) => (
-                            <div key={index} className="flex justify-stretch gap-2 mb-2">
-                                <div className="flex-1">
-                                    {index === 0 && (
-                                        <label className="block text-gray-700 font-medium mb-2">
-                                            Lampiran <span className="text-red-500">*</span>
-                                        </label>
-                                    )}
-                                    {renderFileUpload(index)}
-                                </div>
-                            </div>
-                        ))}
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Lampiran <span className="text-red-500">*</span>
+                        </label>
+                        {renderFileUpload()}
                     </div>
                 </div>
 

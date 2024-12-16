@@ -172,6 +172,7 @@ const DetailCreateBs = () => {
                 state: {
                     nomorBS: bonSementara.nomorBS,
                     jumlahBS: bonSementara.jumlahBS,
+                    aktivitas: bonSementara.aktivitas,
                 },
             })
         } else if (bonSementara?.kategori === 'Marketing/Operasional') {
@@ -179,6 +180,7 @@ const DetailCreateBs = () => {
                 state: {
                     nomorBS: bonSementara.nomorBS,
                     jumlahBS: bonSementara.jumlahBS,
+                    aktivitas: bonSementara.aktivitas,
                 },
             })
         } else {
@@ -273,10 +275,10 @@ const DetailCreateBs = () => {
                     {userData?.uid === bonSementaraDetail?.user.uid && (
                         <button
                             onClick={handleBuatLaporan}
-                            className={`px-12 py-3 rounded text-white ${
+                            className={`px-12 py-3 rounded ${
                                 bonSementaraDetail?.status === 'Disetujui'
-                                    ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
-                                    : 'bg-gray-400 cursor-not-allowed'
+                                    ? 'text-red-600 bg-transparent hover:text-red-800 border border-red-600 hover:border-red-800'
+                                    : 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
                             }`}
                             disabled={bonSementaraDetail?.status !== 'Disetujui'}
                         >

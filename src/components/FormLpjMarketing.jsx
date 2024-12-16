@@ -35,7 +35,8 @@ const FormLpjMarketing = () => {
         totalBiaya: '',
         sisaLebih: '',
         sisaKurang: '',
-        tanggalPengajuan: todayDate
+        tanggalPengajuan: todayDate,
+        aktivitas: ''
     }
 
     const location = useLocation()
@@ -46,6 +47,7 @@ const FormLpjMarketing = () => {
     const [nomorJO, setNomorJO] = useState(location.state?.nomorJO || '')
     const [customer, setCustomer] = useState(location.state?.customer || '')
     const [lokasi, setLokasi] = useState(location.state?.lokasi || '')
+    const [aktivitas, setAktivitas] = useState(location.state?.aktivitas || '')
 
     const [calculatedCosts, setCalculatedCosts] = useState({
         totalBiaya: 0,
@@ -60,6 +62,9 @@ const FormLpjMarketing = () => {
             )
         }
     }, [todayDate])
+
+    const [attachmentFile, setAttachmentFile] = useState(null)
+    const [attachmentFileName, setAttachmentFileName] = useState('')
 
     const [selectedUnit, setSelectedUnit] = useState('')
     const [isAdmin, setIsAdmin] = useState(false)
@@ -234,7 +239,7 @@ const FormLpjMarketing = () => {
         return `LPJ/MRO/${unitCode}/${year}${month}${day}/${sequence}`
     }
 
-    const handleFileUpload = (index, event) => {
+    const handleFileUpload = (event) => {
         const file = event.target.files[0]
         if (!file) return
 
@@ -252,16 +257,9 @@ const FormLpjMarketing = () => {
             return
         }
 
-        const updatedLpj = lpj.map((item, i) =>
-            i === index 
-                ? { 
-                    ...item, 
-                    lampiran: file.name, 
-                    lampiranFile: file 
-                } 
-                : item
-        )
-        setLpj(updatedLpj)
+        // Set single file for all items
+        setAttachmentFile(file)
+        setAttachmentFileName(file.name)
     }
 
     const uploadAttachment = async (file, displayId) => {
@@ -290,29 +288,59 @@ const FormLpjMarketing = () => {
 
     const handleSubmit = async () => {
         try {
-            // Validasi form
-            if (
-                !userData.nama || !selectedUnit?.value || !nomorBS || !jumlahBS || !project || !nomorJO || !customer || !lokasi ||
-                lpj.some((r) => !r.tanggal || !r.namaItem || !r.biaya || !r.jumlah || !r.lampiranFile)
-            ) {
-                toast.warning('Mohon lengkapi semua field yang wajib diisi!')
+            // Validasi form dengan pesan spesifik
+            const missingFields = []
+
+            // Validasi data pengguna
+            if (!userData.nama) missingFields.push('Nama')
+            if (!selectedUnit?.value) missingFields.push('Unit')
+
+            // Tambahkan validasi untuk form-level fields
+            if (!nomorBS) missingFields.push('Nomor Bon Sementara')
+            if (!jumlahBS) missingFields.push('Jumlah Bon Sementara')
+            if (!project) missingFields.push('Project')
+            if (!nomorJO) missingFields.push('Nomor Job Order')
+            if (!customer) missingFields.push('Customer')
+            if (!lokasi) missingFields.push('Lokasi')
+
+            // Validasi setiap reimbursement
+            const multipleItems = lpj.length > 1
+
+            // Iterasi langsung pada lpj untuk validasi
+            lpj.forEach((r, index) => {
+                // Fungsi untuk menambahkan keterangan item dengan kondisional
+                const getFieldLabel = (baseLabel) => {
+                    return multipleItems ? `${baseLabel} (Item ${index + 1})` : baseLabel
+                }
+
+                if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Kegiatan'))
+                if (!r.namaItem) missingFields.push(getFieldLabel('Item'))
+                if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
+                if (!r.jumlah) missingFields.push(getFieldLabel('Jumlah'))
+            })
+
+            // Validasi lampiran file
+            if (!attachmentFile) {
+                missingFields.push('File Lampiran')
+            }
+
+            // Tampilkan pesan warning jika ada field yang kosong
+            if (missingFields.length > 0) {
+                missingFields.forEach((field) => {
+                    toast.warning(
+                        <>
+                            Mohon lengkapi <b>{field}</b>
+                        </>
+                    )
+                })
                 return
             }
 
             // Generate display ID untuk user
             const displayId = generateDisplayId(userData.unit)
-            
-            // Upload attachments and collect download URLs
-            const lpjWithUrls = await Promise.all(
-                lpj.map(async (item) => {
-                    const lampiranUrl = await uploadAttachment(item.lampiranFile, displayId)
-                    return {
-                        ...item,
-                        lampiranUrl: lampiranUrl || '', 
-                        lampiran: item.lampiran || '' 
-                    }
-                })
-            )
+
+            // Upload attachment
+            const lampiranUrl = await uploadAttachment(attachmentFile, displayId)
 
             const lpjData = {
                 user: {
@@ -326,17 +354,16 @@ const FormLpjMarketing = () => {
                     reviewer1: userData.reviewer1,
                     reviewer2: userData.reviewer2
                 },
-                lpj: lpjWithUrls.map((item) => ({
-                    tanggal: item.tanggal,                    
+                lpj: lpj.map((item) => ({
+                    tanggal: item.tanggal,
                     namaItem: item.namaItem,
                     biaya: item.biaya,
                     jumlah: item.jumlah,
                     jumlahBiaya: Number(item.biaya) * Number(item.jumlah),
-                    keterangan: item.keterangan,
-                    lampiran: item.lampiran,
-                    lampiranUrl: item.lampiranUrl
+                    keterangan: item.keterangan
                 })),
                 displayId: displayId,
+                aktivitas: aktivitas,
                 kategori: 'Marketing/Operasional',
                 status: 'Diajukan',
                 approvedByReviewer1: false,
@@ -344,13 +371,15 @@ const FormLpjMarketing = () => {
                 approvedBySuperAdmin: false,
                 rejectedBySuperAdmin: false,
                 nomorBS: nomorBS,
-                jumlahBS: jumlahBS,                                             
-                project: project,                                             
-                nomorJO: nomorJO,                                             
-                customer: customer,                                             
-                lokasi: lokasi,                                             
+                jumlahBS: jumlahBS,
+                project: project,
+                nomorJO: nomorJO,
+                customer: customer,
+                lokasi: lokasi,
                 ...calculatedCosts,
-                tanggalPengajuan: todayDate,            
+                tanggalPengajuan: todayDate,
+                lampiran: attachmentFileName,
+                lampiranUrl: lampiranUrl,
                 statusHistory: [
                     {
                         status: 'Diajukan',
@@ -398,34 +427,52 @@ const FormLpjMarketing = () => {
             sisaLebih: 0,
             sisaKurang: 0
         })
+
+        // Reset file inputs
+        const fileInputs = document.querySelectorAll('input[type="file"]')
+        fileInputs.forEach(input => input.value = '')
+
+        // Reset attachment state
+        setAttachmentFile(null)
+        setAttachmentFileName('')
     }
 
-    // Render file upload section for each lpj form
-    const renderFileUpload = (index) => {
-        const currentLpj = lpj[index]
+    // Render file upload section 
+    const renderFileUpload = () => {
         return (
             <div className="flex items-center">
                 <input 
                     type="file" 
-                    id={`file-upload-${index}`}
+                    id="file-upload"
                     className="hidden" 
                     accept=".pdf"
-                    onChange={(e) => handleFileUpload(index, e)}
+                    onChange={handleFileUpload}
                 />
                 <label
-                    htmlFor={`file-upload-${index}`}
+                    htmlFor="file-upload"
                     className="h-10 px-4 py-2 bg-gray-200 border rounded-md cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
                 >
                     Upload File
                 </label>
                 <span className="ml-4 text-gray-500">
-                    {currentLpj.lampiran 
-                        ? `File: ${currentLpj.lampiran}` 
+                    {attachmentFileName 
+                        ? `File: ${attachmentFileName}` 
                         : 'Format .pdf Max Size: 250MB'}
                 </span>
             </div>
         )
     }
+
+    useEffect(() => {
+        if (location.state?.aktivitas) {
+            setLpj((prevLpj) =>
+                prevLpj.map((item) => ({
+                    ...item,
+                    aktivitas: location.state.aktivitas
+                }))
+            )
+        }
+    }, [location.state?.aktivitas])
 
     const customStyles = {
         control: (base) => ({
@@ -587,18 +634,10 @@ const FormLpjMarketing = () => {
                         />
                     </div>
                     <div>
-                        {lpj.map((lpj, index) => (
-                            <div key={index} className="flex justify-stretch gap-2 mb-2">
-                                <div className="flex-1">
-                                    {index === 0 && (
-                                        <label className="block text-gray-700 font-medium mb-2">
-                                            Lampiran <span className="text-red-500">*</span>
-                                        </label>
-                                    )}
-                                    {renderFileUpload(index)}
-                                </div>
-                            </div>
-                        ))}
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Lampiran <span className="text-red-500">*</span>
+                        </label>
+                        {renderFileUpload()}
                     </div>
                 </div>
 

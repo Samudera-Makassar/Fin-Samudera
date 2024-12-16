@@ -31,13 +31,15 @@ const FormLpjUmum = () => {
         totalBiaya: '',
         sisaLebih: '',
         sisaKurang: '',
-        tanggalPengajuan: todayDate
+        tanggalPengajuan: todayDate,
+        aktivitas: ''
     }
 
     const location = useLocation()
     const [lpj, setLpj] = useState([initialLpjState])
-    const [nomorBS, setNomorBS] = useState(location.state?.nomorBS || '')    
+    const [nomorBS, setNomorBS] = useState(location.state?.nomorBS || '')
     const [jumlahBS, setJumlahBS] = useState(location.state?.jumlahBS || '')
+    const [aktivitas, setAktivitas] = useState(location.state?.aktivitas || '')
 
     const [calculatedCosts, setCalculatedCosts] = useState({
         totalBiaya: 0,
@@ -47,11 +49,12 @@ const FormLpjUmum = () => {
 
     useEffect(() => {
         if (todayDate) {
-            setLpj((prevLpj) =>
-                prevLpj.map((item) => ({ ...item, tanggalPengajuan: todayDate }))
-            )
+            setLpj((prevLpj) => prevLpj.map((item) => ({ ...item, tanggalPengajuan: todayDate })))
         }
     }, [todayDate])
+
+    const [attachmentFile, setAttachmentFile] = useState(null)
+    const [attachmentFileName, setAttachmentFileName] = useState('')
 
     const [selectedUnit, setSelectedUnit] = useState('')
     const [isAdmin, setIsAdmin] = useState(false)
@@ -74,7 +77,7 @@ const FormLpjUmum = () => {
         const year = today.getFullYear()
 
         const formattedDate = today.toISOString().split('T')[0]
-        
+
         const uid = localStorage.getItem('userUid')
 
         setTodayDate(formattedDate)
@@ -101,17 +104,13 @@ const FormLpjUmum = () => {
                         reviewer2: data.reviewer2 || []
                     })
 
-                    setSelectedUnit(
-                        isAdmin 
-                            ? null 
-                            : { value: data.unit, label: data.unit }
-                    )
+                    setSelectedUnit(isAdmin ? null : { value: data.unit, label: data.unit })
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error)
             }
         }
-        
+
         fetchUserData()
     }, [])
 
@@ -121,7 +120,7 @@ const FormLpjUmum = () => {
         return new Intl.DateTimeFormat('id-ID', {
             day: 'numeric',
             month: 'long',
-            year: 'numeric',
+            year: 'numeric'
         }).format(date)
     }
 
@@ -130,7 +129,7 @@ const FormLpjUmum = () => {
         const totalBiaya = lpjItems.reduce((acc, item) => {
             const biaya = Number(item.biaya) || 0
             const jumlah = Number(item.jumlah) || 0
-            return acc + (biaya * jumlah)
+            return acc + biaya * jumlah
         }, 0)
 
         // Calculate sisa lebih atau kurang
@@ -171,16 +170,16 @@ const FormLpjUmum = () => {
             if (i === index) {
                 const cleanValue = value.replace(/\D/g, '')
                 const numValue = Number(cleanValue)
-                
+
                 if (field === 'biaya') {
-                    return { 
-                        ...item, 
+                    return {
+                        ...item,
                         biaya: numValue,
                         jumlahBiaya: numValue * Number(item.jumlah || 0)
                     }
                 } else if (field === 'jumlah') {
-                    return { 
-                        ...item, 
+                    return {
+                        ...item,
                         jumlah: numValue,
                         jumlahBiaya: Number(item.biaya || 0) * numValue
                     }
@@ -193,9 +192,7 @@ const FormLpjUmum = () => {
     }
 
     const handleAddForm = () => {
-        setLpj([
-            ...lpj, 
-            { ...initialLpjState }])
+        setLpj([...lpj, { ...initialLpjState }])
     }
 
     const handleRemoveForm = (index) => {
@@ -224,13 +221,15 @@ const FormLpjUmum = () => {
         const year = today.getFullYear().toString().slice(-2)
         const month = (today.getMonth() + 1).toString().padStart(2, '0')
         const day = today.getDate().toString().padStart(2, '0')
-        const sequence = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+        const sequence = Math.floor(Math.random() * 10000)
+            .toString()
+            .padStart(4, '0')
         const unitCode = getUnitCode(selectedUnit.value)
-                
+
         return `LPJ/GAU/${unitCode}/${year}${month}${day}/${sequence}`
     }
 
-    const handleFileUpload = (index, event) => {
+    const handleFileUpload = (event) => {
         const file = event.target.files[0]
         if (!file) return
 
@@ -248,16 +247,9 @@ const FormLpjUmum = () => {
             return
         }
 
-        const updatedLpj = lpj.map((item, i) =>
-            i === index 
-                ? { 
-                    ...item, 
-                    lampiran: file.name, 
-                    lampiranFile: file 
-                } 
-                : item
-        )
-        setLpj(updatedLpj)
+        // Set single file for all items
+        setAttachmentFile(file)
+        setAttachmentFileName(file.name)
     }
 
     const uploadAttachment = async (file, displayId) => {
@@ -265,17 +257,14 @@ const FormLpjUmum = () => {
 
         try {
             // Create a reference to the storage location
-            const storageRef = ref(
-                storage, 
-                `Lampiran_LPJ/GAUmum/${displayId}/${file.name}`
-            )
+            const storageRef = ref(storage, `Lampiran_LPJ/GAUmum/${displayId}/${file.name}`)
 
             // Upload the file
             const snapshot = await uploadBytes(storageRef, file)
-            
+
             // Get the download URL
             const downloadURL = await getDownloadURL(snapshot.ref)
-            
+
             return downloadURL
         } catch (error) {
             console.error('Error uploading file:', error)
@@ -286,20 +275,55 @@ const FormLpjUmum = () => {
 
     const handleSubmit = async () => {
         try {
-            // Validasi form
-            if (
-                !userData.nama ||
-                !selectedUnit?.value ||
-                !nomorBS || 
-                !jumlahBS ||
-                lpj.some((r) => !r.tanggal || !r.namaItem || !r.biaya || !r.jumlah || !r.lampiranFile)
-            ) {
-                toast.warning('Mohon lengkapi semua field yang wajib diisi!')
+            // // Validasi form
+            const missingFields = []
+
+            // Validasi data pengguna
+            if (!userData.nama) missingFields.push('Nama')
+            if (!selectedUnit?.value) missingFields.push('Unit')
+
+            // Tambahkan validasi untuk form-level fields
+            if (!nomorBS) missingFields.push('Nomor Bon Sementara')
+            if (!jumlahBS) missingFields.push('Jumlah Bon Sementara')
+
+            // Validasi setiap reimbursement
+            const multipleItems = lpj.length > 1
+
+            // Iterasi langsung pada lpj untuk validasi
+            lpj.forEach((r, index) => {
+                // Fungsi untuk menambahkan keterangan item dengan kondisional
+                const getFieldLabel = (baseLabel) => {
+                    return multipleItems ? `${baseLabel} (Item ${index + 1})` : baseLabel
+                }
+
+                if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Kegiatan'))
+                if (!r.namaItem) missingFields.push(getFieldLabel('Item'))
+                if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
+                if (!r.jumlah) missingFields.push(getFieldLabel('Jumlah'))
+            })
+
+            // Validasi lampiran file
+            if (!attachmentFile) {
+                missingFields.push('File Lampiran')
+            }
+
+            // Tampilkan pesan warning jika ada field yang kosong
+            if (missingFields.length > 0) {
+                missingFields.forEach((field) => {
+                    toast.warning(
+                        <>
+                            Mohon lengkapi <b>{field}</b>
+                        </>
+                    )
+                })
                 return
             }
 
             // Generate display ID untuk user
             const displayId = generateDisplayId(userData.unit)
+
+            // Upload attachment
+            const lampiranUrl = await uploadAttachment(attachmentFile, displayId)
 
             // Upload attachments and collect download URLs
             const lpjWithUrls = await Promise.all(
@@ -307,12 +331,12 @@ const FormLpjUmum = () => {
                     const lampiranUrl = await uploadAttachment(item.lampiranFile, displayId)
                     return {
                         ...item,
-                        lampiranUrl: lampiranUrl || '', 
-                        lampiran: item.lampiran || '' 
+                        lampiranUrl: lampiranUrl || '',
+                        lampiran: item.lampiran || ''
                     }
                 })
             )
-            
+
             const lpjData = {
                 user: {
                     uid: userData.uid,
@@ -325,17 +349,16 @@ const FormLpjUmum = () => {
                     reviewer1: userData.reviewer1,
                     reviewer2: userData.reviewer2
                 },
-                lpj: lpjWithUrls.map((item) => ({
-                    tanggal: item.tanggal,                    
+                lpj: lpj.map((item) => ({
+                    tanggal: item.tanggal,
                     namaItem: item.namaItem,
                     biaya: item.biaya,
                     jumlah: item.jumlah,
                     jumlahBiaya: Number(item.biaya) * Number(item.jumlah),
-                    keterangan: item.keterangan,
-                    lampiran: item.lampiran,
-                    lampiranUrl: item.lampiranUrl
+                    keterangan: item.keterangan
                 })),
                 displayId: displayId,
+                aktivitas: aktivitas,
                 kategori: 'GA/Umum',
                 status: 'Diajukan',
                 approvedByReviewer1: false,
@@ -343,9 +366,11 @@ const FormLpjUmum = () => {
                 approvedBySuperAdmin: false,
                 rejectedBySuperAdmin: false,
                 nomorBS: nomorBS,
-                jumlahBS: jumlahBS,                                             
+                jumlahBS: jumlahBS,
                 ...calculatedCosts,
-                tanggalPengajuan: todayDate,            
+                tanggalPengajuan: todayDate,
+                lampiran: attachmentFileName,
+                lampiranUrl: lampiranUrl,
                 statusHistory: [
                     {
                         status: 'Diajukan',
@@ -389,34 +414,44 @@ const FormLpjUmum = () => {
             sisaLebih: 0,
             sisaKurang: 0
         })
+
+        // Reset file inputs
+        const fileInputs = document.querySelectorAll('input[type="file"]')
+        fileInputs.forEach((input) => (input.value = ''))
+
+        // Reset attachment state
+        setAttachmentFile(null)
+        setAttachmentFileName('')
     }
 
-    // Render file upload section for each lpj form
-    const renderFileUpload = (index) => {
-        const currentLpj = lpj[index]
+    // Render file upload section
+    const renderFileUpload = () => {
         return (
             <div className="flex items-center">
-                <input 
-                    type="file" 
-                    id={`file-upload-${index}`}
-                    className="hidden" 
-                    accept=".pdf"
-                    onChange={(e) => handleFileUpload(index, e)}
-                />
+                <input type="file" id="file-upload" className="hidden" accept=".pdf" onChange={handleFileUpload} />
                 <label
-                    htmlFor={`file-upload-${index}`}
+                    htmlFor="file-upload"
                     className="h-10 px-4 py-2 bg-gray-200 border rounded-md cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
                 >
                     Upload File
                 </label>
                 <span className="ml-4 text-gray-500">
-                    {currentLpj.lampiran 
-                        ? `File: ${currentLpj.lampiran}` 
-                        : 'Format .pdf Max Size: 250MB'}
+                    {attachmentFileName ? `File: ${attachmentFileName}` : 'Format .pdf Max Size: 250MB'}
                 </span>
             </div>
         )
     }
+
+    useEffect(() => {
+        if (location.state?.aktivitas) {
+            setLpj((prevLpj) =>
+                prevLpj.map((item) => ({
+                    ...item,
+                    aktivitas: location.state.aktivitas
+                }))
+            )
+        }
+    }, [location.state?.aktivitas])
 
     const customStyles = {
         control: (base) => ({
@@ -481,7 +516,7 @@ const FormLpjUmum = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-6 mb-3">
-                <div>
+                    <div>
                         <label className="block text-gray-700 font-medium mb-2">
                             Nomor Bon Sementara <span className="text-red-500">*</span>
                         </label>
@@ -524,18 +559,10 @@ const FormLpjUmum = () => {
                         />
                     </div>
                     <div>
-                        {lpj.map((lpj, index) => (
-                            <div key={index} className="flex justify-stretch gap-2 mb-2">
-                                <div className="flex-1">
-                                    {index === 0 && (
-                                        <label className="block text-gray-700 font-medium mb-2">
-                                            Lampiran <span className="text-red-500">*</span>
-                                        </label>
-                                    )}
-                                    {renderFileUpload(index)}
-                                </div>
-                            </div>
-                        ))}
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Lampiran <span className="text-red-500">*</span>
+                        </label>
+                        {renderFileUpload()}
                     </div>
                 </div>
 
@@ -585,7 +612,7 @@ const FormLpjUmum = () => {
                             />
                         </div>
 
-                        <div className='max-w-24'>
+                        <div className="max-w-24">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Jumlah <span className="text-red-500">*</span>
@@ -607,9 +634,7 @@ const FormLpjUmum = () => {
                         </div>
 
                         <div>
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">Keterangan</label>
-                            )}
+                            {index === 0 && <label className="block text-gray-700 font-medium mb-2">Keterangan</label>}
                             <input
                                 type="text"
                                 value={item.keterangan}
@@ -641,7 +666,10 @@ const FormLpjUmum = () => {
                     </div>
                 ))}
 
-                <button onClick={handleAddForm} className="text-red-600 font-bold underline cursor-pointer hover:text-red-700">
+                <button
+                    onClick={handleAddForm}
+                    className="text-red-600 font-bold underline cursor-pointer hover:text-red-700"
+                >
                     Tambah
                 </button>
 
@@ -676,13 +704,7 @@ const FormLpjUmum = () => {
                     </button>
                 </div>
             </div>
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                closeOnClick
-                pauseOnHover
-            />
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
         </div>
     )
 }

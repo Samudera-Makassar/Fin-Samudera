@@ -315,7 +315,7 @@ const DetailLpj = () => {
                             ? 'text-red-600 bg-transparent hover:text-red-800 border border-red-600 hover:border-red-800'
                             : 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
                         }`}
-                        onClick={() => handleViewAttachment(lpjDetail?.lpj[0]?.lampiranUrl)}
+                        onClick={() => handleViewAttachment(lpjDetail?.lampiranUrl)}
                     >
                         Lihat Lampiran
                     </button>
