@@ -238,7 +238,7 @@ const FormLpjMarketing = () => {
         const sequence = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
         const unitCode = getUnitCode(selectedUnit.value)
                 
-        return `LPJ/MRO/${unitCode}/${year}${month}${day}/${sequence}`
+        return `LPJ.MRO.${unitCode}.${year}${month}${day}.${sequence}`
     }
 
     const handleFileUpload = (event) => {
@@ -268,11 +268,10 @@ const FormLpjMarketing = () => {
         if (!file) return null
 
         try {
+            const newFileName = `Lampiran_${displayId}.pdf`
+
             // Create a reference to the storage location
-            const storageRef = ref(
-                storage, 
-                `Lampiran_LPJ/MarketingOperasional/${displayId}/${file.name}`
-            )
+            const storageRef = ref(storage, `LPJ/MarketingOperasional/${displayId}/${newFileName}`)
 
             // Upload the file
             const snapshot = await uploadBytes(storageRef, file)

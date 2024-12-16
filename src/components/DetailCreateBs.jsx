@@ -303,12 +303,6 @@ const DetailCreateBs = () => {
                     )}
                 </div>
             </div>
-
-            <ModalPDF
-                showModal={!!previewUrl}
-                previewUrl={previewUrl}
-                onClose={closePreview}
-            />
         </div>
     )
 }

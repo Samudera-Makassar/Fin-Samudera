@@ -234,7 +234,7 @@ const RbsOperasionalForm = () => {
         const sequence = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
         const unitCode = getUnitCode(selectedUnit.value)
                 
-        return `RBS/OPR/${unitCode}/${year}${month}${day}/${sequence}`
+        return `RBS.OPR.${unitCode}.${year}${month}${day}.${sequence}`
     }
 
     const handleFileUpload = (event) => {
@@ -264,8 +264,10 @@ const RbsOperasionalForm = () => {
         if (!file) return null
 
         try {
+            const newFileName = `Lampiran_${displayId}.pdf`
+
             // Create a reference to the storage location
-            const storageRef = ref(storage, `Lampiran_Reimbursement/Operasional/${displayId}/${file.name}`)
+            const storageRef = ref(storage, `Reimbursement/Operasional/${displayId}/${newFileName}`)
 
             // Upload the file
             const snapshot = await uploadBytes(storageRef, file)
