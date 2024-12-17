@@ -112,7 +112,7 @@ const CreateBsCheck = () => {
 
     // Handle Approve
     const handleApprove = (item) => {
-        openModal ({
+        openModal({
             title: 'Konfirmasi Approve',
             message: `Apakah Anda yakin ingin menyetujui Bon Sementara dengan ID ${item.displayId}?`,
             onConfirm: async () => {
@@ -125,7 +125,9 @@ const CreateBsCheck = () => {
                     const isSuperAdmin = userRole === 'Super Admin'
                     const isReviewer1 = item.user.reviewer1.includes(uid)
                     const isReviewer2 = item.user.reviewer2.includes(uid)
-        
+
+                    const hasSingleReviewer = !item.user.reviewer2.length
+    
                     let updateData = {}
         
                     if (isSuperAdmin) {
@@ -146,7 +148,7 @@ const CreateBsCheck = () => {
                             // If already approved by Reviewer 1 or Super Admin, finalize the approval
                             updateData = {
                                 status: 'Disetujui',
-                                approvedByReviewer2Status: "superadmin",                                 
+                                approvedByReviewer2Status: "superadmin", 
                                 approvedBySuperAdmin: true,
                                 statusHistory: arrayUnion({
                                     status: "Disetujui oleh Super Admin (Pengganti Reviewer 2)",
@@ -157,26 +159,41 @@ const CreateBsCheck = () => {
                         }
                     } else {
                         if (isReviewer1) {
-                            // If reviewer1, set approvedByReviewer1 to true
-                            updateData = {
-                                status: 'Diproses',
-                                approvedByReviewer1: true,
-                                approvedByReviewer1Status: "reviewer", // Mark as approved by actual reviewer
-                                statusHistory: arrayUnion({
-                                    status: "Disetujui oleh Reviewer 1",
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid,
-                                })
+                            // Jika reviewer1, dan hanya ada satu reviewer
+                            if (hasSingleReviewer) {
+                                // Jika hanya ada satu reviewer, langsung set status ke 'Disetujui'
+                                updateData = {
+                                    status: 'Disetujui',
+                                    approvedByReviewer1: true,
+                                    approvedByReviewer1Status: "reviewer",
+                                    statusHistory: arrayUnion({
+                                        status: "Disetujui oleh Reviewer 1",
+                                        timestamp: new Date().toISOString(),
+                                        actor: uid,
+                                    })
+                                }
+                            } else {
+                                // Jika ada reviewer 2, set approvedByReviewer1 ke true
+                                updateData = {
+                                    status: 'Diproses',
+                                    approvedByReviewer1: true,
+                                    approvedByReviewer1Status: "reviewer",
+                                    statusHistory: arrayUnion({
+                                        status: "Disetujui oleh Reviewer 1",
+                                        timestamp: new Date().toISOString(),
+                                        actor: uid,
+                                    })
+                                }
                             }
-                        } 
-                    
+                        }
+    
                         if (isReviewer2 && 
                             (item.approvedByReviewer1Status === "reviewer" || item.approvedByReviewer1Status === "superadmin")) {
                             // If reviewer2 and (Reviewer1 or SuperAdmin has approved), set status to 'Disetujui'
                             updateData = {
                                 status: 'Disetujui',
                                 approvedByReviewer2: true,
-                                approvedByReviewer2Status: "reviewer",                     
+                                approvedByReviewer2Status: "reviewer",
                                 statusHistory: arrayUnion({
                                     status: "Disetujui oleh Reviewer 2",
                                     timestamp: new Date().toISOString(),

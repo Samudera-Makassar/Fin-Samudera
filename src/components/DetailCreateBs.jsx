@@ -4,13 +4,19 @@ import { db } from '../firebaseConfig'
 import { useParams, useNavigate } from 'react-router-dom'
 import { generateBsPDF } from '../utils/BsPdf';
 import ModalPDF from './ModalPDF'
+import { toast, ToastContainer } from 'react-toastify'
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 
 const DetailCreateBs = () => {
     const [userData, setUserData] = useState(null)
     const [bonSementaraDetail, setBonSementaraDetail] = useState(null)
     const [reviewers, setReviewers] = useState([])
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
 
     const { id } = useParams() 
     const navigate = useNavigate() 
@@ -176,10 +182,20 @@ const DetailCreateBs = () => {
     }
 
     const handleGenerateAndPreviewPDF = async () => {
-    const url = await generateBsPDF(bonSementaraDetail)
-        if (url) {
-            setModalPdfUrl(url)
-            setModalTitle(`Preview ${bonSementaraDetail.displayId}`)
+        setIsLoading(true)
+        try {
+            setIsLoading(true)
+            const url = await generateBsPDF(bonSementaraDetail)
+
+            if (url) {
+                setModalPdfUrl(url)
+                setModalTitle(`Preview ${bonSementaraDetail.displayId}`)
+            }
+        } catch (error) {
+            toast.error('Gagal menghasilkan PDF')
+            console.error(error)
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -208,7 +224,63 @@ const DetailCreateBs = () => {
     
 
     if (!userData) {
-        return <div>Loading...</div>
+        return (
+            <div className="container mx-auto py-8">
+                <h2 className="text-xl font-medium mb-4">
+                    Detail <span className="font-bold">Pengajuan Bon Sementara</span>
+                </h2>
+                <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
+                    {/* User Details Skeleton */}
+                    <div className="grid grid-cols-2 gap-x-16 mb-6 font-medium">
+                        <div className="grid grid-cols-[auto_1fr] gap-x-16">
+                            {[...Array(4)].map((_, index) => (
+                                <React.Fragment key={index}>
+                                    <Skeleton width={100} height={20} />
+                                    <Skeleton width={200} height={20} />
+                                </React.Fragment>
+                            ))}
+                        </div>
+                        <div className="grid grid-cols-[auto_1fr] gap-x-16">
+                            {[...Array(4)].map((_, index) => (
+                                <React.Fragment key={index}>
+                                    <Skeleton width={100} height={20} />
+                                    <Skeleton width={200} height={20} />
+                                </React.Fragment>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Table Skeleton */}
+                    <div className="mb-8">
+                        <div className="min-w-full bg-white border rounded-lg text-sm">
+                            <div className="bg-gray-100 grid grid-cols-5">
+                                {[...Array(5)].map((_, index) => (
+                                    <div key={index} className="p-1">
+                                        <Skeleton height={25} />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {[...Array(2)].map((_, index) => (
+                                <div key={index} className="grid grid-cols-5 border-b">
+                                    {[...Array(5)].map((_, colIndex) => (
+                                        <div key={colIndex} className="p-1">
+                                            <Skeleton height={25} />
+                                        </div>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Action Buttons Skeleton */}
+                    <div className="flex justify-end mt-4 space-x-1">
+                        <Skeleton width={170} height={45} />
+                        <Skeleton width={170} height={45} />
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -312,20 +384,24 @@ const DetailCreateBs = () => {
                                     : 'bg-gray-400 cursor-not-allowed'
                             }`}
                             onClick={handleGenerateAndPreviewPDF}
-                            disabled={bonSementaraDetail?.status !== 'Disetujui'}
+                            disabled={bonSementaraDetail?.status !== 'Disetujui' || isLoading}
                         >
-                            Print
+                            {isLoading ? (
+                                <>
+                                    <FontAwesomeIcon icon={faSpinner} className="mr-1 animate-spin" />
+                                    Loading..
+                                </>
+                            ) : (
+                                'Print'
+                            )}
                         </button>
                     )}
                 </div>
             </div>
 
-            <ModalPDF
-                showModal={!!modalPdfUrl}
-                previewUrl={modalPdfUrl}
-                onClose={closePreview}
-                title={modalTitle}
-            />
+            <ModalPDF showModal={!!modalPdfUrl} previewUrl={modalPdfUrl} onClose={closePreview} title={modalTitle} />
+
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
         </div>
     )
 }

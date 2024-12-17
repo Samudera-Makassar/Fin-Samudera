@@ -6,6 +6,10 @@ import { generateLpjPDF } from '../utils/LpjPdf';
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import ModalPDF from './ModalPDF'
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 
 const DetailLpj = () => {
     const [userData, setUserData] = useState(null)
@@ -13,6 +17,7 @@ const DetailLpj = () => {
     const [reviewers, setReviewers] = useState([]) 
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
 
     const { id } = useParams() // Get lpj ID from URL params    
     const uid = localStorage.getItem('userUid')
@@ -186,15 +191,106 @@ const DetailLpj = () => {
     }
 
     const handleGenerateAndPreviewPDF = async () => {
-    const url = await generateLpjPDF(lpjDetail)
-        if (url) {
-            setModalPdfUrl(url)
-            setModalTitle(`Preview ${lpjDetail.displayId}`)
+        setIsLoading(true)
+        try {
+            setIsLoading(true)
+            const url = await generateLpjPDF(lpjDetail)
+
+            if (url) {
+                setModalPdfUrl(url)
+                setModalTitle(`Preview ${lpjDetail.displayId}`)
+            }
+        } catch (error) {
+            toast.error('Gagal menghasilkan PDF')
+            console.error(error)
+        } finally {
+            setIsLoading(false)
         }
     }
 
     if (loading) {
-        return <div>Loading...</div>
+        return (
+            <div className="container mx-auto py-8">
+                <h2 className="text-xl font-medium mb-4">
+                    Detail <span className="font-bold">LPJ Bon Sementara</span>
+                </h2>
+                <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
+                    {/* User Details Skeleton */}
+                    <div className="grid grid-cols-2 gap-x-16 mb-6 font-medium">
+                        <div className="grid grid-cols-[auto_1fr] gap-x-16">
+                            {[...Array(5)].map((_, index) => (
+                                <React.Fragment key={index}>
+                                    <Skeleton width={100} height={20} />
+                                    <Skeleton width={200} height={20} />
+                                </React.Fragment>
+                            ))}
+                        </div>
+                        <div className="grid grid-cols-[auto_1fr] gap-x-16">
+                            {[...Array(5)].map((_, index) => (
+                                <React.Fragment key={index}>
+                                    <Skeleton width={100} height={20} />
+                                    <Skeleton width={200} height={20} />
+                                </React.Fragment>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Table Skeleton */}
+                    <div className="mb-8">
+                        <div className="min-w-full bg-white border rounded-lg text-sm">
+                            <div className="bg-gray-100 grid grid-cols-7">
+                                {[...Array(7)].map((_, index) => (
+                                    <div key={index} className="p-1">
+                                        <Skeleton height={25} />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {[...Array(2)].map((_, index) => (
+                                <div key={index} className="grid grid-cols-7 border-b">
+                                    {[...Array(7)].map((_, colIndex) => (
+                                        <div key={colIndex} className="p-1">
+                                            <Skeleton height={25} />
+                                        </div>
+                                    ))}
+                                </div>
+                            ))}
+
+                            <div className="grid grid-cols-6 border-t">
+                                <div className="col-span-5 p-1 text-right">
+                                    <Skeleton height={30} />
+                                </div>
+                                <div className="p-1">
+                                    <Skeleton height={30} />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-6 border-t">
+                                <div className="col-span-5 p-1 text-right">
+                                    <Skeleton height={30} />
+                                </div>
+                                <div className="p-1">
+                                    <Skeleton height={30} />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-6 border-t">
+                                <div className="col-span-5 p-1 text-right">
+                                    <Skeleton height={30} />
+                                </div>
+                                <div className="p-1">
+                                    <Skeleton height={30} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Action Buttons Skeleton */}
+                    <div className="flex justify-end mt-6 space-x-1">
+                        <Skeleton width={170} height={45} />
+                        <Skeleton width={170} height={45} />
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -211,10 +307,15 @@ const DetailLpj = () => {
                         <p>Nama Lengkap</p>
                         <p>: {lpjDetail?.user?.nama ?? 'N/A'}</p>
                         <p>Department</p>
-                        <p>: {Array.isArray(lpjDetail?.user?.department) && lpjDetail.user.department.length > 0 ? lpjDetail.user.department.join(', ') : ''}</p>
+                        <p>
+                            :{' '}
+                            {Array.isArray(lpjDetail?.user?.department) && lpjDetail.user.department.length > 0
+                                ? lpjDetail.user.department.join(', ')
+                                : ''}
+                        </p>
                         <p>Unit Bisnis</p>
                         <p>: {lpjDetail?.user?.unit ?? 'N/A'}</p>
-                        {lpjDetail?.kategori?.toLowerCase() === "marketing/operasional" && (
+                        {lpjDetail?.kategori?.toLowerCase() === 'marketing/operasional' && (
                             <>
                                 <p>Project</p>
                                 <p>: {lpjDetail?.project ?? 'N/A'}</p>
@@ -232,7 +333,7 @@ const DetailLpj = () => {
                         <p>: {lpjDetail?.nomorBS ?? 'N/A'}</p>
                         <p>Jumlah Bon Sementara</p>
                         <p>: Rp{lpjDetail?.jumlahBS.toLocaleString('id-ID') ?? 'N/A'}</p>
-                        {lpjDetail?.kategori?.toLowerCase() === "marketing/operasional" && (
+                        {lpjDetail?.kategori?.toLowerCase() === 'marketing/operasional' && (
                             <>
                                 <p>Nomor Job Order</p>
                                 <p>: {lpjDetail?.nomorJO ?? 'N/A'}</p>
@@ -242,17 +343,13 @@ const DetailLpj = () => {
                         )}
                         <p>Status</p>
                         <p>: {lpjDetail?.status ?? 'N/A'}</p>
-                        <p>
-                            {lpjDetail?.status === 'Ditolak' 
-                                ? 'Ditolak Oleh' 
-                                : 'Disetujui Oleh'}
-                        </p>
+                        <p>{lpjDetail?.status === 'Ditolak' ? 'Ditolak Oleh' : 'Disetujui Oleh'}</p>
                         <p>: {getDetailedApprovalStatus(lpjDetail, reviewers)}</p>
                     </div>
                 </div>
 
                 <div className="mb-8">
-                <table className="min-w-full bg-white border rounded-lg text-sm">
+                    <table className="min-w-full bg-white border rounded-lg text-sm">
                         <thead>
                             <tr className="bg-gray-100 text-left">
                                 <th className="px-4 py-2 border">No.</th>
@@ -285,34 +382,29 @@ const DetailLpj = () => {
                             {lpjDetail?.status === 'Dibatalkan' && (
                                 <tr>
                                     <td colSpan="7" className="px-4 py-2 text-left border">
-                                        <span className='font-semibold'>Alasan Pembatalan :</span> {lpjDetail?.cancelReason}
+                                        <span className="font-semibold">Alasan Pembatalan :</span>{' '}
+                                        {lpjDetail?.cancelReason}
                                     </td>
                                 </tr>
                             )}
 
                             <tr className="font-semibold">
-                                <td colSpan="6"className="px-4 py-2 text-right border">
+                                <td colSpan="6" className="px-4 py-2 text-right border">
                                     Total Biaya :
                                 </td>
-                                <td className="px-4 py-2 border">
-                                    Rp{lpjDetail?.totalBiaya?.toLocaleString('id-ID')}
-                                </td>
-                            </tr>                            
+                                <td className="px-4 py-2 border">Rp{lpjDetail?.totalBiaya?.toLocaleString('id-ID')}</td>
+                            </tr>
                             <tr className="font-semibold">
                                 <td colSpan="6" className="px-4 py-2 text-right border">
                                     Sisa Lebih Bon Sementara :
                                 </td>
-                                <td className="px-4 py-2 border">
-                                    Rp{lpjDetail?.sisaLebih?.toLocaleString('id-ID')}
-                                </td>
+                                <td className="px-4 py-2 border">Rp{lpjDetail?.sisaLebih?.toLocaleString('id-ID')}</td>
                             </tr>
                             <tr className="font-semibold">
                                 <td colSpan="6" className="px-4 py-2 text-right border">
                                     Sisa Kurang Dibayarkan ke Pegawai :
                                 </td>
-                                <td className="px-4 py-2 border">
-                                    Rp{lpjDetail?.sisaKurang?.toLocaleString('id-ID')}
-                                </td>
+                                <td className="px-4 py-2 border">Rp{lpjDetail?.sisaKurang?.toLocaleString('id-ID')}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -323,8 +415,8 @@ const DetailLpj = () => {
                     <button
                         className={`px-12 py-3 rounded ${
                             userData?.uid === lpjDetail?.user.uid
-                            ? 'text-red-600 bg-transparent hover:text-red-800 border border-red-600 hover:border-red-800'
-                            : 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                                ? 'text-red-600 bg-transparent hover:text-red-800 border border-red-600 hover:border-red-800'
+                                : 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
                         }`}
                         onClick={() => handleViewAttachment(lpjDetail?.lampiranUrl)}
                     >
@@ -340,28 +432,24 @@ const DetailLpj = () => {
                                     : 'bg-gray-400 cursor-not-allowed'
                             }`}
                             onClick={handleGenerateAndPreviewPDF}
-                            disabled={lpjDetail?.status !== 'Disetujui'}
+                            disabled={lpjDetail?.status !== 'Disetujui' || isLoading}
                         >
-                            Print
+                            {isLoading ? (
+                                <>
+                                    <FontAwesomeIcon icon={faSpinner} className="mr-1 animate-spin" />
+                                    Loading..
+                                </>
+                            ) : (
+                                'Print'
+                            )}
                         </button>
                     )}
                 </div>
             </div>
 
-            <ModalPDF
-                showModal={!!modalPdfUrl}
-                previewUrl={modalPdfUrl}
-                onClose={closePreview}
-                title={modalTitle}
-            />
-            
-            <ToastContainer 
-                position="top-right" 
-                autoClose={3000} 
-                hideProgressBar={false} 
-                closeOnClick 
-                pauseOnHover 
-            />
+            <ModalPDF showModal={!!modalPdfUrl} previewUrl={modalPdfUrl} onClose={closePreview} title={modalTitle} />
+
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
         </div>
     )
 }

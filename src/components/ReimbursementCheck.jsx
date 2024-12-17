@@ -126,6 +126,8 @@ const ReimbursementCheck = () => {
                     const isReviewer1 = item.user.reviewer1.includes(uid)
                     const isReviewer2 = item.user.reviewer2.includes(uid)
         
+                    const hasSingleReviewer = !item.user.reviewer2.length
+                    
                     let updateData = {}
         
                     if (isSuperAdmin) {
@@ -157,18 +159,33 @@ const ReimbursementCheck = () => {
                         }
                     } else {
                         if (isReviewer1) {
-                            // If reviewer1, set approvedByReviewer1 to true
-                            updateData = {
-                                status: 'Diproses',
-                                approvedByReviewer1: true,
-                                approvedByReviewer1Status: "reviewer", // Mark as approved by actual reviewer
-                                statusHistory: arrayUnion({
-                                    status: "Disetujui oleh Reviewer 1",
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid,
-                                })
+                            // Jika reviewer1, dan hanya ada satu reviewer
+                            if (hasSingleReviewer) {
+                                // Jika hanya ada satu reviewer, langsung set status ke 'Disetujui'
+                                updateData = {
+                                    status: 'Disetujui',
+                                    approvedByReviewer1: true,
+                                    approvedByReviewer1Status: 'reviewer',
+                                    statusHistory: arrayUnion({
+                                        status: 'Disetujui oleh Reviewer 1',
+                                        timestamp: new Date().toISOString(),
+                                        actor: uid
+                                    })
+                                }
+                            } else {
+                                // Jika ada reviewer 2, set approvedByReviewer1 ke true
+                                updateData = {
+                                    status: 'Diproses',
+                                    approvedByReviewer1: true,
+                                    approvedByReviewer1Status: 'reviewer',
+                                    statusHistory: arrayUnion({
+                                        status: 'Disetujui oleh Reviewer 1',
+                                        timestamp: new Date().toISOString(),
+                                        actor: uid
+                                    })
+                                }
                             }
-                        } 
+                        }
                     
                         if (isReviewer2 && 
                             (item.approvedByReviewer1Status === "reviewer" || item.approvedByReviewer1Status === "superadmin")) {
