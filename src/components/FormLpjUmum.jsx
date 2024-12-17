@@ -261,7 +261,7 @@ const FormLpjUmum = () => {
             const newFileName = `Lampiran_${displayId}.pdf`
 
             // Create a reference to the storage location
-            const storageRef = ref(storage, `LPJ/GAUmum/${displayId}/${newFileName}`)
+            const storageRef = ref(storage, `LPJ/GA_Umum/${displayId}/${newFileName}`)
 
             // Upload the file
             const snapshot = await uploadBytes(storageRef, file)

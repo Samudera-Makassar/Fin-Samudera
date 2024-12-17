@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { useParams } from 'react-router-dom'
-import { downloadLpjPDF } from '../utils/LpjPdf';
+import { generateLpjPDF } from '../utils/LpjPdf';
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import ModalPDF from './ModalPDF'
@@ -158,20 +158,6 @@ const DetailLpj = () => {
         return '-'
     }
 
-    const [previewUrl, setPreviewUrl] = useState(null)
-
-    const handleViewAttachment = (lampiranUrl) => {
-        if (lampiranUrl) {
-            setPreviewUrl(lampiranUrl) // Set URL untuk preview
-        } else {
-            toast.error('Lampiran tidak tersedia')
-        }
-    }
-
-    const closePreview = () => {
-        setPreviewUrl(null) // Reset URL untuk menutup preview
-    }
-    
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A' // Handle null/undefined
         const date = new Date(dateString)
@@ -180,6 +166,31 @@ const DetailLpj = () => {
             month: 'long',
             year: 'numeric',
         }).format(date)
+    }
+    
+    const [modalPdfUrl, setModalPdfUrl] = useState(null)
+    const [modalTitle, setModalTitle] = useState('') 
+
+    const handleViewAttachment = (lampiranUrl) => {
+        if (lampiranUrl) {
+            setModalPdfUrl(lampiranUrl) // Set URL untuk preview
+            setModalTitle(`Lampiran ${lpjDetail.displayId}`)
+        } else {
+            toast.error('Lampiran tidak tersedia')
+        }
+    }
+
+    const closePreview = () => {
+        setModalPdfUrl(null) // Reset URL untuk menutup preview
+        setModalTitle ('') 
+    }
+
+    const handleGenerateAndPreviewPDF = async () => {
+    const url = await generateLpjPDF(lpjDetail)
+        if (url) {
+            setModalPdfUrl(url)
+            setModalTitle(`Preview ${lpjDetail.displayId}`)
+        }
     }
 
     if (loading) {
@@ -328,19 +339,20 @@ const DetailLpj = () => {
                                     ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
                                     : 'bg-gray-400 cursor-not-allowed'
                             }`}
-                            onClick={() => downloadLpjPDF(lpjDetail)}
+                            onClick={handleGenerateAndPreviewPDF}
                             disabled={lpjDetail?.status !== 'Disetujui'}
                         >
-                            Download
+                            Print
                         </button>
                     )}
                 </div>
             </div>
 
             <ModalPDF
-                showModal={!!previewUrl}
-                previewUrl={previewUrl}
+                showModal={!!modalPdfUrl}
+                previewUrl={modalPdfUrl}
                 onClose={closePreview}
+                title={modalTitle}
             />
             
             <ToastContainer 

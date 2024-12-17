@@ -1,10 +1,10 @@
 import React from "react";
 import { pdf } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
 import { Page, Text, View, Document, StyleSheet, Image, Font } from "@react-pdf/renderer";
 import Logo from "../assets/images/logo-samudera.png";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, storage } from "../firebaseConfig";
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -486,8 +486,9 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
   );
 };
 
-const downloadReimbursementPDF = async (reimbursementDetail) => {
+const generateReimbursementPDF = async (reimbursementDetail) => {
   try {
+    console.log("Status dari Firestore:", reimbursementDetail.status);
     // Cek apakah reimbursement sudah disetujui
     if (reimbursementDetail.status !== "Disetujui") {
       toast.error("Reimbursement belum disetujui");
@@ -495,8 +496,7 @@ const downloadReimbursementPDF = async (reimbursementDetail) => {
     }
 
     // Ambil nama reviewer sebelum PDF dirender
-    const approvedReviewers =
-      await getApprovedReviewerNames(reimbursementDetail);
+    const approvedReviewers = await getApprovedReviewerNames(reimbursementDetail);
 
     // Buat dokumen PDF    
     const pdfBlob = await pdf(
@@ -506,14 +506,17 @@ const downloadReimbursementPDF = async (reimbursementDetail) => {
       />,
     ).toBlob();
 
-    // Buat nama file dengan format yang sesuai
-    const fileName = `Reimbursement_${reimbursementDetail.user?.nama || "User"}_${new Date().toISOString().split("T")[0]}.pdf`;
+    const sanitizedKategori = reimbursementDetail.kategori.replace(/\//g, '_');
 
-    // Gunakan file-saver untuk download
-    saveAs(pdfBlob, fileName);
+    const storageRef = ref(storage, `Reimbursement/${sanitizedKategori}/${reimbursementDetail.displayId}/${reimbursementDetail.displayId}.pdf`);
+    await uploadBytes(storageRef, pdfBlob);
+
+    const downloadURL = await getDownloadURL(storageRef);    
+    return downloadURL;
   } catch (error) {
     console.error("Gagal mengunduh:", error);
     toast.error("Gagal mengunduh Reimbursement");
+    return null;
   }
 };
 
@@ -525,4 +528,4 @@ const downloadReimbursementPDF = async (reimbursementDetail) => {
   pauseOnHover
 />
 
-export { ReimbursementPDF, downloadReimbursementPDF };
+export { ReimbursementPDF, generateReimbursementPDF };
