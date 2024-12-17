@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../firebaseConfig' 
+import { db } from '../firebaseConfig'
 import { useParams } from 'react-router-dom'
-import { downloadReimbursementPDF } from '../utils/ReimbursementPdf';
+import { generateReimbursementPDF, ReimbursementPDF } from '../utils/ReimbursementPdf';
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import ModalPDF from './ModalPDF'
@@ -21,19 +21,19 @@ const DetailRbs = () => {
         const fetchData = async () => {
             try {
                 setLoading(true)
-                
+
                 // Fetch user data
                 const userDocRef = doc(db, 'users', uid)
                 const userSnapshot = await getDoc(userDocRef)
-                
+
                 if (!userSnapshot.exists()) {
                     throw new Error('User tidak ditemukan')
                 }
-                
+
                 // Fetch reimbursement data
                 const reimbursementDocRef = doc(db, 'reimbursement', id)
                 const reimbursementSnapshot = await getDoc(reimbursementDocRef)
-                
+
                 if (!reimbursementSnapshot.exists()) {
                     throw new Error('Data reimbursement tidak ditemukan')
                 }
@@ -41,7 +41,7 @@ const DetailRbs = () => {
                 const reimbursementData = reimbursementSnapshot.data()
                 setUserData(userSnapshot.data())
                 setReimbursementDetail(reimbursementData)
-                
+
                 // Fetch names for all reviewers in reviewer1 and reviewer2 arrays
                 const fetchReviewerNames = async () => {
                     const reviewerPromises = [];
@@ -113,29 +113,29 @@ const DetailRbs = () => {
                 // Super Admin menggantikan Reviewer 1
                 if (lastStatus.status.includes('Reviewer 1')) {
                     return 'Super Admin'
-                } 
+                }
                 // Super Admin menggantikan Reviewer 2
                 else {
                     return 'Super Admin'
                 }
-            } 
+            }
             // Ditolak oleh Reviewer 1
             else if (lastStatus.status.includes('Reviewer 1')) {
                 return `${reviewerNames[0] || 'N/A'}`
-            } 
+            }
             // Ditolak oleh Reviewer 2
             else if (lastStatus.status.includes('Reviewer 2')) {
                 return `${reviewerNames[1] || 'N/A'}`
             }
-        } 
-        
+        }
+
         // Untuk status Diproses
         else if (reimbursement.status === 'Diproses') {
             // Jika disetujui oleh Super Admin
             if (lastStatus.status.includes('Super Admin')) {
                 // Super Admin menggantikan Reviewer 1
                 return 'Super Admin'
-            } 
+            }
             // Disetujui oleh Reviewer 1
             else if (lastStatus.status.includes('Reviewer 1')) {
                 return `${reviewerNames[0] || 'N/A'}`
@@ -148,7 +148,7 @@ const DetailRbs = () => {
             if (lastStatus.status.includes('Super Admin')) {
                 // Super Admin menggantikan Reviewer 2
                 return 'Super Admin'
-            } 
+            }
             // Disetujui oleh Reviewer 2
             else if (lastStatus.status.includes('Reviewer 2')) {
                 return `${reviewerNames[1] || 'N/A'}`
@@ -156,20 +156,6 @@ const DetailRbs = () => {
         }
 
         return '-'
-    }
-
-    const [previewUrl, setPreviewUrl] = useState(null)
-
-    const handleViewAttachment = (lampiranUrl) => {
-        if (lampiranUrl) {
-            setPreviewUrl(lampiranUrl) // Set URL untuk preview
-        } else {
-            toast.error('Lampiran tidak tersedia')
-        }
-    }
-
-    const closePreview = () => {
-        setPreviewUrl(null) // Reset URL untuk menutup preview
     }
 
     const formatDate = (dateString) => {
@@ -180,6 +166,31 @@ const DetailRbs = () => {
             month: 'long',
             year: 'numeric',
         }).format(date)
+    }
+
+    const [modalPdfUrl, setModalPdfUrl] = useState(null)
+    const [modalTitle, setModalTitle] = useState('') 
+
+    const handleViewAttachment = (lampiranUrl) => {
+        if (lampiranUrl) {
+            setModalPdfUrl(lampiranUrl) 
+            setModalTitle(`Lampiran ${reimbursementDetail.displayId}`)
+        } else {
+            toast.error('Lampiran tidak tersedia')
+        }
+    }
+
+    const closePreview = () => {
+        setModalPdfUrl(null) // Reset URL untuk menutup preview
+        setModalTitle ('') 
+    }
+
+    const handleGenerateAndPreviewPDF = async () => {
+        const url = await generateReimbursementPDF(reimbursementDetail)
+        if (url) {
+            setModalPdfUrl(url)
+            setModalTitle(`Preview ${reimbursementDetail.displayId}`)
+        }
     }
 
     const getColumns = (kategori) => {
@@ -205,14 +216,14 @@ const DetailRbs = () => {
             'ga/umum': [
                 { header: 'Kebutuhan', key: 'kebutuhan' },
                 { header: 'Keterangan', key: 'keterangan' }
-            ],            
+            ],
             default: []
         }
 
         const additionalColumns = categoryColumns[kategori?.toLowerCase()] || categoryColumns.default
         return [...baseColumns, ...additionalColumns, { header: 'Biaya', key: 'biaya' }]
     }
-    
+
     // Render cell berdasarkan key
     const renderCell = (item, column, index) => {
         switch (column.key) {
@@ -230,7 +241,7 @@ const DetailRbs = () => {
     if (loading) {
         return <div>Loading...</div>
     }
-    
+
     const columns = getColumns(reimbursementDetail?.kategori)
 
     return (
@@ -250,7 +261,7 @@ const DetailRbs = () => {
                         <p>
                             :{' '}
                             {Array.isArray(reimbursementDetail?.user?.department) &&
-                            reimbursementDetail.user.department.length > 0
+                                reimbursementDetail.user.department.length > 0
                                 ? reimbursementDetail.user.department.join(', ')
                                 : ''}
                         </p>
@@ -324,11 +335,10 @@ const DetailRbs = () => {
                 <div className="flex justify-end mt-6 space-x-2">
                     {/* Tombol untuk melihat lampiran */}
                     <button
-                        className={`px-12 py-3 rounded ${
-                            userData?.uid === reimbursementDetail?.user.uid
-                            ? 'text-red-600 bg-transparent hover:text-red-800 border border-red-600 hover:border-red-800'
-                            : 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
-                        }`}
+                        className={`px-12 py-3 rounded ${userData?.uid === reimbursementDetail?.user.uid
+                                ? 'text-red-600 bg-transparent hover:text-red-800 border border-red-600 hover:border-red-800'
+                                : 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                            }`}
                         onClick={() => handleViewAttachment(reimbursementDetail?.lampiranUrl)}
                     >
                         Lihat Lampiran
@@ -337,32 +347,32 @@ const DetailRbs = () => {
                     {/* Hanya tampilkan tombol Download jika user adalah pembuat reimbursement */}
                     {userData?.uid === reimbursementDetail?.user.uid && (
                         <button
-                            className={`px-16 py-3 rounded text-white ${
-                                reimbursementDetail?.status === 'Disetujui'
+                            className={`px-16 py-3 rounded text-white ${reimbursementDetail?.status === 'Disetujui'
                                     ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
                                     : 'bg-gray-400 cursor-not-allowed'
-                            }`}
-                            onClick={() => downloadReimbursementPDF(reimbursementDetail)}
+                                }`}
+                            onClick={handleGenerateAndPreviewPDF}
                             disabled={reimbursementDetail?.status !== 'Disetujui'}
                         >
-                            Download
+                            Print
                         </button>
                     )}
                 </div>
             </div>
 
             <ModalPDF
-                showModal={!!previewUrl}
-                previewUrl={previewUrl}
+                showModal={!!modalPdfUrl}
+                previewUrl={modalPdfUrl}
                 onClose={closePreview}
+                title={modalTitle}
             />
-            
-            <ToastContainer 
-                position="top-right" 
-                autoClose={3000} 
-                hideProgressBar={false} 
-                closeOnClick 
-                pauseOnHover 
+
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
             />
         </div>
     )

@@ -1,9 +1,9 @@
 import React from "react";
 import { pdf } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
 import { Page, Text, View, Document, StyleSheet, Font } from "@react-pdf/renderer";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, storage } from "../firebaseConfig";
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -54,22 +54,6 @@ const styles = StyleSheet.create({
         padding: 4,                
         alignItems: 'center',
         justifyContent: 'center',
-        height: '100%'
-    },
-    biayaHeaderContainer: {
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-    },
-    subHeaderRow: {
-        flexDirection: 'row',
-        width: '100%',
-    },
-    subHeaderCell: {
-        flex: 1,
-        textAlign: 'center',
-        paddingHorizontal: 2,
         height: '100%'
     },
     tableCell: {
@@ -384,7 +368,7 @@ const BsPDF = ({ bonSementaraDetail, approvedReviewers }) => {
     );
 };
 
-const downloadBsPDF = async (bonSementaraDetail) => {
+const generateBsPDF = async (bonSementaraDetail) => {
     try {
         // Cek apakah Bon Sementara sudah disetujui
         if (bonSementaraDetail.status !== "Disetujui") {
@@ -393,8 +377,7 @@ const downloadBsPDF = async (bonSementaraDetail) => {
         }
 
         // Ambil nama reviewer sebelum PDF dirender
-        const approvedReviewers =
-            await getApprovedReviewerNames(bonSementaraDetail);
+        const approvedReviewers = await getApprovedReviewerNames(bonSementaraDetail);
 
         // Buat dokumen PDF    
         const pdfBlob = await pdf(
@@ -404,14 +387,17 @@ const downloadBsPDF = async (bonSementaraDetail) => {
             />,
         ).toBlob();
 
-        // Buat nama file dengan format yang sesuai
-        const fileName = `Bon Sementara_${bonSementaraDetail.user?.nama || "User"}_${new Date().toISOString().split("T")[0]}.pdf`;
+        const sanitizedKategori = bonSementaraDetail.bonSementara[0].kategori.replace(/\//g, '_');
 
-        // Gunakan file-saver untuk download
-        saveAs(pdfBlob, fileName);
+        const storageRef = ref(storage, `BonSementara/${sanitizedKategori}/${bonSementaraDetail.displayId}/${bonSementaraDetail.displayId}.pdf`);
+        await uploadBytes(storageRef, pdfBlob);
+
+        const downloadURL = await getDownloadURL(storageRef);    
+        return downloadURL;
     } catch (error) {
         console.error("Gagal mengunduh:", error);
         toast.error("Gagal mengunduh Bon Sementara");
+        return null;
     }
 };
 
@@ -423,4 +409,4 @@ const downloadBsPDF = async (bonSementaraDetail) => {
     pauseOnHover
 />
 
-export { BsPDF, downloadBsPDF };
+export { BsPDF, generateBsPDF };

@@ -1,10 +1,10 @@
 import React from "react";
 import { pdf } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
 import { Page, Text, View, Document, StyleSheet, Image, Font } from "@react-pdf/renderer";
 import Logo from "../assets/images/logo-samudera.png";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, storage } from "../firebaseConfig";
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -409,7 +409,7 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
               <Text> </Text>
             </View>
             <View style={[styles.tableCell, { width: '32%' }]}>
-              <Text>BIAYA LOGISTIK DI BELOPA PERIODE 14 OKT 2024 NO JO 3429CSML02001</Text>
+              <Text>{lpjDetail?.aktivitas} </Text>
             </View>
             <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right' }]}>
               <Text>{lpjDetail?.jumlahBS.toLocaleString('id-ID') ?? 'N/A'}</Text>
@@ -796,7 +796,7 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
   );
 };
 
-const downloadLpjPDF = async (lpjDetail) => {
+const generateLpjPDF = async (lpjDetail) => {
   try {
     // Cek apakah lpj sudah disetujui
     if (lpjDetail.status !== "Disetujui") {
@@ -805,8 +805,7 @@ const downloadLpjPDF = async (lpjDetail) => {
     }
 
     // Ambil nama reviewer sebelum PDF dirender
-    const approvedReviewers =
-      await getApprovedReviewerNames(lpjDetail);
+    const approvedReviewers = await getApprovedReviewerNames(lpjDetail);
 
     // Buat dokumen PDF    
     const pdfBlob = await pdf(
@@ -816,14 +815,17 @@ const downloadLpjPDF = async (lpjDetail) => {
       />,
     ).toBlob();
 
-    // Buat nama file dengan format yang sesuai
-    const fileName = `Lpj_${lpjDetail.user?.nama || "User"}_${new Date().toISOString().split("T")[0]}.pdf`;
+    const sanitizedKategori = lpjDetail.kategori.replace(/\//g, '_');
 
-    // Gunakan file-saver untuk download
-    saveAs(pdfBlob, fileName);
+    const storageRef = ref(storage, `LPJ/${sanitizedKategori}/${lpjDetail.displayId}/${lpjDetail.displayId}.pdf`);
+    await uploadBytes(storageRef, pdfBlob);
+
+    const downloadURL = await getDownloadURL(storageRef);    
+    return downloadURL;
   } catch (error) {
     console.error("Gagal mengunduh:", error);
     toast.error("Gagal mengunduh LPJ Bon Sementara");
+    return null;
   }
 };
 
@@ -835,4 +837,4 @@ const downloadLpjPDF = async (lpjDetail) => {
   pauseOnHover
 />
 
-export { LpjPDF, downloadLpjPDF };
+export { LpjPDF, generateLpjPDF };

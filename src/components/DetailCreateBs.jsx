@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { useParams, useNavigate } from 'react-router-dom'
-import { downloadBsPDF } from '../utils/BsPdf';
+import { generateBsPDF } from '../utils/BsPdf';
 import ModalPDF from './ModalPDF'
 
 const DetailCreateBs = () => {
@@ -167,6 +167,22 @@ const DetailCreateBs = () => {
         }).format(date)
     }
 
+    const [modalPdfUrl, setModalPdfUrl] = useState(null) 
+    const [modalTitle, setModalTitle] = useState('') 
+
+    const closePreview = () => {
+        setModalPdfUrl(null) // Reset URL untuk menutup preview
+        setModalTitle ('') 
+    }
+
+    const handleGenerateAndPreviewPDF = async () => {
+    const url = await generateBsPDF(bonSementaraDetail)
+        if (url) {
+            setModalPdfUrl(url)
+            setModalTitle(`Preview ${bonSementaraDetail.displayId}`)
+        }
+    }
+
     const handleBuatLaporan = () => {
         const bonSementara = bonSementaraDetail?.bonSementara?.[0]
         if (bonSementara?.kategori === 'GA/Umum') {
@@ -295,14 +311,21 @@ const DetailCreateBs = () => {
                                     ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
                                     : 'bg-gray-400 cursor-not-allowed'
                             }`}
-                            onClick={() => downloadBsPDF(bonSementaraDetail)}
+                            onClick={handleGenerateAndPreviewPDF}
                             disabled={bonSementaraDetail?.status !== 'Disetujui'}
                         >
-                            Download
+                            Print
                         </button>
                     )}
                 </div>
             </div>
+
+            <ModalPDF
+                showModal={!!modalPdfUrl}
+                previewUrl={modalPdfUrl}
+                onClose={closePreview}
+                title={modalTitle}
+            />
         </div>
     )
 }
