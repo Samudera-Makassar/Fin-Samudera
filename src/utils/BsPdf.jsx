@@ -25,11 +25,10 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         textAlign: 'center',
-        marginBottom: 20,
-        // fontWeight: 'semibold',        
+        marginBottom: 20,             
     },
     header: {
-        marginBottom: 20,
+        marginBottom: 8,
         fontSize: 10,
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -227,7 +226,10 @@ const BsPDF = ({ bonSementaraDetail, approvedReviewers }) => {
             <Page size="A4" style={styles.page}>
                 {bonSementaraDetail.bonSementara?.map((item) => (
                     <View style={styles.header}>
-                        <Text>{bonSementaraDetail.user?.unit || "-"}</Text>
+                        <View style={{ alignItems: 'center' }}>
+                            <Text>{bonSementaraDetail.user?.unit || "-"}</Text>
+                            <Text>MAKASSAR</Text>
+                        </View>
                         <Text>{item.nomorBS || "-"}</Text>
                     </View>
                 ))}
