@@ -6,6 +6,8 @@ import Select from 'react-select'
 import { useLocation } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 
 const FormLpjMarketing = () => {
     const [todayDate, setTodayDate] = useState('')
@@ -577,7 +579,7 @@ const FormLpjMarketing = () => {
                         />
                     </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-6 mb-3">
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">
@@ -696,7 +698,7 @@ const FormLpjMarketing = () => {
                             />
                         </div>
 
-                        <div className='max-w-24'>
+                        <div className="max-w-24">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Jumlah <span className="text-red-500">*</span>
@@ -718,9 +720,7 @@ const FormLpjMarketing = () => {
                         </div>
 
                         <div>
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">Keterangan</label>
-                            )}
+                            {index === 0 && <label className="block text-gray-700 font-medium mb-2">Keterangan</label>}
                             <input
                                 type="text"
                                 value={item.keterangan}
@@ -752,7 +752,10 @@ const FormLpjMarketing = () => {
                     </div>
                 ))}
 
-                <button onClick={handleAddForm} className="text-red-600 font-bold underline cursor-pointer hover:text-red-700">
+                <button
+                    onClick={handleAddForm}
+                    className="text-red-600 font-bold underline cursor-pointer hover:text-red-700"
+                >
                     Tambah
                 </button>
 
@@ -787,28 +790,11 @@ const FormLpjMarketing = () => {
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? (
-                            <div className="flex items-center gap-2 text-gray-200">
-                                <svg
-                                    className="animate-spin h-5 w-5"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                </svg>
-                                <span>Submitting...</span>
+                            <div className="flex items-center gap-1 text-gray-200">
+                                <>
+                                    <FontAwesomeIcon icon={faSpinner} className="mr-2 animate-spin" />
+                                    Submitting...
+                                </>
                             </div>
                         ) : (
                             'Submit'

@@ -5,6 +5,8 @@ import { db, storage } from '../firebaseConfig'
 import Select from 'react-select'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 
 const RbsOperasionalForm = () => {
     const [todayDate, setTodayDate] = useState('')
@@ -309,13 +311,11 @@ const RbsOperasionalForm = () => {
                     if (!r.jenisLain) missingFields.push(getFieldLabel('Jenis Reimbursement'))
                     if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
                     if (!r.kebutuhan) missingFields.push(getFieldLabel('Kebutuhan'))
-                    if (!r.keterangan) missingFields.push(getFieldLabel('Keterangan'))
                     if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Aktivitas'))
                 } else {
                     if (!r.jenis) missingFields.push(getFieldLabel('Jenis Reimbursement'))
                     if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
                     if (!r.kebutuhan) missingFields.push(getFieldLabel('Kebutuhan'))
-                    if (!r.keterangan) missingFields.push(getFieldLabel('Keterangan'))
                     if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Aktivitas'))
                 }
             })
@@ -663,28 +663,11 @@ const RbsOperasionalForm = () => {
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? (
-                            <div className="flex items-center gap-2 text-gray-200">
-                                <svg
-                                    className="animate-spin h-5 w-5"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                </svg>
-                                <span>Submitting...</span>
+                            <div className="flex items-center gap-1 text-gray-200">
+                                <>
+                                    <FontAwesomeIcon icon={faSpinner} className="mr-2 animate-spin" />
+                                    Submitting...
+                                </>
                             </div>
                         ) : (
                             'Submit'
@@ -693,13 +676,7 @@ const RbsOperasionalForm = () => {
                 </div>
             </div>
 
-            <ToastContainer 
-                position="top-right" 
-                autoClose={3000} 
-                hideProgressBar={false} 
-                closeOnClick 
-                pauseOnHover 
-            />
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
         </div>
     )
 }

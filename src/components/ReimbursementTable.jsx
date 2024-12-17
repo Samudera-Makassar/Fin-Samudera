@@ -255,7 +255,7 @@ const ReimbursementTable = () => {
                 onChange={(option) => handleFilterChange(field, option)}
                 options={options}
                 placeholder={label}
-                isClearable={field !== 'bulan'}
+                isClearable={field !== 'bulan' && field !== 'tahun'}
                 className="w-40"
                 styles={selectStyles}
             />

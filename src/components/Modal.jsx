@@ -17,17 +17,22 @@ const Modal = ({
     const handleReasonChange = (e) => setCancelReason(e.target.value)
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div
+            className="fixed inset-0 flex items-center justify-center z-50"
+            onClick={onClose}
+        >
             <div className="absolute inset-0 bg-black opacity-50"></div>
-            <div className="bg-white rounded-lg p-6 z-10 w-full max-w-md mx-auto">
+            <div 
+                className="bg-white rounded-lg p-6 z-10 w-full max-w-md mx-auto"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <h3 className="text-lg font-bold mb-4">{title}</h3>
                 <p className="text-sm text-gray-500 mb-4">{message}</p>
-                {/* Form alasan pembatalan hanya tampil jika showCancelReason bernilai true */}
                 {showCancelReason && (
                     <textarea
                         placeholder="Alasan pembatalan"
                         value={cancelReason}
-                        onChange={(e) => setCancelReason(e.target.value)}
+                        onChange={handleReasonChange}
                         className="w-full p-2 border border-gray-300 rounded mb-4"
                     />
                 )}

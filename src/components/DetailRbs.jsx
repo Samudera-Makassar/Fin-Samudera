@@ -230,7 +230,6 @@ const DetailRbs = () => {
     if (loading) {
         return <div>Loading...</div>
     }
-    
     const columns = getColumns(reimbursementDetail?.kategori)
 
     return (

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import LogoHero from '../assets/images/login-hero.png'
 import Logo from '../assets/images/logo-samudera.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
+import { faEye, faEyeSlash, faSpinner } from '@fortawesome/free-solid-svg-icons'
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false)
@@ -13,6 +13,7 @@ const LoginPage = () => {
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const navigate = useNavigate()
+    const [isLoading, setIsLoading] = useState(false)
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword)
@@ -21,6 +22,7 @@ const LoginPage = () => {
     const handleLogin = async (e) => {
         e.preventDefault()
         setError('')
+        setIsLoading(true)
 
         try {
             // Query untuk memeriksa email
@@ -29,6 +31,7 @@ const LoginPage = () => {
 
             if (emailSnapshot.empty) {
                 setError('Email tidak ditemukan');
+                setIsLoading(false);
                 return;
             }
 
@@ -41,7 +44,8 @@ const LoginPage = () => {
             const userSnapshot = await getDocs(userQuery);
 
             if (userSnapshot.empty) {
-                setError('Password salah');
+                setError('Password Salah');
+                setIsLoading(false);
                 return;
             }
 
@@ -58,10 +62,14 @@ const LoginPage = () => {
             else if (role === 'Reviewer') navigate('/dashboard/reviewer');
             else if (role === 'Employee') navigate('/dashboard/employee');
             else if (role === 'Super Admin') navigate('/manage-users');
-            else setError('Role tidak dikenali. Hubungi administrator.');
+            else {
+                setError('Role tidak dikenali. Hubungi administrator.');
+                setIsLoading(false);
+            }
         } catch (err) {
             console.error('Login error:', err);
             setError('Terjadi kesalahan saat login. Silakan coba lagi.');
+            setIsLoading(false);
         }
     }
 
@@ -123,8 +131,19 @@ const LoginPage = () => {
                     <button
                         type="submit"
                         className="w-full bg-red-600 text-white font-semibold py-3 rounded-md hover:bg-red-700 transition duration-300"
+                        disabled={isLoading}
                     >
-                        Login
+                        {isLoading ? (
+                            <>
+                                <FontAwesomeIcon 
+                                    icon={faSpinner} 
+                                    className="mr-2 animate-spin" 
+                                />
+                                Loading...
+                            </>
+                        ) : (
+                            'Login'
+                        )}
                     </button>
                 </form>
             </div>

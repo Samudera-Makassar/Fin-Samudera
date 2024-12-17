@@ -251,7 +251,7 @@ const LpjBsTable = ({ onCancel }) => {
                 onChange={(option) => handleFilterChange(field, option)}
                 options={options}
                 placeholder={label}
-                isClearable={field !== 'bulan'}
+                isClearable={field !== 'bulan' && field !== 'tahun'}
                 className="w-40"
                 styles={selectStyles}
             />
@@ -262,7 +262,7 @@ const LpjBsTable = ({ onCancel }) => {
         return (
             <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
                 <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xl font-medium mb-4 items-center">Reimbursement Diajukan</h3>
+                    <h3 className="text-xl font-medium mb-4 items-center">LPJ Bon Sementara Diajukan</h3>
                     <div className="flex space-x-2">
                         <Skeleton width={100} height={32} />
                         <Skeleton width={100} height={32} />
