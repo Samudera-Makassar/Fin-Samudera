@@ -247,7 +247,7 @@ const DetailRbs = () => {
             case 'tanggal':
                 return formatDate(item[column.key])
             case 'biaya':
-                return item[column.key]?.toLocaleString('id-ID') || 'N/A'
+                return `Rp${item[column.key]?.toLocaleString('id-ID') || 'N/A'}`
             default:
                 return item[column.key] || 'N/A'
         }

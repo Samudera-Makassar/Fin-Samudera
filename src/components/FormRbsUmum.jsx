@@ -353,6 +353,11 @@ const RbsUmumForm = () => {
                 return total + biayaNumber
             }, 0)
 
+            // Fungsi untuk mengonversi format Rupiah ke angka
+            const parseRupiah = (value) => {
+                return Number(value.replace(/[^,\d]/g, '').replace(',', '.')) || 0
+            }
+
             // Map data reimbursement langsung saat akan disimpan
             const reimbursementData = {
                 user: {
@@ -367,7 +372,7 @@ const RbsUmumForm = () => {
                     reviewer2: userData.reviewer2
                 },
                 reimbursements: reimbursements.map((item) => ({
-                    biaya: item.biaya,
+                    biaya: parseRupiah(item.biaya),
                     kebutuhan: item.kebutuhan,
                     keterangan: item.keterangan,
                     tanggal: item.tanggal,                    

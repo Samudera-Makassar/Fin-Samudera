@@ -314,6 +314,11 @@ const RbsMedicalForm = () => {
                 return total + biayaNumber
             }, 0)
 
+            // Fungsi untuk mengonversi format Rupiah ke angka
+            const parseRupiah = (value) => {
+                return Number(value.replace(/[^,\d]/g, '').replace(',', '.')) || 0
+            }
+
             // Map data reimbursement langsung saat akan disimpan
             const reimbursementData = {
                 user: {
@@ -329,7 +334,7 @@ const RbsMedicalForm = () => {
                 },
                 reimbursements: reimbursements.map((item) => ({
                     jenis: item.jenis,
-                    biaya: item.biaya,
+                    biaya: parseRupiah(item.biaya),
                     dokter: item.dokter,
                     klinik: item.klinik,
                     tanggal: item.tanggal
