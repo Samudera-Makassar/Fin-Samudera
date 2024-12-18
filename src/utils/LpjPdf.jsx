@@ -36,18 +36,18 @@ const styles = StyleSheet.create({
   logo: {
     width: 160,
     height: 24,
-    marginBottom: 20,
+    marginBottom: 12,
     alignSelf: "flex-start",
   },
   title: {
-    fontSize: 12,
+    fontSize: 10,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
     fontWeight: 'bold',
     textDecoration: 'underline',
   },
   header: {
-    marginBottom: 12,
+    marginBottom: 16,
     fontWeight: 'bold',
     fontSize: 10,
     flexDirection: 'row',
@@ -61,24 +61,24 @@ const styles = StyleSheet.create({
   tableRow: {
     flexDirection: 'row',
     borderBottomColor: '#000',
-    borderBottomWidth: 1,
-    // minHeight: 18,
+    borderBottomWidth: 1,    
     alignItems: 'center',
   },
   tableHeader: {
     backgroundColor: '#FFFF99',
     textAlign: 'center',
-    fontWeight: 'bold'
+    fontWeight: 'bold',    
   },
   tableHeaderCell: {
     fontSize: 8,
-    padding: 4,
+    padding: 2,
     borderColor: '#000',
     borderBottom: 1,
     borderRightWidth: 1,
     borderBottomColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
+    textAlign: 'center',
     height: '100%'
   },
   biayaHeaderContainer: {
@@ -178,6 +178,11 @@ const getApprovedReviewerNames = async (lpjDetail) => {
   // Cari reviewer2 dan gunakan "Super Admin" sebagai backup jika tidak ditemukan
   const reviewer2Name = await findApprovedReviewer(reviewer2, "Super Admin");
 
+  // Tambahkan kondisi jika reviewer2 kosong atau tidak ada
+  if ((reviewer2.length === 0 || reviewer2Name === "-") && reviewer1Name !== "-") {
+    return { reviewer1Name, reviewer2Name: "" };
+  }
+
   // Jika kedua reviewer adalah Super Admin, kembalikan "Super Admin" saja
   if (reviewer1Name === reviewer2Name && reviewer1Name.toLowerCase().includes("super admin")) {
     return { reviewer1Name: "Super Admin", reviewer2Name: "" };
@@ -199,41 +204,41 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
         <View style={styles.header}>
           {lpjDetail.kategori === "GA/Umum" ? (
             <View style={{ flexDirection: 'row' }}>
-              <View style={{ flexDirection: "column", marginRight: 12 }}>
-                <Text style={{ marginBottom: 4 }}>Bisnis Unit</Text>
-                <Text style={{ marginBottom: 4 }}>PIC</Text>
+              <View style={{ flexDirection: "column", marginRight: 12, gap: 4 }}>
+                <Text>Bisnis Unit</Text>
+                <Text>PIC</Text>
               </View>
-              <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4 }}>
-                <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>
+              <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4, gap: 4 }}>
+                <Text>:</Text>
+                <Text>:</Text>
               </View>
-              <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase' }}>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.user?.unit || "-"}</Text>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.user?.nama || "-"}</Text>
+              <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase', gap: 4 }}>
+                <Text>{lpjDetail.user?.unit || "-"}</Text>
+                <Text>{lpjDetail.user?.nama || "-"}</Text>
               </View>
             </View>
           ) : lpjDetail.kategori === "Marketing/Operasional" ? (
             <View style={{ flexDirection: 'row' }}>
-              <View style={{ flexDirection: "column", marginRight: 12 }}>
-                <Text style={{ marginBottom: 4 }}>Bisnis Unit</Text>
-                <Text style={{ marginBottom: 4 }}>Project</Text>
-                <Text style={{ marginBottom: 4 }}>Customer</Text>
-                <Text style={{ marginBottom: 4 }}>Location</Text>
-                <Text style={{ marginBottom: 4 }}>PIC</Text>
+              <View style={{ flexDirection: "column", marginRight: 12, gap: 4 }}>
+                <Text>Bisnis Unit</Text>
+                <Text>Project</Text>
+                <Text>Customer</Text>
+                <Text>Location</Text>
+                <Text>PIC</Text>
               </View>
-              <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4 }}>
-                <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>
+              <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4, gap: 4 }}>
+                <Text>:</Text>
+                <Text>:</Text>
+                <Text>:</Text>
+                <Text>:</Text>
+                <Text>:</Text>
               </View>
-              <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase' }}>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.user?.unit || "-"}</Text>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.project || "-"}</Text>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.customer || "-"}</Text>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.lokasi || "-"}</Text>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.user?.nama || "-"}</Text>
+              <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase', gap: 4 }}>
+                <Text>{lpjDetail.user?.unit || "-"}</Text>
+                <Text>{lpjDetail.project || "-"}</Text>
+                <Text>{lpjDetail.customer || "-"}</Text>
+                <Text>{lpjDetail.lokasi || "-"}</Text>
+                <Text>{lpjDetail.user?.nama || "-"}</Text>
               </View>
             </View>
           ) : (
@@ -244,17 +249,17 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
 
           {lpjDetail.kategori === "GA/Umum" && lpjDetail.lpj?.map((item, index) => (
             <View key={index} style={{ flexDirection: 'row' }}>
-              <View style={{ flexDirection: "column", marginRight: 12 }}>
-                <Text style={{ marginBottom: 4 }}>No. BS</Text>
-                <Text style={{ marginBottom: 4 }}>Tgl. Kegiatan</Text>
+              <View style={{ flexDirection: "column", marginRight: 12, gap: 4 }}>
+                <Text>No. BS</Text>
+                <Text>Tgl. Kegiatan</Text>
               </View>
-              <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4 }}>
-                <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>
+              <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4, gap: 4 }}>
+                <Text>:</Text>
+                <Text>:</Text>
               </View>
-              <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase' }}>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.nomorBS || "-"}</Text>
-                <Text style={{ marginBottom: 4 }}>
+              <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase', gap: 4 }}>
+                <Text>{lpjDetail.nomorBS || "-"}</Text>
+                <Text>
                   {item.tanggal
                     ? new Date(item.tanggal).toLocaleDateString("id-ID", {
                       day: "2-digit",
@@ -269,25 +274,25 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
 
           {lpjDetail.kategori === "Marketing/Operasional" && lpjDetail.lpj?.map((item, index) => (
             <View key={index} style={{ flexDirection: 'row' }}>
-              <View style={{ flexDirection: "column", marginRight: 12 }}>
-                <Text style={{ marginBottom: 4 }}> </Text>
-                <Text style={{ marginBottom: 4 }}>No. BS</Text>
-                <Text style={{ marginBottom: 4 }}>No. Job Order</Text>
-                <Text style={{ marginBottom: 4 }}>Tgl. Kegiatan</Text>
-                <Text style={{ marginBottom: 4 }}> </Text>
+              <View style={{ flexDirection: "column", marginRight: 12, gap: 4 }}>
+                <Text> </Text>
+                <Text>No. BS</Text>
+                <Text>No. Job Order</Text>
+                <Text>Tgl. Kegiatan</Text>
+                <Text> </Text>
               </View>
-              <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4 }}>
-                <Text style={{ marginBottom: 4 }}> </Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}>:</Text>
-                <Text style={{ marginBottom: 4 }}> </Text>
+              <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4, gap: 4 }}>
+                <Text> </Text>
+                <Text>:</Text>
+                <Text>:</Text>
+                <Text>:</Text>
+                <Text> </Text>
               </View>
-              <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase' }}>
-                <Text style={{ marginBottom: 4 }}> </Text>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.nomorBS || "-"}</Text>
-                <Text style={{ marginBottom: 4 }}>{lpjDetail.nomorJO || "-"}</Text>
-                <Text style={{ marginBottom: 4 }}>
+              <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase', gap: 4 }}>
+                <Text> </Text>
+                <Text>{lpjDetail.nomorBS || "-"}</Text>
+                <Text>{lpjDetail.nomorJO || "-"}</Text>
+                <Text>
                   {item.tanggal
                     ? new Date(item.tanggal).toLocaleDateString("id-ID", {
                       day: "2-digit",
@@ -296,7 +301,7 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
                     })
                     : "-"}
                 </Text>
-                <Text style={{ marginBottom: 4 }}> </Text>
+                <Text> </Text>
               </View>
             </View>
           ))}
@@ -306,34 +311,34 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
         <View style={styles.tableContainer}>
           {/* Header Row */}
           <View style={[styles.tableRow, styles.tableHeader]}>
-            <View style={[styles.tableHeaderCell, { width: '5%', fontSize: 8, borderRight: 1, justifyContent: 'center' }]}>
-              <Text style={{ textAlign: 'center' }}>NO.</Text>
+            <View style={[styles.tableHeaderCell, { width: '5%' }]}>
+              <Text>NO.</Text>
             </View>
-            <View style={[styles.tableHeaderCell, { width: '32%', borderRight: 1 }]}>
-              <Text style={{ textAlign: 'center' }}>URAIAN</Text>
+            <View style={[styles.tableHeaderCell, { width: '32%' }]}>
+              <Text>URAIAN</Text>
             </View>
-            <View style={[styles.tableHeaderCell, { width: '12%', borderRight: 1 }]}>
-              <Text style={{ textAlign: 'center' }}>BON</Text>
-              <Text style={{ textAlign: 'center' }}>SEMENTARA</Text>
+            <View style={[styles.tableHeaderCell, { width: '12%' }]}>
+              <Text>BON</Text>
+              <Text>SEMENTARA</Text>
             </View>
-            <View style={[styles.tableHeaderCell, { width: '7%', borderRight: 1, paddingHorizontal: 1 }]}>
-              <Text style={{ textAlign: 'center' }}>JUMLAH</Text>
+            <View style={[styles.tableHeaderCell, { width: '7%', paddingHorizontal: 1 }]}>
+              <Text>JUMLAH</Text>
             </View>
-            <View style={[styles.tableHeaderCell, { width: '10%', borderRight: 1 }]}>
-              <Text style={{ textAlign: 'center' }}>SATUAN</Text>
-              <Text style={{ textAlign: 'center' }}>BOX/SHIFT</Text>
-              <Text style={{ textAlign: 'center' }}>/JAM</Text>
+            <View style={[styles.tableHeaderCell, { width: '10%', paddingHorizontal: 1 }]}>
+              <Text>SATUAN</Text>
+              <Text>BOX/SHIFT</Text>
+              <Text>/JAM</Text>
             </View>
-            <View style={[styles.tableHeaderCell, { width: '24%', borderRight: 1, padding: 0 }]}>
+            <View style={[styles.tableHeaderCell, { width: '24%', padding: 0 }]}>
               <View style={styles.biayaHeaderContainer}>
                 <Text style={{ textAlign: 'center', borderBottom: 1, width: '100%', paddingVertical: 4 }}>BIAYA</Text>
                 <View style={styles.subHeaderRow}>
-                  <View style={[styles.subHeaderCell, { paddingRight: 4, borderRight: 1, borderBottom: 0 }]}>
+                  <View style={[styles.subHeaderCell, { borderRight: 1, borderBottom: 0 }]}>
                     <Text> </Text>
                     <Text>AKTUAL (Rp)</Text>
                     <Text> </Text>
                   </View>
-                  <View style={[styles.subHeaderCell, { paddingLeft: 4, borderBottom: 0 }]}>
+                  <View style={[styles.subHeaderCell, { borderBottom: 0 }]}>
                     <Text> </Text>
                     <Text>JUMLAH</Text>
                     <Text> </Text>
@@ -342,35 +347,35 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
                 {/* <Text> </Text> */}
               </View>
             </View>
-            <View style={[styles.tableHeaderCell, { width: '10%', borderRightWidth: 0 }]}>
-              <Text style={{ textAlign: 'center' }}>KET</Text>
+            <View style={[styles.tableHeaderCell, { width: '10%', borderRight: 0 }]}>
+              <Text>KET</Text>
             </View>
           </View>
 
           {/* Empty Row */}
           <View style={styles.tableRow}>
-            <View style={[styles.tableCell, { width: '5%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '5%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '32%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '32%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '7%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0, alignItems: 'center', justifyContent: "center", display: 'flex' }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
               <Text> </Text>
             </View>
           </View>
@@ -383,22 +388,22 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
             <View style={[styles.tableCell, { width: '32%' }]}>
               <Text style={{ fontWeight: 'bold' }}>A. Bon Sementara :</Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '7%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0 }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
               <Text> </Text>
             </View>
           </View>
@@ -411,50 +416,50 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
             <View style={[styles.tableCell, { width: '32%' }]}>
               <Text>{lpjDetail?.aktivitas} </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right' }]}>
+            <View style={[styles.tableCell, { width: '12%', textAlign: 'right' }]}>
               <Text>{lpjDetail?.jumlahBS.toLocaleString('id-ID') ?? 'N/A'}</Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '7%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0 }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
               <Text> </Text>
             </View>
           </View>
 
           {/* Empty Row */}
           <View style={styles.tableRow}>
-            <View style={[styles.tableCell, { width: '5%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '5%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '32%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '32%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '7%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0, alignItems: 'center', justifyContent: "center", display: 'flex' }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
               <Text> </Text>
             </View>
           </View>
@@ -467,50 +472,50 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
             <View style={[styles.tableCell, { width: '32%' }]}>
               <Text style={{ fontWeight: 'bold' }}>B. Perincian Biaya :</Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right' }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1, textAlign: 'center' }]}>
+            <View style={[styles.tableCell, { width: '7%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1, textAlign: 'center' }]}>
+            <View style={[styles.tableCell, { width: '10%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0 }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
               <Text> </Text>
             </View>
           </View>
 
           {/* Empty Row */}
           <View style={styles.tableRow}>
-            <View style={[styles.tableCell, { width: '5%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '5%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '32%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '32%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '7%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0, alignItems: 'center', justifyContent: "center", display: 'flex' }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
               <Text> </Text>
             </View>
           </View>
@@ -524,107 +529,107 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
               <View style={[styles.tableCell, { width: '32%' }]}>
                 <Text>{item.namaItem}</Text>
               </View>
-              <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right' }]}>
-                <Text></Text>
-              </View>
-              <View style={[styles.tableCell, { width: '7%', borderRight: 1, textAlign: 'center' }]}>
-                <Text>{item.jumlah}</Text>
-              </View>
-              <View style={[styles.tableCell, { width: '10%', borderRight: 1, textAlign: 'center' }]}>
+              <View style={[styles.tableCell, { width: '12%' }]}>
                 <Text> </Text>
               </View>
-              <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right' }]}>
+              <View style={[styles.tableCell, { width: '7%', textAlign: 'center' }]}>
+                <Text>{item.jumlah}</Text>
+              </View>
+              <View style={[styles.tableCell, { width: '10%' }]}>
+                <Text> </Text>
+              </View>
+              <View style={[styles.tableCell, { width: '12%' }]}>
                 <Text>{item?.biaya.toLocaleString('id-ID') || "-"}</Text>
               </View>
-              <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right' }]}>
+              <View style={[styles.tableCell, { width: '12%', textAlign: 'right' }]}>
                 <Text>{item?.jumlahBiaya.toLocaleString('id-ID') || "-"}</Text>
               </View>
-              <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0 }]}>
-                <Text>{item?.keterangan || " "}</Text>
+              <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
+                <Text style={{ flexWrap: 'wrap', textAlign: 'left', overflow: 'hidden' }}>{item?.keterangan || " "}</Text>
               </View>
             </View>
           ))}
 
           {/* Empty Row */}
           <View style={styles.tableRow}>
-            <View style={[styles.tableCell, { width: '5%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '5%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '32%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '32%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '7%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0, alignItems: 'center', justifyContent: "center", display: 'flex' }]}>
-              <Text> </Text>
-            </View>
-          </View>
-
-          {/* Empty Row */}
-          <View style={styles.tableRow}>
-            <View style={[styles.tableCell, { width: '5%', borderRight: 1 }]}>
-              <Text> </Text>
-            </View>
-            <View style={[styles.tableCell, { width: '32%', borderRight: 1 }]}>
-              <Text> </Text>
-            </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
-              <Text> </Text>
-            </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1 }]}>
-              <Text> </Text>
-            </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1 }]}>
-              <Text> </Text>
-            </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
-              <Text> </Text>
-            </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
-              <Text> </Text>
-            </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0, alignItems: 'center', justifyContent: "center", display: 'flex' }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
               <Text> </Text>
             </View>
           </View>
 
           {/* Empty Row */}
           <View style={styles.tableRow}>
-            <View style={[styles.tableCell, { width: '5%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '5%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '32%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '32%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '7%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0, alignItems: 'center', justifyContent: "center", display: 'flex' }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
+              <Text> </Text>
+            </View>
+          </View>
+
+          {/* Empty Row */}
+          <View style={styles.tableRow}>
+            <View style={[styles.tableCell, { width: '5%' }]}>
+              <Text> </Text>
+            </View>
+            <View style={[styles.tableCell, { width: '32%' }]}>
+              <Text> </Text>
+            </View>
+            <View style={[styles.tableCell, { width: '12%' }]}>
+              <Text> </Text>
+            </View>
+            <View style={[styles.tableCell, { width: '7%' }]}>
+              <Text> </Text>
+            </View>
+            <View style={[styles.tableCell, { width: '10%' }]}>
+              <Text> </Text>
+            </View>
+            <View style={[styles.tableCell, { width: '12%' }]}>
+              <Text> </Text>
+            </View>
+            <View style={[styles.tableCell, { width: '12%' }]}>
+              <Text> </Text>
+            </View>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
               <Text> </Text>
             </View>
           </View>
@@ -637,22 +642,22 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
             <View style={[styles.tableCell, { width: '32%', borderTopWidth: 1 }]}>
               <Text>Total Bon Sementara</Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right', fontWeight: 'bold', borderTopWidth: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%', textAlign: 'right', fontWeight: 'bold', borderTopWidth: 1 }]}>
               <Text>{lpjDetail?.jumlahBS.toLocaleString('id-ID') ?? 'N/A'}</Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1, borderTopWidth: 1 }]}>
+            <View style={[styles.tableCell, { width: '7%', borderTopWidth: 1 }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1, borderTopWidth: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%', borderTopWidth: 1 }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, borderTopWidth: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%', borderTopWidth: 1 }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, borderTopWidth: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%', borderTopWidth: 1 }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0, borderTopWidth: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0, borderTopWidth: 1 }]}>
               <Text> </Text>
             </View>
           </View>
@@ -665,22 +670,22 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
             <View style={[styles.tableCell, { width: '32%' }]}>
               <Text>Sub Total Biaya Operasional Sementara</Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right' }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '7%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right' }]}>
+            <View style={[styles.tableCell, { width: '12%', textAlign: 'right' }]}>
               <Text>{lpjDetail?.jumlahBS.toLocaleString('id-ID') ?? 'N/A'}</Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0 }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
               <Text> </Text>
             </View>
           </View>
@@ -693,22 +698,22 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
             <View style={[styles.tableCell, { width: '32%' }]}>
               <Text>Total Biaya Operasional</Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right' }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '7%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right', fontWeight: 'bold' }]}>
+            <View style={[styles.tableCell, { width: '12%', textAlign: 'right', fontWeight: 'bold' }]}>
               <Text>{lpjDetail.totalBiaya.toLocaleString('id-ID') ?? 'N/A'}</Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0 }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
               <Text> </Text>
             </View>
           </View>
@@ -721,22 +726,22 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
             <View style={[styles.tableCell, { width: '32%' }]}>
               <Text>Sisa Lebih Biaya Operasional Sementara</Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right' }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '7%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%' }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, textAlign: 'right' }]}>
+            <View style={[styles.tableCell, { width: '12%', textAlign: 'right' }]}>
               <Text>{lpjDetail.sisaLebih === 0 ? '' : `${lpjDetail.sisaLebih.toLocaleString('id-ID') ?? 'N/A'}`}</Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0 }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0 }]}>
               <Text> </Text>
             </View>
           </View>
@@ -749,22 +754,22 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
             <View style={[styles.tableCell, { width: '32%', borderBottom: 1 }]}>
               <Text>Sisa Kurang dibayarkan ke Pegawai</Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, borderBottom: 1, textAlign: 'right' }]}>
+            <View style={[styles.tableCell, { width: '12%', borderBottom: 1 }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '7%', borderRight: 1, borderBottom: 1 }]}>
+            <View style={[styles.tableCell, { width: '7%', borderBottom: 1 }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRight: 1, borderBottom: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%', borderBottom: 1 }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, borderBottom: 1 }]}>
+            <View style={[styles.tableCell, { width: '12%', borderBottom: 1 }]}>
               <Text> </Text>
             </View>
-            <View style={[styles.tableCell, { width: '12%', borderRight: 1, borderBottom: 1, textAlign: 'right' }]}>
+            <View style={[styles.tableCell, { width: '12%', borderBottom: 1, textAlign: 'right' }]}>
               <Text>{lpjDetail.sisaKurang === 0 ? '' : `-${lpjDetail.sisaKurang.toLocaleString('id-ID') ?? 'N/A'}`}</Text>
             </View>
-            <View style={[styles.tableCell, { width: '10%', borderRightWidth: 0, borderBottom: 1 }]}>
+            <View style={[styles.tableCell, { width: '10%', borderRight: 0, borderBottom: 1 }]}>
               <Text> </Text>
             </View>
           </View>

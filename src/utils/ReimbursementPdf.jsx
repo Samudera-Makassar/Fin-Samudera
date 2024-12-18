@@ -64,6 +64,8 @@ const styles = StyleSheet.create({
     padding: 4,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRightColor: '#000',
+    borderRightWidth: 1,
     height: '100%'
   },
   tableCell: {
@@ -149,6 +151,11 @@ const getApprovedReviewerNames = async (reimbursementDetail) => {
   const reviewer1Name = await findApprovedReviewer(reviewer1, "Super Admin");
   // Cari reviewer2 dan gunakan "Super Admin" sebagai backup jika tidak ditemukan
   const reviewer2Name = await findApprovedReviewer(reviewer2, "Super Admin");
+
+  // Tambahkan kondisi jika reviewer2 kosong atau tidak ada
+  if ((reviewer2.length === 0 || reviewer2Name === "-") && reviewer1Name !== "-") {
+    return { reviewer1Name, reviewer2Name: "" };
+  }
 
   // Jika kedua reviewer adalah Super Admin, kembalikan "Super Admin" saja
   if (reviewer1Name === reviewer2Name && reviewer1Name.toLowerCase().includes("super admin")) {
@@ -259,13 +266,13 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
 
           {/* Header Row */}
           <View style={[styles.tableRow, styles.tableHeader]}>
-            <View style={[styles.tableHeaderCell, { width: '6%', borderRight: 1 }]}>
+            <View style={[styles.tableHeaderCell, { width: '6%' }]}>
               <Text>NO.</Text>
             </View>
-            <View style={[styles.tableHeaderCell, { width: '74%', borderRight: 1 }]}>
+            <View style={[styles.tableHeaderCell, { width: '74%' }]}>
               <Text>ACTIVITIES NAME</Text>
             </View>
-            <View style={[styles.tableHeaderCell, { width: '20%' }]}>
+            <View style={[styles.tableHeaderCell, { width: '20%', borderRight: 0 }]}>
               <Text>JUMLAH (IDR)</Text>
             </View>
           </View>
@@ -345,7 +352,7 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
               <Text>TOTAL:</Text>
             </View>
             <View style={[styles.tableCell, { width: '20%', borderRight: 0, textAlign: 'right' }]}>
-              <Text>Rp{reimbursementDetail.totalBiaya?.toLocaleString("id-ID") || "-"}</Text>
+              <Text>{reimbursementDetail.totalBiaya?.toLocaleString("id-ID") || "-"}</Text>
             </View>
           </View>
 
@@ -388,227 +395,6 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
       </Page>
     </Document >
   );
-  // return (
-  //   <Document>
-  //     <Page size="A4" style={styles.page}>
-  //       <Image src={Logo} style={styles.logo} />
-  //       {/* <View style={styles.header}> */}
-  //       <View style={[styles.companyInfo, { fontFamily: "Optima" }]}>
-  //         <Text style={styles.title}>
-  //           {reimbursementDetail.user?.unit || "-"}
-  //         </Text>
-  //         <Text style={styles.subtitle}>
-  //           Jl. Sungai Saddang No. 82, Kota Makassar
-  //         </Text>
-  //         <Text
-  //           style={[styles.subtitle, { marginTop: 12, fontWeight: "bold" }]}
-  //         >
-  //           samudera.id
-  //         </Text>
-  //         <Text style={[styles.subtitle, { fontSize: 8 }]}>
-  //           A member of the SAMUDERA INDONESIA GROUP
-  //         </Text>
-  //       </View>
-  //       {/* </View> */}
-
-  //       <View style={styles.tableContainer}>
-  //         <View style={[styles.tableRow, styles.tableHeader]}>
-  //           <Text
-  //             style={[
-  //               styles.tableCell,
-  //               {
-  //                 flex: 1,
-  //                 textAlign: "center",
-  //                 fontSize: 12,
-  //                 fontWeight: "semibold",
-  //               },
-  //             ]}
-  //           >
-  //             REIMBURSEMENT
-  //           </Text>
-  //         </View>
-
-  //         {/* Header Tabel */}
-  //         <View style={[styles.tableRow]}>
-  //           <Text
-  //             style={[
-  //               styles.tableCell,
-  //               { flex: 0.05, textAlign: "center", borderRight: 1 },
-  //             ]}
-  //           >
-  //             NO.
-  //           </Text>
-  //           <Text
-  //             style={[
-  //               styles.tableCell,
-  //               { flex: 0.8, textAlign: "center", borderRight: 1 },
-  //             ]}
-  //           >
-  //             ACTIVITIES NAME
-  //           </Text>
-  //           <Text
-  //             style={[styles.tableCell, { flex: 0.15, textAlign: "center" }]}
-  //           >
-  //             JUMLAH (IDR)
-  //           </Text>
-  //         </View>
-
-  //         {/* Baris untuk deskripsi Biaya Reimburse */}
-  //         <View style={[styles.tableRow]}>
-  //           <Text style={[styles.tableCell, { flex: 0.05, borderRight: 1 }]}> </Text>
-  //           <Text
-  //             style={[
-  //               styles.tableCell,
-  //               {
-  //                 flex: 0.8,
-  //                 fontWeight: "semibold",
-  //                 textTransform: "uppercase",
-  //                 borderRight: 1,
-  //               },
-  //             ]}
-  //           >
-  //             BIAYA REIMBURSE {reimbursementDetail.user?.nama || "-"} UNTUK
-  //             KEGIATAN {reimbursementDetail.kategori || "-"}
-  //           </Text>
-  //           <Text style={[styles.tableCell, { flex: 0.15 }]}> </Text>
-  //         </View>
-
-  //         {/* Baris Data */}
-  //         {reimbursementDetail.reimbursements?.map((item, index) => (
-  //           <View key={index} style={styles.tableRow}>
-  //             <Text
-  //               style={[
-  //                 styles.tableCell,
-  //                 { flex: 0.05, textAlign: "center", borderRight: 1 },
-  //               ]}
-  //             >
-  //               {index + 1}
-  //             </Text>
-  //             <View
-  //               style={[
-  //                 styles.tableCell,
-  //                 { flex: 0.8, flexDirection: "row", borderRight: 1 },
-  //               ]}
-  //             >
-  //               <Text style={{ width: 100 }}>
-  //                 {item.tanggal
-  //                   ? new Date(item.tanggal)
-  //                     .toLocaleDateString("en-GB", {
-  //                       day: "2-digit",
-  //                       month: "short",
-  //                       year: "2-digit",
-  //                     })
-  //                     .replace(/\./g, "")
-  //                     .replace(/\s/g, "-")
-  //                   : "-"}
-  //               </Text>
-  //               <Text style={{ marginLeft: 10 }}>{item.jenis || "-"}</Text>
-  //             </View>
-  //             <Text
-  //               style={[styles.tableCell, { flex: 0.15, textAlign: "right" }]}
-  //             >
-  //               {(item.biaya || 0).toLocaleString("id-ID")}
-  //             </Text>
-  //           </View>
-  //         ))}
-
-  //         <View style={styles.tableRow}>
-  //           <Text style={[styles.tableCell, { flex: 0.05, borderRight: 1 }]}> </Text>
-  //           <Text
-  //             style={[
-  //               styles.tableCell,
-  //               { flex: 0.8, textAlign: "right", borderRight: 1 },
-  //             ]}
-  //           >
-  //             TOTAL
-  //           </Text>
-  //           <Text style={[styles.tableCell, { flex: 0.15, textAlign: "right" }]}>
-  //             Rp{reimbursementDetail.totalBiaya?.toLocaleString("id-ID") || "-"}
-  //           </Text>
-  //         </View>
-
-  //         <View style={styles.tableRow}>
-  //           <Text style={styles.tableCell}>
-  //             TERBILANG: {terbilang(reimbursementDetail.totalBiaya || 0)}
-  //           </Text>
-  //         </View>
-
-  //         <Text
-  //           style={[
-  //             styles.subtitle,
-  //             { marginTop: 24, paddingHorizontal: 4, fontSize: 8 },
-  //           ]}
-  //         >
-  //           Dokumen Ini Sudah Mendukung Signature Digital
-  //         </Text>
-
-  //         <View
-  //           style={[
-  //             styles.container,
-  //             { flexDirection: "row", justifyContent: "space-between" },
-  //           ]}
-  //         >
-  //           <View
-  //             style={[styles.bankInfo, { width: "40%", flexDirection: "row" }]}
-  //           >
-  //             {/* Label */}
-  //             <View
-  //               style={{
-  //                 flexDirection: "column",
-  //                 marginRight: 4,
-  //                 textAlign: "right",
-  //               }}
-  //             >
-  //               <Text style={{ marginBottom: 4 }}>Nama Account</Text>
-  //               <Text style={{ marginBottom: 4 }}>Bank Penerima</Text>
-  //               <Text style={{ marginBottom: 4 }}>No Rekening</Text>
-  //             </View>
-  //             {/* Tanda Titik Dua */}
-  //             <View
-  //               style={{
-  //                 flexDirection: "column",
-  //                 marginRight: 4,
-  //                 textAlign: "center",
-  //               }}
-  //             >
-  //               <Text style={{ marginBottom: 4 }}>:</Text>
-  //               <Text style={{ marginBottom: 4 }}>:</Text>
-  //               <Text style={{ marginBottom: 4 }}>:</Text>
-  //             </View>
-  //             {/* Value */}
-  //             <View style={{ flexDirection: "column", textAlign: "left" }}>
-  //               <Text style={{ marginBottom: 4 }}>
-  //                 {reimbursementDetail.user?.nama || "-"}
-  //               </Text>
-  //               <Text style={{ marginBottom: 4 }}>
-  //                 {reimbursementDetail.user?.bankName || "-"}
-  //               </Text>
-  //               <Text style={{ marginBottom: 4 }}>
-  //                 {reimbursementDetail.user?.accountNumber || "-"}
-  //               </Text>
-  //             </View>
-  //           </View>
-
-  //           <Text
-  //             style={[
-  //               styles.signature,
-  //               {
-  //                 marginLeft: "auto",
-  //                 marginBottom: 0,
-  //                 textAlign: "right",
-  //                 width: "70%",
-  //                 paddingHorizontal: 4
-  //               },
-  //             ]}
-  //           >
-  //             Approved By {approvedReviewers.reviewer1Name}
-  //             {approvedReviewers.reviewer2Name ? ` & ${approvedReviewers.reviewer2Name}` : ""}
-  //           </Text>
-  //         </View>
-  //       </View>
-  //     </Page>
-  //   </Document>
-  // );
 };
 
 const generateReimbursementPDF = async (reimbursementDetail) => {

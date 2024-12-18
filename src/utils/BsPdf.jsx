@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         textAlign: 'center',
-        marginBottom: 20,             
+        marginBottom: 20,
     },
     header: {
         marginBottom: 8,
@@ -41,8 +41,7 @@ const styles = StyleSheet.create({
     tableRow: {
         flexDirection: 'row',
         borderBottomColor: '#000',
-        borderBottomWidth: 1,
-        // minHeight: 18,
+        borderBottomWidth: 1,        
         alignItems: 'center',
     },
     tableHeader: {
@@ -50,9 +49,11 @@ const styles = StyleSheet.create({
     },
     tableHeaderCell: {
         fontSize: 8,
-        padding: 4,                
+        padding: 4,
         alignItems: 'center',
         justifyContent: 'center',
+        borderRightColor: '#000',
+        borderRightWidth: 1,
         height: '100%'
     },
     tableCell: {
@@ -136,6 +137,11 @@ const getApprovedReviewerNames = async (bonSementaraDetail) => {
     // Cari reviewer2 dan gunakan "Super Admin" sebagai backup jika tidak ditemukan
     const reviewer2Name = await findApprovedReviewer(reviewer2, "Super Admin");
 
+    // Tambahkan kondisi jika reviewer2 kosong atau tidak ada
+    if ((reviewer2.length === 0 || reviewer2Name === "-") && reviewer1Name !== "-") {
+        return { reviewer1Name, reviewer2Name: "" };
+    }
+    
     // Jika kedua reviewer adalah Super Admin, kembalikan "Super Admin" saja
     if (reviewer1Name === reviewer2Name && reviewer1Name.toLowerCase().includes("super admin")) {
         return { reviewer1Name: "Super Admin", reviewer2Name: "" };
@@ -274,13 +280,13 @@ const BsPDF = ({ bonSementaraDetail, approvedReviewers }) => {
 
                     {/* Header Row */}
                     <View style={[styles.tableRow, styles.tableHeader]}>
-                        <View style={[styles.tableHeaderCell, { width: '6%', borderRight: 1 }]}>
+                        <View style={[styles.tableHeaderCell, { width: '6%' }]}>
                             <Text>NO.</Text>
                         </View>
-                        <View style={[styles.tableHeaderCell, { width: '74%', borderRight: 1 }]}>
+                        <View style={[styles.tableHeaderCell, { width: '74%' }]}>
                             <Text>ACTIVITIES NAME</Text>
                         </View>
-                        <View style={[styles.tableHeaderCell, { width: '20%' }]}>
+                        <View style={[styles.tableHeaderCell, { width: '20%', borderRight: 0 }]}>
                             <Text>JUMLAH (IDR)</Text>
                         </View>
                     </View>
@@ -394,7 +400,7 @@ const generateBsPDF = async (bonSementaraDetail) => {
         const storageRef = ref(storage, `BonSementara/${sanitizedKategori}/${bonSementaraDetail.displayId}/${bonSementaraDetail.displayId}.pdf`);
         await uploadBytes(storageRef, pdfBlob);
 
-        const downloadURL = await getDownloadURL(storageRef);    
+        const downloadURL = await getDownloadURL(storageRef);
         return downloadURL;
     } catch (error) {
         console.error("Gagal mengunduh:", error);
