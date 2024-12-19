@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: 16,
-    fontSize: 6,    
+    fontSize: 7,    
   },
   footerRow: {
     flexDirection: 'row',
@@ -252,7 +252,6 @@ const ReimbursementPDF = ({ reimbursementDetail, approvedReviewers }) => {
           <Text style={{ fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase' }}>{reimbursementDetail.user?.unit || "-"}</Text>
           <Text>Jl. Sungai Saddang No. 82, Kota Makassar</Text>
           <Text style={{ marginTop: 10, fontWeight: "bold" }}>samudera.id</Text>
-          <Text style={{ fontSize: 6 }}>A member of the SAMUDERA INDONESIA GROUP</Text>
         </View>
 
         {/* Table */}

@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   tableContainer: {
-    border: 2,
+    border: 1,
     borderColor: '#000',
     fontFamily: 'Poppins'
   },
@@ -65,17 +65,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tableHeader: {
-    backgroundColor: '#FFFF99',
+    backgroundColor: '#ED1C24',
     textAlign: 'center',
-    fontWeight: 'bold',    
+    fontWeight: 'bold',   
+    color: 'white' 
   },
   tableHeaderCell: {
     fontSize: 8,
     padding: 2,
     borderColor: '#000',
-    borderBottom: 1,
     borderRightWidth: 1,
-    borderBottomColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
@@ -207,14 +206,17 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
               <View style={{ flexDirection: "column", marginRight: 12, gap: 4 }}>
                 <Text>Bisnis Unit</Text>
                 <Text>PIC</Text>
+                <Text>No. BS</Text>
               </View>
               <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4, gap: 4 }}>
+                <Text>:</Text>
                 <Text>:</Text>
                 <Text>:</Text>
               </View>
               <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase', gap: 4 }}>
                 <Text>{lpjDetail.user?.unit || "-"}</Text>
                 <Text>{lpjDetail.user?.nama || "-"}</Text>
+                <Text>{lpjDetail.nomorBS || "-"}</Text>
               </View>
             </View>
           ) : lpjDetail.kategori === "Marketing/Operasional" ? (
@@ -247,33 +249,8 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
             </View>
           )}
 
-          {lpjDetail.kategori === "GA/Umum" && lpjDetail.lpj?.map((item, index) => (
-            <View key={index} style={{ flexDirection: 'row' }}>
-              <View style={{ flexDirection: "column", marginRight: 12, gap: 4 }}>
-                <Text>No. BS</Text>
-                <Text>Tgl. Kegiatan</Text>
-              </View>
-              <View style={{ flexDirection: "column", textAlign: "center", marginRight: 4, gap: 4 }}>
-                <Text>:</Text>
-                <Text>:</Text>
-              </View>
-              <View style={{ flexDirection: "column", textAlign: "left", textTransform: 'uppercase', gap: 4 }}>
-                <Text>{lpjDetail.nomorBS || "-"}</Text>
-                <Text>
-                  {item.tanggal
-                    ? new Date(item.tanggal).toLocaleDateString("id-ID", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })
-                    : "-"}
-                </Text>
-              </View>
-            </View>
-          ))}
-
-          {lpjDetail.kategori === "Marketing/Operasional" && lpjDetail.lpj?.map((item, index) => (
-            <View key={index} style={{ flexDirection: 'row' }}>
+          {lpjDetail.kategori === "Marketing/Operasional" && (
+            <View style={{ flexDirection: 'row' }}>
               <View style={{ flexDirection: "column", marginRight: 12, gap: 4 }}>
                 <Text> </Text>
                 <Text>No. BS</Text>
@@ -293,8 +270,8 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
                 <Text>{lpjDetail.nomorBS || "-"}</Text>
                 <Text>{lpjDetail.nomorJO || "-"}</Text>
                 <Text>
-                  {item.tanggal
-                    ? new Date(item.tanggal).toLocaleDateString("id-ID", {
+                  {lpjDetail.tanggal
+                    ? new Date(lpjDetail.tanggal).toLocaleDateString("id-ID", {
                       day: "2-digit",
                       month: "2-digit",
                       year: "numeric",
@@ -304,7 +281,7 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
                 <Text> </Text>
               </View>
             </View>
-          ))}
+          )}
         </View>
 
         {/* Table */}
@@ -538,7 +515,7 @@ const LpjPDF = ({ lpjDetail, approvedReviewers }) => {
               <View style={[styles.tableCell, { width: '10%' }]}>
                 <Text> </Text>
               </View>
-              <View style={[styles.tableCell, { width: '12%' }]}>
+              <View style={[styles.tableCell, { width: '12%', textAlign: 'right' }]}>
                 <Text>{item?.biaya.toLocaleString('id-ID') || "-"}</Text>
               </View>
               <View style={[styles.tableCell, { width: '12%', textAlign: 'right' }]}>

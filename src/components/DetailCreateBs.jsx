@@ -213,7 +213,7 @@ const DetailCreateBs = () => {
         }
     }    
 
-    if (isLoading) {
+    if (!userData || !bonSementaraDetail) {
         return (
             <div className="container mx-auto py-8">
                 <h2 className="text-xl font-medium mb-4">
@@ -239,7 +239,7 @@ const DetailCreateBs = () => {
                             ))}
                         </div>
                     </div>
-
+    
                     {/* Table Skeleton */}
                     <div className="mb-8">
                         <div className="min-w-full bg-white border rounded-lg text-sm">
@@ -250,7 +250,7 @@ const DetailCreateBs = () => {
                                     </div>
                                 ))}
                             </div>
-
+    
                             {[...Array(2)].map((_, index) => (
                                 <div key={index} className="grid grid-cols-5 border-b">
                                     {[...Array(5)].map((_, colIndex) => (
@@ -262,15 +262,17 @@ const DetailCreateBs = () => {
                             ))}
                         </div>
                     </div>
-
+    
                     {/* Action Buttons Skeleton */}
-                    <div className="flex justify-end mt-4 space-x-1">
-                        <Skeleton width={170} height={45} />
-                        <Skeleton width={170} height={45} />
-                    </div>
+                    {userData && bonSementaraDetail && userData.uid === bonSementaraDetail.user.uid ? (
+                        <div className="flex justify-end mt-4 space-x-1">
+                            <Skeleton width={170} height={45} />
+                            <Skeleton width={170} height={45} />
+                        </div>
+                    ) : null}
                 </div>
             </div>
-        )
+        );
     }
 
     return (

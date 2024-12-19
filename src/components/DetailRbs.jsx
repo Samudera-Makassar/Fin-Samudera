@@ -234,7 +234,7 @@ const DetailRbs = () => {
     const renderCell = (item, column, index) => {
         switch (column.key) {
             case 'no':
-                return index + 1
+                return <div className="text-center">{index + 1}</div>;
             case 'tanggal':
                 return formatDate(item[column.key])
             case 'biaya':
@@ -244,7 +244,7 @@ const DetailRbs = () => {
         }
     }
 
-    if (isLoading) {
+    if (!userData) {
         return (
             <div className="container mx-auto py-8">
                     <h2 className="text-xl font-medium mb-4">
@@ -361,7 +361,10 @@ const DetailRbs = () => {
                         <thead>
                             <tr className="bg-gray-100 text-left">
                                 {columns.map((column) => (
-                                    <th key={column.key} className="px-4 py-2 border">
+                                    <th 
+                                    key={column.key} 
+                                    className={`px-4 py-2 border ${column.key === 'no' ? 'text-center w-12' : 'text-left'}`}
+                                >
                                         {column.header}
                                     </th>
                                 ))}

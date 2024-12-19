@@ -24,7 +24,6 @@ const FormLpjUmum = () => {
     const initialLpjState = {
         nomorBS: '',
         jumlahBS: '',
-        tanggal: '',
         lampiran: null,
         lampiranFile: null,
         namaItem: '',
@@ -302,7 +301,6 @@ const FormLpjUmum = () => {
                     return multipleItems ? `${baseLabel} (Item ${index + 1})` : baseLabel
                 }
 
-                if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Kegiatan'))
                 if (!r.namaItem) missingFields.push(getFieldLabel('Item'))
                 if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
                 if (!r.jumlah) missingFields.push(getFieldLabel('Jumlah'))
@@ -358,7 +356,6 @@ const FormLpjUmum = () => {
                     reviewer2: userData.reviewer2
                 },
                 lpj: lpj.map((item) => ({
-                    tanggal: item.tanggal,
                     namaItem: item.namaItem,
                     biaya: item.biaya,
                     jumlah: item.jumlah,
@@ -582,20 +579,6 @@ const FormLpjUmum = () => {
 
                 {lpj.map((item, index) => (
                     <div className="flex justify-stretch gap-2 mb-2" key={index}>
-                        <div>
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Tanggal Kegiatan <span className="text-red-500">*</span>
-                                </label>
-                            )}
-                            <input
-                                type="date"
-                                value={item.tanggal}
-                                onChange={(e) => handleInputChange(index, 'tanggal', e.target.value)}
-                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
-                            />
-                        </div>
-
                         <div className="flex-grow">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">

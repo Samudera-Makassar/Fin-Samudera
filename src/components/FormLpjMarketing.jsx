@@ -51,6 +51,7 @@ const FormLpjMarketing = () => {
     const [nomorJO, setNomorJO] = useState(location.state?.nomorJO || '')
     const [customer, setCustomer] = useState(location.state?.customer || '')
     const [lokasi, setLokasi] = useState(location.state?.lokasi || '')
+    const [tanggal, setTanggal] = useState(location.state?.tanggal || '')
     const [aktivitas, setAktivitas] = useState(location.state?.aktivitas || '')
 
     const [calculatedCosts, setCalculatedCosts] = useState({
@@ -307,6 +308,7 @@ const FormLpjMarketing = () => {
             if (!nomorJO) missingFields.push('Nomor Job Order')
             if (!customer) missingFields.push('Customer')
             if (!lokasi) missingFields.push('Lokasi')
+            if (!tanggal) missingFields.push('Tanggal Kegiatan')
 
             // Validasi setiap reimbursement
             const multipleItems = lpj.length > 1
@@ -318,7 +320,6 @@ const FormLpjMarketing = () => {
                     return multipleItems ? `${baseLabel} (Item ${index + 1})` : baseLabel
                 }
 
-                if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Kegiatan'))
                 if (!r.namaItem) missingFields.push(getFieldLabel('Item'))
                 if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
                 if (!r.jumlah) missingFields.push(getFieldLabel('Jumlah'))
@@ -362,7 +363,6 @@ const FormLpjMarketing = () => {
                     reviewer2: userData.reviewer2
                 },
                 lpj: lpj.map((item) => ({
-                    tanggal: item.tanggal,
                     namaItem: item.namaItem,
                     biaya: item.biaya,
                     jumlah: item.jumlah,
@@ -385,6 +385,7 @@ const FormLpjMarketing = () => {
                 lokasi: lokasi,
                 ...calculatedCosts,
                 tanggalPengajuan: todayDate,
+                tanggal: tanggal,
                 lampiran: attachmentFileName,
                 lampiranUrl: lampiranUrl,
                 statusHistory: [
@@ -433,6 +434,8 @@ const FormLpjMarketing = () => {
         setNomorJO('')
         setCustomer('')
         setLokasi('')
+        setTanggal('')
+        setAktivitas('')
         setCalculatedCosts({
             totalBiaya: 0,
             sisaLebih: 0,
@@ -636,12 +639,14 @@ const FormLpjMarketing = () => {
 
                 <div className="grid grid-cols-2 gap-6 mb-3">
                     <div>
-                        <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Tanggal Kegiatan <span className="text-red-500">*</span>
+                        </label>
                         <input
-                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                            type="text"
-                            value={formatDate(todayDate)}
-                            disabled
+                            type="date"
+                            value={tanggal}
+                            onChange={(e) => setTanggal(e.target.value)}
+                            className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
                         />
                     </div>
                     <div>
@@ -652,24 +657,22 @@ const FormLpjMarketing = () => {
                     </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-6 mb-3">
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
+                        <input
+                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                            type="text"
+                            value={formatDate(todayDate)}
+                            disabled
+                        />
+                    </div>
+                </div>
+
                 <hr className="border-gray-300 my-6" />
 
                 {lpj.map((item, index) => (
                     <div className="flex justify-stretch gap-2 mb-2" key={index}>
-                        <div>
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Tanggal Kegiatan <span className="text-red-500">*</span>
-                                </label>
-                            )}
-                            <input
-                                type="date"
-                                value={item.tanggal}
-                                onChange={(e) => handleInputChange(index, 'tanggal', e.target.value)}
-                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
-                            />
-                        </div>
-
                         <div className="flex-grow">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
@@ -802,13 +805,7 @@ const FormLpjMarketing = () => {
                     </button>
                 </div>
             </div>
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                closeOnClick
-                pauseOnHover
-            />
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
         </div>
     )
 }
