@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { useParams } from 'react-router-dom'
-import { generateLpjPDF } from '../utils/LpjPdf';
+import { generateLpjPDF } from '../utils/LpjPdf'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import ModalPDF from './ModalPDF'
@@ -14,8 +14,7 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 const DetailLpj = () => {
     const [userData, setUserData] = useState(null)
     const [lpjDetail, setLpjDetail] = useState(null)
-    const [reviewers, setReviewers] = useState([]) 
-    const [loading, setLoading] = useState(true)
+    const [reviewers, setReviewers] = useState([])
     const [error, setError] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -25,7 +24,7 @@ const DetailLpj = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                setLoading(true)
+                setIsLoading(true)
 
                 // Fetch user data
                 const userDocRef = doc(db, 'users', uid)
@@ -47,54 +46,36 @@ const DetailLpj = () => {
                 setUserData(userSnapshot.data())
                 setLpjDetail(lpjData)
 
-                // Fetch names for all reviewers in reviewer1 and reviewer2 arrays
-                const fetchReviewerNames = async () => {
-                    const reviewerPromises = [];
-
-                    // Tambahkan reviewer1 jika ada
-                    if (Array.isArray(lpjData?.user?.reviewer1)) {
-                        reviewerPromises.push(
-                            ...lpjData.user.reviewer1.map(async (reviewerUid) => {
-                                try {
-                                    const reviewerDocRef = doc(db, 'users', reviewerUid)
-                                    const reviewerSnapshot = await getDoc(reviewerDocRef)
-                                    return reviewerSnapshot.exists() ? reviewerSnapshot.data().nama : null
-                                } catch (error) {
-                                    console.error('Error fetching Reviewer 1:', error)
-                                    return null
-                                }
-                            })
-                        )
-                    }
-
-                    // Tambahkan reviewer2 jika ada
-                    if (Array.isArray(lpjData?.user?.reviewer2)) {
-                        reviewerPromises.push(
-                            ...lpjData.user.reviewer2.map(async (reviewerUid) => {
-                                try {
-                                    const reviewerDocRef = doc(db, 'users', reviewerUid)
-                                    const reviewerSnapshot = await getDoc(reviewerDocRef)
-                                    return reviewerSnapshot.exists() ? reviewerSnapshot.data().nama : null
-                                } catch (error) {
-                                    console.error('Error fetching Reviewer 2:', error)
-                                    return null
-                                }
-                            })
-                        )
-                    }
-
-                    const reviewerNames = await Promise.all(reviewerPromises)
-                    const validReviewerNames = reviewerNames.filter(name => name !== null)
-                    setReviewers(validReviewerNames)
+                // Helper function to fetch names of reviewers
+                const fetchReviewerNames = async (reviewerArray) => {
+                    if (!Array.isArray(reviewerArray)) return []
+                    const promises = reviewerArray.map(async (reviewerUid) => {
+                        try {
+                            const reviewerDocRef = doc(db, 'users', reviewerUid)
+                            const reviewerSnapshot = await getDoc(reviewerDocRef)
+                            return reviewerSnapshot.exists() ? reviewerSnapshot.data().nama : null
+                        } catch (error) {
+                            console.error(`Error fetching reviewer (${reviewerUid}):`, error)
+                            return null
+                        }
+                    })
+                    return Promise.all(promises)
                 }
 
-                // Panggil fungsi fetch reviewer names
-                await fetchReviewerNames()
+                // Fetch names for all reviewers in reviewer1 and reviewer2
+                const [reviewer1Names, reviewer2Names] = await Promise.all([
+                    fetchReviewerNames(lpjData?.user?.reviewer1),
+                    fetchReviewerNames(lpjData?.user?.reviewer2),
+                ])
+
+                // Combine reviewer names and filter out null values
+                const validReviewerNames = [...reviewer1Names, ...reviewer2Names].filter(name => name !== null)
+                setReviewers(validReviewerNames)
             } catch (error) {
                 console.error("Error fetching data:", error)
                 setError(error.message)
             } finally {
-                setLoading(false)
+                setIsLoading(false)
             }
         }
 
@@ -104,62 +85,66 @@ const DetailLpj = () => {
     }, [uid, id]) // Dependencies array to prevent infinite loop
 
     // Fungsi untuk mendapatkan status approval dengan nama reviewer
-    const getDetailedApprovalStatus = (lpj, reviewerNames) => {
-        if (!lpj || !lpj.statusHistory || lpj.statusHistory.length === 0) {
+    const getDetailedApprovalStatus = (reimbursement, reviewerNames) => {
+        if (!reimbursement || !reimbursement.statusHistory || reimbursement.statusHistory.length === 0) {
             return '-'
         }
-
-        const lastStatus = lpj.statusHistory[lpj.statusHistory.length - 1]
-
-        // Untuk status Ditolak
-        if (lpj.status === 'Ditolak') {
-            // Jika ditolak oleh Super Admin
-            if (lastStatus.status.includes('Super Admin')) {
-                // Super Admin menggantikan Reviewer 1
-                if (lastStatus.status.includes('Reviewer 1')) {
-                    return 'Super Admin'
-                } 
-                // Super Admin menggantikan Reviewer 2
-                else {
+    
+        const lastStatus = reimbursement.statusHistory[reimbursement.statusHistory.length - 1]
+        const { status, actor } = lastStatus
+    
+        // Helper function to determine approver
+        const determineApprover = (reviewerArray, roleIndexStart) => {
+            // Cari index reviewer di array reviewerNames berdasarkan UID actor
+            const reviewerIndex = reviewerArray.findIndex(uid => uid === actor)
+            if (reviewerIndex !== -1) {
+                return reviewerNames[roleIndexStart + reviewerIndex] || 'N/A'
+            }
+            return '-'
+        }
+    
+        // Periksa Reviewer 1 dan Reviewer 2
+        const reviewer1Array = reimbursement?.user?.reviewer1 || []
+        const reviewer2Array = reimbursement?.user?.reviewer2 || []
+    
+        switch (reimbursement.status) {
+            case 'Ditolak': {
+                if (status.includes('Super Admin')) {
                     return 'Super Admin'
                 }
-            } 
-            // Ditolak oleh Reviewer 1
-            else if (lastStatus.status.includes('Reviewer 1')) {
-                return `${reviewerNames[0] || 'N/A'}`
-            } 
-            // Ditolak oleh Reviewer 2
-            else if (lastStatus.status.includes('Reviewer 2')) {
-                return `${reviewerNames[1] || 'N/A'}`
+                if (status.includes('Reviewer 1')) {
+                    return determineApprover(reviewer1Array, 0)
+                }
+                if (status.includes('Reviewer 2')) {
+                    return determineApprover(reviewer2Array, reviewer1Array.length)
+                }
+                break
             }
-        } 
-        
-        // Untuk status Diproses
-        else if (lpj.status === 'Diproses') {
-            // Jika disetujui oleh Super Admin
-            if (lastStatus.status.includes('Super Admin')) {
-                // Super Admin menggantikan Reviewer 1
-                return 'Super Admin'
-            } 
-            // Disetujui oleh Reviewer 1
-            else if (lastStatus.status.includes('Reviewer 1')) {
-                return `${reviewerNames[0] || 'N/A'}`
+    
+            case 'Diproses': {
+                if (status.includes('Super Admin')) {
+                    return 'Super Admin'
+                }
+                if (status.includes('Reviewer 1')) {
+                    return determineApprover(reviewer1Array, 0)
+                }
+                break
             }
+    
+            case 'Disetujui': {
+                if (status.includes('Super Admin')) {
+                    return 'Super Admin'
+                }
+                if (status.includes('Reviewer 2')) {
+                    return determineApprover(reviewer2Array, reviewer1Array.length)
+                }
+                break
+            }
+    
+            default:
+                return '-'
         }
-
-        // Untuk status Disetujui
-        else if (lpj.status === 'Disetujui') {
-            // Jika disetujui oleh Super Admin
-            if (lastStatus.status.includes('Super Admin')) {
-                // Super Admin menggantikan Reviewer 2
-                return 'Super Admin'
-            } 
-            // Disetujui oleh Reviewer 2
-            else if (lastStatus.status.includes('Reviewer 2')) {
-                return `${reviewerNames[1] || 'N/A'}`
-            }
-        }
-
+    
         return '-'
     }
 
@@ -172,9 +157,9 @@ const DetailLpj = () => {
             year: 'numeric',
         }).format(date)
     }
-    
+
     const [modalPdfUrl, setModalPdfUrl] = useState(null)
-    const [modalTitle, setModalTitle] = useState('') 
+    const [modalTitle, setModalTitle] = useState('')
 
     const handleViewAttachment = (lampiranUrl) => {
         if (lampiranUrl) {
@@ -187,7 +172,7 @@ const DetailLpj = () => {
 
     const closePreview = () => {
         setModalPdfUrl(null) // Reset URL untuk menutup preview
-        setModalTitle ('') 
+        setModalTitle('')
     }
 
     const handleGenerateAndPreviewPDF = async () => {
@@ -208,7 +193,7 @@ const DetailLpj = () => {
         }
     }
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="container mx-auto py-8">
                 <h2 className="text-xl font-medium mb-4">
@@ -413,11 +398,10 @@ const DetailLpj = () => {
                 <div className="flex justify-end mt-6 space-x-2">
                     {/* Tombol untuk melihat lampiran */}
                     <button
-                        className={`px-12 py-3 rounded ${
-                            userData?.uid === lpjDetail?.user.uid
-                                ? 'text-red-600 bg-transparent hover:text-red-800 border border-red-600 hover:border-red-800'
-                                : 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
-                        }`}
+                        className={`px-12 py-3 rounded ${userData?.uid === lpjDetail?.user.uid
+                            ? 'text-red-600 bg-transparent hover:text-red-800 border border-red-600 hover:border-red-800'
+                            : 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                            }`}
                         onClick={() => handleViewAttachment(lpjDetail?.lampiranUrl)}
                     >
                         Lihat Lampiran
@@ -426,11 +410,10 @@ const DetailLpj = () => {
                     {/* Hanya tampilkan tombol Download jika user adalah pembuat lpj */}
                     {userData?.uid === lpjDetail?.user.uid && (
                         <button
-                            className={`px-16 py-3 rounded text-white ${
-                                lpjDetail?.status === 'Disetujui'
-                                    ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
-                                    : 'bg-gray-400 cursor-not-allowed'
-                            }`}
+                            className={`px-16 py-3 rounded text-white ${lpjDetail?.status === 'Disetujui'
+                                ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                }`}
                             onClick={handleGenerateAndPreviewPDF}
                             disabled={lpjDetail?.status !== 'Disetujui' || isLoading}
                         >
@@ -447,9 +430,20 @@ const DetailLpj = () => {
                 </div>
             </div>
 
-            <ModalPDF showModal={!!modalPdfUrl} previewUrl={modalPdfUrl} onClose={closePreview} title={modalTitle} />
+            <ModalPDF 
+                showModal={!!modalPdfUrl} 
+                previewUrl={modalPdfUrl} 
+                onClose={closePreview} 
+                title={modalTitle} 
+            />
 
-            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+            <ToastContainer 
+                position="top-right" 
+                autoClose={3000} 
+                hideProgressBar={false} 
+                closeOnClick 
+                pauseOnHover 
+            />
         </div>
     )
 }
