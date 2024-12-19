@@ -66,8 +66,8 @@ const RbsUmumForm = () => {
         { value: 'ATK', label: 'ATK' },
         { value: 'RTG', label: 'RTG' },
         { value: 'Parkir', label: 'Parkir' },
-        { value: 'Melas Lembur', label: 'Melas Lembur' },
-        { value: 'Melas Meeting', label: 'Melas Meeting' },
+        { value: 'Meals Lembur', label: 'Meals Lembur' },
+        { value: 'Meals Meeting', label: 'Meals Meeting' },
         { value: 'Lainnya', label: 'Lainnya' }
     ]
 

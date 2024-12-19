@@ -106,6 +106,9 @@ const DetailCreateBs = () => {
         // Periksa Reviewer 1 dan Reviewer 2
         const reviewer1Array = bonSementara?.user?.reviewer1 || []
         const reviewer2Array = bonSementara?.user?.reviewer2 || []
+
+        // Logika untuk kasus reviewer2 kosong
+        const reviewer2Exists = Array.isArray(reviewer2Array) && reviewer2Array.some(uid => uid)
     
         switch (bonSementara.status) {
             case 'Ditolak': {
@@ -134,6 +137,9 @@ const DetailCreateBs = () => {
             case 'Disetujui': {
                 if (status.includes('Super Admin')) {
                     return 'Super Admin'
+                }
+                if (!reviewer2Exists && status.includes('Reviewer 1')) {
+                    return determineApprover(reviewer1Array, 0)
                 }
                 if (status.includes('Reviewer 2')) {
                     return determineApprover(reviewer2Array, reviewer1Array.length)
@@ -352,7 +358,7 @@ const DetailCreateBs = () => {
                             className={`px-12 py-3 rounded ${
                                 bonSementaraDetail?.status === 'Disetujui'
                                     ? 'text-red-600 bg-transparent hover:text-red-800 border border-red-600 hover:border-red-800'
-                                    : 'text-white bg-gray-400 cursor-not-allowed'
+                                    : 'text-gray-400 bg-gray-100 cursor-not-allowed'
                             }`}
                             disabled={bonSementaraDetail?.status !== 'Disetujui'}
                         >

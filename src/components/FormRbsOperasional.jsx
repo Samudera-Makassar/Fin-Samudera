@@ -64,7 +64,7 @@ const RbsOperasionalForm = () => {
 
     const jenisOptions = [
         { value: 'Entertaint', label: 'Entertaint' },
-        { value: 'Melas Lembur', label: 'Melas Lembur' },
+        { value: 'Meals Lembur', label: 'Meals Lembur' },
         { value: 'Parkir', label: 'Parkir' },
         { value: 'Toll', label: 'Toll' },
         { value: 'Lainnya', label: 'Lainnya' }

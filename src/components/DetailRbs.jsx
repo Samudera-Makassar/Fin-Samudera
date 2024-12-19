@@ -84,7 +84,6 @@ const DetailRbs = () => {
         }
     }, [uid, id]) // Dependencies array to prevent infinite loop
     
-
     // Fungsi untuk mendapatkan status approval dengan nama reviewer
     const getDetailedApprovalStatus = (reimbursement, reviewerNames) => {
         if (!reimbursement || !reimbursement.statusHistory || reimbursement.statusHistory.length === 0) {
@@ -107,6 +106,9 @@ const DetailRbs = () => {
         // Periksa Reviewer 1 dan Reviewer 2
         const reviewer1Array = reimbursement?.user?.reviewer1 || []
         const reviewer2Array = reimbursement?.user?.reviewer2 || []
+
+        // Logika untuk kasus reviewer2 kosong
+        const reviewer2Exists = Array.isArray(reviewer2Array) && reviewer2Array.some(uid => uid)
     
         switch (reimbursement.status) {
             case 'Ditolak': {
@@ -135,6 +137,9 @@ const DetailRbs = () => {
             case 'Disetujui': {
                 if (status.includes('Super Admin')) {
                     return 'Super Admin'
+                }
+                if (!reviewer2Exists && status.includes('Reviewer 1')) {
+                    return determineApprover(reviewer1Array, 0)
                 }
                 if (status.includes('Reviewer 2')) {
                     return determineApprover(reviewer2Array, reviewer1Array.length)
