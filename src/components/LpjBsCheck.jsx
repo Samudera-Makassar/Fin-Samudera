@@ -112,7 +112,7 @@ const LpjBsCheck = () => {
 
     // Handle Approve
     const handleApprove = (item) => {
-        openModal ({
+        openModal({
             title: 'Konfirmasi Approve',
             message: `Apakah Anda yakin ingin menyetujui LPJ Bon Sementara dengan ID ${item.displayId}?`,
             onConfirm: async () => {
@@ -120,41 +120,58 @@ const LpjBsCheck = () => {
                     const uid = localStorage.getItem('userUid')
                     const userRole = localStorage.getItem('userRole')
                     const lpjRef = doc(db, 'lpj', item.id)
-        
+
                     // Cek apakah UID termasuk dalam super admin, reviewer1, atau reviewer2
                     const isSuperAdmin = userRole === 'Super Admin'
                     const isReviewer1 = item.user.reviewer1.includes(uid)
                     const isReviewer2 = item.user.reviewer2.includes(uid)
-        
+
                     const hasSingleReviewer = !item.user.reviewer2.length
 
                     let updateData = {}
-        
+
                     if (isSuperAdmin) {
                         // Super Admin approval logic
-                        if (!item.approvedByReviewer1Status) {
-                            // If not approved by anyone, Super Admin approves as first approver
-                            updateData = {
-                                status: 'Diproses',
-                                approvedByReviewer1Status: "superadmin", // New field to track approval type
-                                approvedBySuperAdmin: true,
-                                statusHistory: arrayUnion({
-                                    status: "Disetujui oleh Super Admin (Pengganti Reviewer 1)",
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid,
-                                })
-                            }
-                        } else if (item.approvedByReviewer1Status === "superadmin" || item.approvedByReviewer1Status === "reviewer") {
-                            // If already approved by Reviewer 1 or Super Admin, finalize the approval
+                        if (hasSingleReviewer) {
+                            // Jika hanya ada satu reviewer, langsung set status ke 'Disetujui'
                             updateData = {
                                 status: 'Disetujui',
-                                approvedByReviewer2Status: "superadmin",                                 
+                                approvedByReviewer1Status: 'superadmin',
                                 approvedBySuperAdmin: true,
                                 statusHistory: arrayUnion({
-                                    status: "Disetujui oleh Super Admin (Pengganti Reviewer 2)",
+                                    status: 'Disetujui oleh Super Admin',
                                     timestamp: new Date().toISOString(),
-                                    actor: uid,
+                                    actor: uid
                                 })
+                            }
+                        } else {
+                            if (!item.approvedByReviewer1Status) {
+                                // If not approved by anyone, Super Admin approves as first approver
+                                updateData = {
+                                    status: 'Diproses',
+                                    approvedByReviewer1Status: 'superadmin', // New field to track approval type
+                                    approvedBySuperAdmin: true,
+                                    statusHistory: arrayUnion({
+                                        status: 'Disetujui oleh Super Admin (Pengganti Reviewer 1)',
+                                        timestamp: new Date().toISOString(),
+                                        actor: uid
+                                    })
+                                }
+                            } else if (
+                                item.approvedByReviewer1Status === 'superadmin' ||
+                                item.approvedByReviewer1Status === 'reviewer'
+                            ) {
+                                // If already approved by Reviewer 1 or Super Admin, finalize the approval
+                                updateData = {
+                                    status: 'Disetujui',
+                                    approvedByReviewer2Status: 'superadmin',
+                                    approvedBySuperAdmin: true,
+                                    statusHistory: arrayUnion({
+                                        status: 'Disetujui oleh Super Admin (Pengganti Reviewer 2)',
+                                        timestamp: new Date().toISOString(),
+                                        actor: uid
+                                    })
+                                }
                             }
                         }
                     } else {
@@ -185,32 +202,35 @@ const LpjBsCheck = () => {
                                     })
                                 }
                             }
-                        } 
-                    
-                        if (isReviewer2 && 
-                            (item.approvedByReviewer1Status === "reviewer" || item.approvedByReviewer1Status === "superadmin")) {
+                        }
+
+                        if (
+                            isReviewer2 &&
+                            (item.approvedByReviewer1Status === 'reviewer' ||
+                                item.approvedByReviewer1Status === 'superadmin')
+                        ) {
                             // If reviewer2 and (Reviewer1 or SuperAdmin has approved), set status to 'Disetujui'
                             updateData = {
                                 status: 'Disetujui',
                                 approvedByReviewer2: true,
-                                approvedByReviewer2Status: "reviewer",                     
+                                approvedByReviewer2Status: 'reviewer',
                                 statusHistory: arrayUnion({
-                                    status: "Disetujui oleh Reviewer 2",
+                                    status: 'Disetujui oleh Reviewer 2',
                                     timestamp: new Date().toISOString(),
-                                    actor: uid,
+                                    actor: uid
                                 })
                             }
                         }
                     }
-        
+
                     // Update the document
                     await updateDoc(lpjRef, updateData)
-        
+
                     // Remove the approved item from the list
-                    setData(prevData => ({
-                        lpj: prevData.lpj.filter(r => r.id !== item.id)
+                    setData((prevData) => ({
+                        lpj: prevData.lpj.filter((r) => r.id !== item.id)
                     }))
-        
+
                     toast.success('LPJ Bon Sementara berhasil disetujui')
                     closeModal()
                 } catch (error) {
