@@ -4,7 +4,6 @@ import { doc, getDoc } from 'firebase/firestore'
 import ReimbursementTable from '../components/ReimbursementTable'
 import CreateBsTable from '../components/CreateBsTable'
 import LpjBsTable from '../components/LpjBsTable'
-import ReportCard from '../components/ReportCard'
 import Layout from './Layout'
 
 const AdminDashboard = ({ userUid }) => {
@@ -42,8 +41,7 @@ const AdminDashboard = ({ userUid }) => {
                     <div className="w-full">
                         <h2 className="text-xl font-medium mb-4">
                             Welcome, <span className="font-bold">{user?.name || 'User'}</span>
-                        </h2>
-                        <ReportCard />
+                        </h2>                        
                         <ReimbursementTable />
                         <CreateBsTable />
                         <LpjBsTable />

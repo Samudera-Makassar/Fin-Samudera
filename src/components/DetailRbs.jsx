@@ -239,6 +239,8 @@ const DetailRbs = () => {
                 return formatDate(item[column.key])
             case 'biaya':
                 return `Rp${item[column.key]?.toLocaleString('id-ID') || 'N/A'}`
+            case 'keterangan':
+                return item[column.key] || '-';
             default:
                 return item[column.key] || 'N/A'
         }
@@ -423,10 +425,10 @@ const DetailRbs = () => {
                     {/* Hanya tampilkan tombol Download jika user adalah pembuat reimbursement */}
                     {userData?.uid === reimbursementDetail?.user.uid && (
                         <button
-                            className={`px-16 py-3 rounded text-white ${
+                            className={`px-16 py-3 rounded ${
                                 reimbursementDetail?.status === 'Disetujui'
-                                    ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
-                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    ? 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                                    : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                             }`}
                             onClick={handleGenerateAndPreviewPDF}
                             disabled={reimbursementDetail?.status !== 'Disetujui' || isLoading}

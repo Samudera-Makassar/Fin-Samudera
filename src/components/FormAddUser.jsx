@@ -117,6 +117,19 @@ const AddUserForm = () => {
                     { name: 'password', label: 'Password' },
                     { name: 'role', label: 'Role' }
                 ]
+            } else if (formData.role === 'Reviewer') {
+                // For Reviewer, exclude reviewer1 validation
+                fieldsToValidate = [
+                    { name: 'nama', label: 'Nama' },
+                    { name: 'email', label: 'Email' },
+                    { name: 'password', label: 'Password' },
+                    { name: 'posisi', label: 'Posisi' },
+                    { name: 'unit', label: 'Unit Bisnis' },
+                    { name: 'role', label: 'Role' },
+                    { name: 'department', label: 'Department' },
+                    { name: 'bankName', label: 'Nama Bank' },
+                    { name: 'accountNumber', label: 'Nomor Rekening' }
+                ]
             } else {
                 // For other roles, validate all fields
                 fieldsToValidate = [
@@ -141,11 +154,13 @@ const AddUserForm = () => {
                 }
             }
 
-            // Validasi untuk memastikan reviewer1 dan reviewer2 tidak sama
-            if (formData.reviewer1.some((r) => formData.reviewer2.includes(r))) {
-                toast.warning('Reviewer 1 dan Reviewer 2 tidak boleh sama')
-                setIsSubmitting(false)
-                return
+            // Validasi untuk memastikan reviewer1 dan reviewer2 tidak sama, jika berlaku
+            if (formData.reviewer1.length > 0 && formData.reviewer2.length > 0) {
+                if (formData.reviewer1.some((r) => formData.reviewer2.includes(r))) {
+                    toast.warning('Reviewer 1 dan Reviewer 2 tidak boleh sama')
+                    setIsSubmitting(false)
+                    return
+                }
             }
 
             const emailExists = await checkEmailExists(formData.email)
@@ -167,7 +182,7 @@ const AddUserForm = () => {
                 department: formData.role === 'Super Admin' ? [] : formData.department,
                 bankName: formData.role === 'Super Admin' ? '' : formData.bankName,
                 accountNumber: formData.role === 'Super Admin' ? '' : formData.accountNumber,
-                reviewer1: formData.role === 'Super Admin' ? [] : formData.reviewer1,
+                reviewer1: formData.role === 'Super Admin' || formData.role === 'Reviewer' ? [] : formData.reviewer1,
                 reviewer2: formData.role === 'Super Admin' ? [] : formData.reviewer2,
             })
 
@@ -363,7 +378,7 @@ const AddUserForm = () => {
                         {formData.role !== 'Super Admin' && (
                             <div className="mb-2">
                                 <label className="block font-medium text-gray-700">
-                                    Reviewer 1 <span className="text-red-500">*</span>
+                                    Reviewer 1 {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
                                 </label>
                                 <Select
                                     isMulti

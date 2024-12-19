@@ -418,10 +418,11 @@ const DetailLpj = () => {
                     {/* Hanya tampilkan tombol Download jika user adalah pembuat lpj */}
                     {userData?.uid === lpjDetail?.user.uid && (
                         <button
-                            className={`px-16 py-3 rounded text-white ${lpjDetail?.status === 'Disetujui'
-                                ? 'bg-red-600 hover:bg-red-700 hover:text-gray-200'
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                }`}
+                            className={`px-16 py-3 rounded ${
+                                lpjDetail?.status === 'Disetujui'
+                                    ? 'text-white bg-red-600 hover:bg-red-700 hover:text-gray-200'
+                                    : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                            }`}
                             onClick={handleGenerateAndPreviewPDF}
                             disabled={lpjDetail?.status !== 'Disetujui' || isLoading}
                         >

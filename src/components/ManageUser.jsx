@@ -17,7 +17,7 @@ const ManageUser = () => {
         role: '',
         department: ''
     })
-    const itemsPerPage = 5 // Jumlah item per halaman
+    const itemsPerPage = 10 // Jumlah item per halaman
     const navigate = useNavigate()
 
     const [showModal, setShowModal] = useState(false) // State untuk menampilkan modal konfirmasi
