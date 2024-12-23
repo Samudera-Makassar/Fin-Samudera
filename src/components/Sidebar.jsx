@@ -104,16 +104,6 @@ const Sidebar = () => {
                                     REIMBURSEMENT
                                 </span>
                                 <NavLink
-                                    to="/reimbursement/medical"
-                                    className={({ isActive }) =>
-                                        isActive
-                                            ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
-                                            : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
-                                    }
-                                >
-                                    Medical
-                                </NavLink>
-                                <NavLink
                                     to="/reimbursement/bbm"
                                     className={({ isActive }) =>
                                         isActive

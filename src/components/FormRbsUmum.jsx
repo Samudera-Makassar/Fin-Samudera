@@ -25,7 +25,7 @@ const RbsUmumForm = () => {
     const initialReimbursementState = {
         jenis: '',
         biaya: '',
-        kebutuhan: '',
+        item: '',
         keterangan: '',
         tanggal: '',
         lampiran: null,
@@ -65,6 +65,7 @@ const RbsUmumForm = () => {
     const jenisOptions = [
         { value: 'ATK', label: 'ATK' },
         { value: 'RTG', label: 'RTG' },
+        { value: 'Entertaint', label: 'Entertaint' },
         { value: 'Parkir', label: 'Parkir' },
         { value: 'Meals Lembur', label: 'Meals Lembur' },
         { value: 'Meals Meeting', label: 'Meals Meeting' },
@@ -312,12 +313,12 @@ const RbsUmumForm = () => {
                             if (r.isLainnya) {
                                 if (!r.jenisLain) missingFields.push(getFieldLabel('Jenis Reimbursement'))
                                 if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
-                                if (!r.kebutuhan) missingFields.push(getFieldLabel('Kebutuhan'))
+                                if (!r.item) missingFields.push(getFieldLabel('Item'))
                                 if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Aktivitas'))
                             } else {
                                 if (!r.jenis) missingFields.push(getFieldLabel('Jenis Reimbursement'))
                                 if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
-                                if (!r.kebutuhan) missingFields.push(getFieldLabel('Kebutuhan'))
+                                if (!r.item) missingFields.push(getFieldLabel('Item'))
                                 if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Aktivitas'))
                             }
                         })
@@ -373,7 +374,7 @@ const RbsUmumForm = () => {
                 },
                 reimbursements: reimbursements.map((item) => ({
                     biaya: parseRupiah(item.biaya),
-                    kebutuhan: item.kebutuhan,
+                    item: item.item,
                     keterangan: item.keterangan,
                     tanggal: item.tanggal,                    
                     isLainnya: item.isLainnya,
@@ -606,14 +607,14 @@ const RbsUmumForm = () => {
                         <div className="flex-1 min-w-36">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
-                                    Kebutuhan <span className="text-red-500">*</span>
+                                    Item <span className="text-red-500">*</span>
                                 </label>
                             )}
                             <input
                                 className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                                 type="text"
-                                value={reimbursement.kebutuhan}
-                                onChange={(e) => handleInputChange(index, 'kebutuhan', e.target.value)}
+                                value={reimbursement.item}
+                                onChange={(e) => handleInputChange(index, 'item', e.target.value)}
                             />
                         </div>
 

@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/LoginPage';
 import SidebarWrapper from './components/sidebarWrapper';
-import RbsMedical from './pages/RbsMedical';
 import RbsBbm from './pages/RbsBbm';
 import RbsOperasional from './pages/RbsOperasional';
 import RbsUmum from './pages/RbsUmum';
@@ -37,8 +36,7 @@ const AppContent = () => {
                 <Route path="/dashboard/admin" element={<AdminDashboard />} />
                 <Route path="/dashboard/reviewer" element={<ReviewerDashboard />} />
                 <Route path="/dashboard/employee" element={<EmployeeDashboard />} />
-
-                <Route path="/reimbursement/medical" element={<RbsMedical />} />
+                
                 <Route path="/reimbursement/bbm" element={<RbsBbm />} />
                 <Route path="/reimbursement/operasional" element={<RbsOperasional />} />
                 <Route path="/reimbursement/umum" element={<RbsUmum />} />

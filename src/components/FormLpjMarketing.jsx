@@ -784,6 +784,13 @@ const FormLpjMarketing = () => {
 
                 <hr className="border-gray-300 my-6" />
 
+                {calculatedCosts.sisaLebih > 0 && (
+                    <div className='text-right'>
+                        *Pastikan sudah memasukkan bukti pengembalian dana sebesar {' '}
+                        <span className='font-bold '> {formatRupiah(calculatedCosts.sisaLebih)}</span> di lampiran
+                    </div>
+                )}            
+
                 <div className="flex justify-end mt-6">
                     <button
                         className={`rounded text-white py-3 

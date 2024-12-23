@@ -211,16 +211,12 @@ const DetailRbs = () => {
                 { header: 'Lokasi Pertamina', key: 'lokasi' },
                 { header: 'Plat Nomor', key: 'plat' }
             ],
-            medical: [
-                { header: 'Nama Dokter', key: 'dokter' },
-                { header: 'Nama Klinik/Rumah Sakit', key: 'klinik' }
-            ],
             operasional: [
                 { header: 'Kebutuhan', key: 'kebutuhan' },
                 { header: 'Keterangan', key: 'keterangan' }
             ],
             'ga/umum': [
-                { header: 'Kebutuhan', key: 'kebutuhan' },
+                { header: 'Item', key: 'item' },
                 { header: 'Keterangan', key: 'keterangan' }
             ],
             default: []
