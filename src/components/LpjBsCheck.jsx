@@ -1,19 +1,36 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { collection, query, where, getDocs, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore'
-import { db } from '../firebaseConfig' 
+import { collection, query, where, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { db } from '../firebaseConfig'
 import Modal from './Modal'
+import Select from 'react-select'
 import EmptyState from '../assets/images/EmptyState.png'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 const LpjBsCheck = () => {
+    const [activeTab, setActiveTab] = useState('pending')
     const [data, setData] = useState({ lpj: [] })
-
-    const [currentPage, setCurrentPage] = useState(1)
-
+    const [approvedData, setApprovedData] = useState({ lpj: [] })
+    const [filteredApprovedData, setFilteredApprovedData] = useState({ lpj: [] })
     const [showModal, setShowModal] = useState(false)
     const [modalProps, setModalProps] = useState({})
+
+    const uid = localStorage.getItem('userUid')
+    const userRole = localStorage.getItem('userRole')
+
+    // Get current date
+    const today = new Date()
+    const currentYear = today.getFullYear()
+    const currentMonth = today.getMonth() + 1 // JavaScript months are 0-indexed
+
+    const [yearOptions, setYearOptions] = useState([{ value: currentYear, label: `${currentYear}` }])
+
+    // Set default filters with current month and year
+    const [filters, setFilters] = useState({
+        bulan: { value: currentMonth, label: new Intl.DateTimeFormat('id-ID', { month: 'long' }).format(today) },
+        tahun: { value: currentYear, label: `${currentYear}` }
+    })
 
     // Fungsi untuk membuka modal
     const openModal = ({ title, message, onConfirm }) => {
@@ -27,54 +44,70 @@ const LpjBsCheck = () => {
     }
 
     useEffect(() => {
-        const fetchUserAndLpjs = async () => {
+        const fetchUserAndLpj = async () => {
             try {
-                const uid = localStorage.getItem('userUid') // Ambil UID dari localStorage
-                const userRole = localStorage.getItem('userRole')
-
                 if (!uid) {
-                    console.error('UID tidak ditemukan di localStorage')                    
+                    console.error('UID tidak ditemukan di localStorage')
                     return
-                }              
+                }
 
-                // Query reimbursement berdasarkan UID user dan role
-                let lpj = []
+                let pendingLpj = []
+                let approvedLpj = []
+
                 if (userRole === 'Super Admin') {
-                    // Jika Super Admin, tampilkan semua lpj yang diproses
-                    const q = query(
+                    // Pending lpj for Super Admin
+                    const pendingQ = query(
                         collection(db, 'lpj'),
-                        where("status", "in", ["Diproses", "Diajukan"])
+                        where('status', 'in', ['Diproses', 'Diajukan'])
                     )
-                    const querySnapshot = await getDocs(q)
-                    lpj = querySnapshot.docs.map((doc) => ({
+                    const pendingSnapshot = await getDocs(pendingQ)
+                    pendingLpj = pendingSnapshot.docs.map((doc) => ({
                         id: doc.id,
                         displayId: doc.data().displayId,
                         ...doc.data(),
                     }))
+
+                    // Approved lpj for Super Admin
+                    const approvedQ = query(
+                        collection(db, 'lpj'),
+                        where('status', 'in', ['Diproses', 'Disetujui'])
+                    )
+                    const approvedSnapshot = await getDocs(approvedQ)
+                    approvedLpj = approvedSnapshot.docs
+                        .map((doc) => ({
+                            id: doc.id,
+                            displayId: doc.data().displayId,
+                            ...doc.data(),
+                        }))
+                        .filter((doc) =>
+                            doc.statusHistory.some((history) =>
+                                history.actor === uid &&
+                                [
+                                    'Disetujui oleh Super Admin (Pengganti Reviewer 1)',
+                                    'Disetujui oleh Super Admin (Pengganti Reviewer 2)',
+                                    'Disetujui oleh Super Admin',
+                                ].includes(history.status)
+                            )
+                        )
                 } else {
-                    // Untuk reviewer 1: hanya tampilkan lpj dengan status 'Diajukan'
-                    const q1 = query(
+                    // For reviewers
+                    const pendingQ1 = query(
                         collection(db, 'lpj'),
-                        where("status", "==", "Diajukan"),
-                        where('user.reviewer1', 'array-contains', uid)                                      
+                        where('status', '==', 'Diajukan'),
+                        where('user.reviewer1', 'array-contains', uid)
+                    )
+                    const pendingQ2 = query(
+                        collection(db, 'lpj'),
+                        where('status', '==', 'Diproses'),
+                        where('user.reviewer2', 'array-contains', uid)
                     )
 
-                    // Untuk reviewer 2: tampilkan lpj dengan status 'Diproses' 
-                    // yang sudah disetujui oleh reviewer 1
-                    const q2 = query(
-                        collection(db, 'lpj'),
-                        where("status", "==", "Diproses"),
-                        where('user.reviewer2', 'array-contains', uid),
-                        where('approvedByReviewer1Status', 'in', ['reviewer', 'superadmin'])
-                    )
-
-                    // Gabungkan hasil dari kedua query
                     const [snapshot1, snapshot2] = await Promise.all([
-                        getDocs(q1),
-                        getDocs(q2)
+                        getDocs(pendingQ1),
+                        getDocs(pendingQ2),
                     ])
 
-                    lpj = [
+                    pendingLpj = [
                         ...snapshot1.docs.map((doc) => ({
                             id: doc.id,
                             displayId: doc.data().displayId,
@@ -84,30 +117,80 @@ const LpjBsCheck = () => {
                             id: doc.id,
                             displayId: doc.data().displayId,
                             ...doc.data(),
-                        }))
+                        })),
                     ]
 
-                    // Hapus duplikasi jika ada
-                    lpj = Array.from(
-                        new Map(lpj.map(item => [item.id, item]))
-                        .values()
-                    )                    
+                    // Approved Lpj
+                    const approvedQ = query(
+                        collection(db, 'lpj'),
+                        where('status', 'in', ['Diproses', 'Disetujui'])
+                    )
+                    const approvedSnapshot = await getDocs(approvedQ)
+                    approvedLpj = approvedSnapshot.docs
+                        .map((doc) => ({
+                            id: doc.id,
+                            displayId: doc.data().displayId,
+                            ...doc.data(),
+                        }))
+                        .filter((doc) =>
+                            doc.statusHistory.some((history) =>
+                                history.actor === uid &&
+                                ['Disetujui oleh Reviewer 1', 'Disetujui oleh Reviewer 2'
+                                ].includes(history.status)
+                            )
+                        )
                 }
 
-                // Sort lpj from oldest to newest based on tanggalPengajuan
-                lpj.sort((a, b) => {
+                // Sort Lpj by date
+                pendingLpj.sort((a, b) => {
                     const dateA = new Date(a.tanggalPengajuan)
                     const dateB = new Date(b.tanggalPengajuan)
                     return dateA - dateB
                 })
 
-                setData({ lpj })
+                // Sort approved Lpj by the latest statusHistory timestamp
+                approvedLpj.sort((a, b) => {
+                    const latestA = Math.max(
+                        ...a.statusHistory
+                            .filter((history) => history.actor === uid)
+                            .map((history) => new Date(history.timestamp))
+                    )
+                    const latestB = Math.max(
+                        ...b.statusHistory
+                            .filter((history) => history.actor === uid)
+                            .map((history) => new Date(history.timestamp))
+                    )
+                    return latestB - latestA
+                })
+
+                const existingYears = new Set(
+                    approvedLpj
+                        .map(item =>
+                            item.statusHistory
+                                .filter(
+                                    status =>
+                                        status.actor === uid && status.status.includes('Disetujui')
+                                )
+                                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]?.timestamp
+                        )
+                        .filter(Boolean) // Hilangkan nilai undefined jika tidak ada tanggal
+                        .map(timestamp => new Date(timestamp).getFullYear()) // Ambil tahun dari timestamp
+                )
+
+                const updatedYearOptions = Array.from(existingYears)
+                    .map(year => ({ value: year, label: `${year}` }))
+                    .sort((a, b) => b.value - a.value); // Urutkan tahun dari yang terbaru
+
+                setYearOptions(updatedYearOptions)
+
+                setData({ lpj: pendingLpj })
+                setApprovedData({ lpj: approvedLpj })
             } catch (error) {
-                console.error('Error fetching user or lpj data:', error)
+                console.error('Error fetching lpj data:', error)
             }
         }
 
-        fetchUserAndLpjs()
+        fetchUserAndLpj()
     }, [])
 
     // Handle Approve
@@ -243,14 +326,14 @@ const LpjBsCheck = () => {
 
     // Handle Reject
     const handleReject = (item) => {
-        openModal ({
+        openModal({
             title: 'Konfirmasi Reject',
             message: `Apakah Anda yakin ingin menolak LPJ Bon Sementara dengan ID ${item.displayId}?`,
             onConfirm: async () => {
                 try {
                     const uid = localStorage.getItem('userUid')
-                    const userRole = localStorage.getItem('userRole')  
-                    const lpjRef = doc(db, 'lpj', item.id)                  
+                    const userRole = localStorage.getItem('userRole')
+                    const lpjRef = doc(db, 'lpj', item.id)
 
                     // Cek apakah UID termasuk dalam super admin, reviewer1, atau reviewer2
                     const isSuperAdmin = userRole === 'Super Admin'
@@ -258,7 +341,7 @@ const LpjBsCheck = () => {
                     const isReviewer2 = item.user.reviewer2.includes(uid)
 
                     let updateData = {}
-                    
+
                     if (isSuperAdmin) {
                         // Super Admin rejection logic
                         if (!item.approvedByReviewer1Status) {
@@ -277,7 +360,7 @@ const LpjBsCheck = () => {
                             // If already approved by Reviewer 1 or Super Admin, reject at final stage                            
                             updateData = {
                                 status: 'Ditolak',
-                                approvedByReviewer2Status: "superadmin",  
+                                approvedByReviewer2Status: "superadmin",
                                 rejectedBySuperAdmin: true,
                                 statusHistory: arrayUnion({
                                     status: 'Ditolak oleh Super Admin (Pengganti Reviewer 2)',
@@ -288,7 +371,7 @@ const LpjBsCheck = () => {
                         }
                     } else {
                         // Existing reviewer rejection logic
-                        if (isReviewer1) {                            
+                        if (isReviewer1) {
                             updateData = {
                                 status: 'Ditolak',
                                 approvedByReviewer1Status: "reviewer",
@@ -298,7 +381,7 @@ const LpjBsCheck = () => {
                                     actor: uid,
                                 })
                             }
-                        } else if (isReviewer2 && (item.approvedByReviewer1Status === "reviewer" || item.approvedByReviewer1Status === "superadmin")) {                            
+                        } else if (isReviewer2 && (item.approvedByReviewer1Status === "reviewer" || item.approvedByReviewer1Status === "superadmin")) {
                             updateData = {
                                 status: 'Ditolak',
                                 statusHistory: arrayUnion({
@@ -311,15 +394,15 @@ const LpjBsCheck = () => {
                             throw new Error('Anda tidak memiliki akses untuk menolak lpj ini.')
                         }
                     }
-    
+
                     // Update the document
                     await updateDoc(lpjRef, updateData)
-    
+
                     // Remove the rejected item from the list
                     setData(prevData => ({
                         lpj: prevData.lpj.filter(r => r.id !== item.id)
                     }))
-    
+
                     toast.success('LPJ Bon Sementara berhasil ditolak')
                     closeModal()
                 } catch (error) {
@@ -340,120 +423,292 @@ const LpjBsCheck = () => {
         }).format(date)
     }
 
+    const filterOptions = {
+        bulan: [
+            { value: 1, label: 'Januari' },
+            { value: 2, label: 'Februari' },
+            { value: 3, label: 'Maret' },
+            { value: 4, label: 'April' },
+            { value: 5, label: 'Mei' },
+            { value: 6, label: 'Juni' },
+            { value: 7, label: 'Juli' },
+            { value: 8, label: 'Agustus' },
+            { value: 9, label: 'September' },
+            { value: 10, label: 'Oktober' },
+            { value: 11, label: 'November' },
+            { value: 12, label: 'Desember' }
+        ]
+    }
+
+    useEffect(() => {
+        const filterData = () => {
+            const filtered = approvedData.lpj.filter(item => {
+                const approvedTimestamp = item.statusHistory
+                    .filter(status => status.actor === uid && status.status.includes('Disetujui'))
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]?.timestamp
+
+                if (!approvedTimestamp) return false // Skip jika tidak ada tanggal disetujui
+
+                const itemDate = new Date(approvedTimestamp)
+                const matchesMonth = filters.bulan
+                    ? itemDate.getMonth() + 1 === filters.bulan.value
+                    : true
+                const matchesYear = filters.tahun
+                    ? itemDate.getFullYear() === filters.tahun.value
+                    : true
+
+                return matchesMonth && matchesYear
+            })
+            setFilteredApprovedData({ lpj: filtered })
+        }
+        filterData()
+    }, [filters.bulan, filters.tahun, approvedData])
+
+    const handleFilterChange = (field, selectedOption) => {
+        setFilters((prev) => ({
+            ...prev,
+            [field]: selectedOption
+        }))
+    }
+
+    const selectStyles = {
+        control: (base) => ({
+            ...base,
+            display: 'flex', // Menggunakan Flexbox
+            alignItems: 'center', // Teks berada di tengah vertikal
+            justifyContent: 'space-between', // Menjaga ikon dropdown di kanan
+            borderColor: '#e5e7eb',
+            fontSize: '12px', // Ukuran teks
+            height: '32px', // Tinggi field tetap
+            padding: '0 4px', // Padding horizontal
+            lineHeight: 'normal', // Pastikan line-height default
+            '&:hover': {
+                borderColor: '#3b82f6'
+            },
+            borderRadius: '8px' // Sudut melengkung
+        }),
+        menu: (base) => ({
+            ...base,
+            zIndex: 100
+        }),
+        option: (base) => ({
+            ...base,
+            fontSize: '12px',
+            padding: '6px 12px',
+            cursor: 'pointer'
+        })
+    }
+
+    const FilterSelect = ({ field, label }) => {
+        // For year, use the dynamically generated yearOptions
+        const options = field === 'tahun' ? yearOptions : filterOptions[field]
+
+        return (
+            <Select
+                value={filters[field]}
+                onChange={(option) => handleFilterChange(field, option)}
+                options={options}
+                placeholder={label}
+                className="w-40"
+                styles={selectStyles}
+            />
+        )
+    }
+
     return (
         <div className="container mx-auto py-8">
-            <h2 className="text-xl font-medium mb-4">
+            <h2 className="text-xl font-medium">
                 Cek <span className="font-bold">Laporan Bon Sementara</span>
             </h2>
-        
+
+            {/* Tab Navigation */}
+            <div className="flex mb-4 space-x-2 justify-end text-sm">
+                <button
+                    className={`px-4 py-2 rounded-full ${activeTab === 'pending'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                    onClick={() => setActiveTab('pending')}
+                >
+                    Perlu Ditanggapi
+                </button>
+                <button
+                    className={`px-4 py-2 rounded-full ${activeTab === 'approved'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                    onClick={() => setActiveTab('approved')}
+                >
+                    Riwayat Persetujuan
+                </button>
+            </div>
+
             <div>
-                {data.lpj.length === 0 ? (
-                    // Jika belum ada data LPJ BS 
+                {activeTab === 'pending' ? (
+                    // Pending LPJ Table
                     <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
                         <h3 className="text-xl font-medium mb-4">Daftar LPJ Bon Sementara Perlu Ditanggapi</h3>
-                        <div className="flex justify-center">
-                            <figure className="w-44 h-44">
-                                <img src={EmptyState} alt="lpj icon" className="w-full h-full object-contain" />
-                            </figure>
-                        </div>
+                        {data.lpj.length === 0 ? (
+                            <div className="flex justify-center">
+                                <figure className="w-44 h-44">
+                                    <img src={EmptyState} alt="LPJ Bon Sementara icon" className="w-full h-full object-contain" />
+                                </figure>
+                            </div>
+                        ) : (
+                            <table className="min-w-full bg-white border rounded-lg text-sm">
+                                <thead>
+                                    <tr className="bg-gray-100 text-left">
+                                        <th className="px-2 py-2 border text-center w-auto">No.</th>
+                                        <th className="px-4 py-2 border">ID</th>
+                                        <th className="px-4 py-2 border">Nama</th>
+                                        <th className="px-4 py-2 border">Kategori LPJ BS</th>
+                                        <th className="px-4 py-2 border">Nomor BS</th>
+                                        <th className="px-4 py-2 border">Jumlah BS</th>
+                                        <th className="px-4 py-2 border">Tanggal Pengajuan</th>
+                                        <th className="p-2 border text-center">Status</th>
+                                        <th className="py-2 border text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.lpj.map((item, index) => (
+                                        <tr key={index}>
+                                            <td className="px-2 py-2 border text-center w-auto">{index + 1}</td>
+                                            <td className="px-4 py-2 border">
+                                                <Link
+                                                    to={`/lpj/${item.id}`}
+                                                    className="text-black hover:text-gray-700 hover:underline cursor-pointer"
+                                                >
+                                                    {item.displayId}
+                                                </Link>
+                                            </td>
+                                            <td className="px-4 py-2 border">{item.user.nama}</td>
+                                            <td className="px-4 py-2 border">{item.kategori}</td>
+                                            <td className="px-4 py-2 border">{item.nomorBS}</td>
+                                            <td className="px-4 py-2 border">Rp{item.jumlahBS.toLocaleString('id-ID')}</td>
+                                            <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
+                                            <td className="px-2 py-2 border text-center">
+                                                <span className={`px-4 py-1 rounded-full text-xs font-medium 
+                                                    ${item.status === 'Diajukan' ? 'bg-blue-200 text-blue-800 border-[1px] border-blue-600' :
+                                                        item.status === 'Disetujui' ? 'bg-green-200 text-green-800 border-[1px] border-green-600' :
+                                                            item.status === 'Diproses' ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600' :
+                                                                item.status === 'Ditolak' ? 'bg-red-200 text-red-800 border-[1px] border-red-600' :
+                                                                    'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
+                                                    }`}
+                                                >
+                                                    {item.status || 'Tidak Diketahui'}
+                                                </span>
+                                            </td>
+                                            <td className="py-2 border text-center">
+                                                <div className="flex justify-center space-x-2">
+                                                    <button
+                                                        className="rounded-full p-1 bg-green-200 hover:bg-green-300 text-green-600 border-[1px] border-green-600"
+                                                        onClick={() => handleApprove(item)}
+                                                        title="Approve"
+                                                    >
+                                                        <svg
+                                                            className="w-6 h-6"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="2"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M5 13l4 4L19 7"
+                                                            />
+                                                        </svg>
+                                                    </button>
+
+                                                    <button
+                                                        className="rounded-full p-1 bg-red-200 hover:bg-red-300 text-red-600 border-[1px] border-red-600"
+                                                        onClick={() => handleReject(item)}
+                                                        title="Reject"
+                                                    >
+                                                        <svg
+                                                            className="w-6 h-6"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="2"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M6 18L18 6M6 6l12 12"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 ) : (
-                    // Jika ada data LPJ BS
+                    // Approved LPJ Table
                     <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                        <h3 className="text-xl font-medium mb-4">Daftar LPJ Bon Sementara Perlu Ditanggapi</h3>
-                        <table className="min-w-full bg-white border rounded-lg text-sm">
-                            <thead>
-                                <tr className="bg-gray-100 text-left">
-                                <th className="px-2 py-2 border text-center w-auto">No.</th>
-                                    <th className="px-4 py-2 border">ID</th>
-                                    <th className="px-4 py-2 border">Nama</th>
-                                    <th className="px-4 py-2 border">Kategori LPJ BS</th>
-                                    <th className="px-4 py-2 border">Nomor BS</th>
-                                    <th className="px-4 py-2 border">Jumlah BS</th>
-                                    <th className="px-4 py-2 border">Tanggal Pengajuan</th>                                    
-                                    <th className="py-2 border text-center">Status</th>
-                                    <th className="py-2 border text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.lpj.map((item, index) => (
-                                    <tr key={index}>
-                                        <td className="px-2 py-2 border text-center w-auto">
-                                            {index + 1 + (currentPage - 1)}
-                                        </td>    
-                                            <td className="px-4 py-2 border">
-                                            <Link 
-                                                to={`/lpj/${item.id}`}
-                                                className="text-black hover:text-gray-700 hover:underline cursor-pointer"
-                                            >
-                                                {item.displayId}
-                                            </Link>                                                                            
-                                        </td>
-                                        <td className="px-4 py-2 border">{item.user.nama}</td>
-                                        <td className="px-4 py-2 border">{item.kategori}</td>
-                                        <td className="px-4 py-2 border">{item.nomorBS}</td>
-                                        <td className="px-4 py-2 border">Rp{item.jumlahBS.toLocaleString('id-ID')}</td>              
-                                        <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>                                                              
-                                        <td className="py-2 border text-center">
-                                            <span className={`px-4 py-1 rounded-full text-xs font-medium 
-                                                ${
-                                                    item.status === 'Diajukan' ? 'bg-blue-200 text-blue-800 border-[1px] border-blue-600' : 
-                                                    item.status === 'Disetujui' ? 'bg-green-200 text-green-800 border-[1px] border-green-600' : 
-                                                    item.status === 'Diproses' ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600' : 
-                                                    item.status === 'Ditolak' ? 'bg-red-200 text-red-800 border-[1px] border-red-600' : 
-                                                    'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
-                                                }`}
-                                            >
-                                                {item.status || 'Tidak Diketahui'}
-                                            </span>
-                                        </td>                          
-                                        <td className="py-2 border text-center">
-                                            <div className="flex justify-center space-x-2">                        
-                                                <button 
-                                                className="rounded-full p-1 bg-green-200 hover:bg-green-300 text-green-600 border-[1px] border-green-600"
-                                                onClick={() => handleApprove(item)}
-                                                title="Approve"
-                                                >
-                                                <svg
-                                                    className="w-6 h-6"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                >
-                                                    <path 
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M5 13l4 4L19 7" 
-                                                    />
-                                                </svg>
-                                                </button>
-                                                
-                                                <button 
-                                                className="rounded-full p-1 bg-red-200 hover:bg-red-300 text-red-600 border-[1px] border-red-600"
-                                                onClick={() => handleReject(item)}
-                                                title="Reject"
-                                                >
-                                                <svg
-                                                    className="w-6 h-6"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                >
-                                                    <path 
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M6 18L18 6M6 6l12 12" 
-                                                    />
-                                                </svg>
-                                                </button>
-                                            </div>
-                                        </td>
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-xl font-medium mb-4">Riwayat Persetujuan LPJ Bon Sementara</h3>
+                            <div className="flex space-x-2">
+                                <FilterSelect field="bulan" label="Bulan" />
+                                <FilterSelect field="tahun" label="Tahun" />
+                            </div>
+                        </div>
+                        {filteredApprovedData.lpj.length === 0 ? (
+                            <div className="flex justify-center">
+                                <figure className="w-44 h-44">
+                                    <img src={EmptyState} alt="LPJ Bon Sementara icon" className="w-full h-full object-contain" />
+                                </figure>
+                            </div>
+                        ) : (
+                            <table className="min-w-full bg-white border rounded-lg text-sm">
+                                <thead>
+                                    <tr className="bg-gray-100 text-left">
+                                        <th className="px-2 py-2 border text-center w-auto">No.</th>
+                                        <th className="px-4 py-2 border">ID</th>
+                                        <th className="px-4 py-2 border">Nama</th>
+                                        <th className="px-4 py-2 border">Kategori LPJ</th>
+                                        <th className="px-4 py-2 border">Nomor BS</th>
+                                        <th className="px-4 py-2 border">Jumlah BS</th>
+                                        <th className="px-4 py-2 border">Tanggal Pengajuan</th>
+                                        <th className="px-4 py-2 border">Tanggal Disetujui</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {filteredApprovedData.lpj.map((item, index) => (
+                                        <tr key={index}>
+                                            <td className="px-2 py-2 border text-center w-auto">{index + 1}</td>
+                                            <td className="p-4 border">
+                                                <Link
+                                                    to={`/reimbursement/${item.id}`}
+                                                    className="text-black hover:text-gray-700 hover:underline cursor-pointer"
+                                                >
+                                                    {item.displayId}
+                                                </Link>
+                                            </td>
+                                            <td className="p-4 border">{item.user.nama}</td>
+                                            <td className="p-4 border">{item.kategori}</td>
+                                            <td className="p-4 border">{item.nomorBS}</td>
+                                            <td className="p-4 border">Rp{item.jumlahBS.toLocaleString('id-ID')}</td>
+                                            <td className="p-4 border">{formatDate(item.tanggalPengajuan)}</td>
+                                            <td className="p-4 border">
+                                                {formatDate(
+                                                    item.statusHistory
+                                                        .filter(
+                                                            status =>
+                                                                status.actor === uid && status.status.includes('Disetujui')
+                                                        )
+                                                        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]?.timestamp
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 )}
             </div>

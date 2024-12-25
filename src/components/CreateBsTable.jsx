@@ -10,11 +10,11 @@ import 'react-toastify/dist/ReactToastify.css'
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
-const CreateBsTable = ({ onCancel }) => {
+const CreateBsTable = () => {
     const [data, setData] = useState({ bonSementara: [] })
-    const [userData, setUserData] = useState(null) // State untuk menyimpan data user
     const [loading, setLoading] = useState(true)
     const [currentPage, setCurrentPage] = useState(1)
+
     // Get current date
         const today = new Date()
         const currentYear = today.getFullYear()
