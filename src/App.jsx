@@ -11,7 +11,7 @@ import DetailReimbursementPage from './pages/DetailRbsPage';
 import DetailLpjPage from './pages/DetailLpjPage';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import ReviewerDashboard from './pages/ReviewerDashboard';
-import ValidatorDashboard from './pages/ReviewerDashboard';
+import ValidatorDashboard from './pages/ValidatorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/protectedRoute';

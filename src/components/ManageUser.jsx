@@ -49,6 +49,7 @@ const ManageUser = () => {
         ],
         role: [
             { value: 'Employee', label: 'Employee' },
+            { value: 'Validator', label: 'Validator' },
             { value: 'Reviewer', label: 'Reviewer' },
             { value: 'Admin', label: 'Admin' },
             { value: 'Super Admin', label: 'Super Admin' }
