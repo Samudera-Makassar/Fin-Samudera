@@ -6,6 +6,7 @@ import LpjBsTable from '../components/LpjBsTable'
 import CreateBsTable from '../components/CreateBsTable'
 import ReportCard from '../components/ReportCard'
 import Layout from './Layout'
+import GAUPieChart from '../components/GAUPieChart'
 
 const ReviewerDashboard = ({ userUid }) => {
     const [user, setUser] = useState(null)
@@ -43,7 +44,10 @@ const ReviewerDashboard = ({ userUid }) => {
                         <h2 className="text-xl font-medium mb-4">
                             Welcome, <span className="font-bold">{user?.name || 'User '}</span>
                         </h2>
-                        <ReportCard />
+                        <div className='flex flex-row justify-between gap-4 mb-6'>
+                            <ReportCard />
+                            <GAUPieChart />
+                        </div>                        
                         <ReimbursementTable />
                         <CreateBsTable />
                         <LpjBsTable />
