@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { doc, setDoc, getDoc, addDoc, collection } from 'firebase/firestore'
+import { doc, setDoc, getDoc, addDoc, collection, getDocs, query, where } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebaseConfig'
 import Select from 'react-select'
@@ -16,6 +16,7 @@ const RbsOperasionalForm = () => {
         bankName: '',
         accountNumber: '',
         unit: '',
+        validator: [],
         reviewer1: [],
         reviewer2: []
     })
@@ -50,6 +51,36 @@ const RbsOperasionalForm = () => {
     
     const [selectedUnit, setSelectedUnit] = useState('')
     const [isAdmin, setIsAdmin] = useState(false)
+    const [validatorOptions, setValidatorOptions] = useState([])
+    const [selectedValidator, setSelectedValidator] = useState(null)
+
+    useEffect(() => {
+        const fetchValidators = async () => {
+            try {
+                const usersRef = collection(db, 'users')
+                const q = query(usersRef, where('role', 'in', ['Validator']))
+                const querySnapshot = await getDocs(q)
+
+                const options = querySnapshot.docs.map((doc) => {
+                    const userData = doc.data()
+                    return {
+                        value: userData.uid,
+                        label: userData.nama,
+                        role: userData.role
+                    }
+                })
+
+                setValidatorOptions(options)
+            } catch (error) {
+                console.error('Error fetching validators:', error)
+                toast.error('Gagal memuat daftar validator')
+            }
+        }
+
+        if (isAdmin) {
+            fetchValidators()
+        }
+    }, [isAdmin])
 
     const BUSINESS_UNITS = [
         { value: 'PT Makassar Jaya Samudera', label: 'PT Makassar Jaya Samudera' },
@@ -57,7 +88,7 @@ const RbsOperasionalForm = () => {
         { value: 'PT Kendari Jaya Samudera', label: 'PT Kendari Jaya Samudera' },
         { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
         { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
-        { value: 'PT Silkargo Indonesia', label: 'PT Silkargo Indonesia' },
+        { value: 'PT SILKargo Indonesia', label: 'PT SILKargo Indonesia' },
         { value: 'PT PAD Samudera Indonesia', label: 'PT PAD Samudera Indonesia' },
         { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
     ]
@@ -100,6 +131,7 @@ const RbsOperasionalForm = () => {
                         accountNumber: data.accountNumber || '',
                         unit: data.unit || '',
                         department: data.department || [],
+                        validator: data.validator || [],
                         reviewer1: data.reviewer1 || [],
                         reviewer2: data.reviewer2 || []
                     })
@@ -219,7 +251,7 @@ const RbsOperasionalForm = () => {
         'PT Kendari Jaya Samudera': 'KEJS',
         'PT Samudera Kendari Logistik': 'SKEL',
         'PT Samudera Agencies Indonesia': 'SAI',
-        'PT Silkargo Indonesia': 'SKI',
+        'PT SILKargo Indonesia': 'SKI',
         'PT PAD Samudera Indonesia': 'SP',
         'PT Masaji Kargosentra Tama': 'MKT'
     }
@@ -295,6 +327,7 @@ const RbsOperasionalForm = () => {
             // Validasi data pengguna
             if (!userData.nama) missingFields.push('Nama')
             if (!selectedUnit?.value) missingFields.push('Unit')
+            if (isAdmin && !selectedValidator) missingFields.push('Validator')
 
             // Tentukan apakah ada lebih dari satu item reimbursement
             const multipleItems = reimbursements.length > 1
@@ -366,6 +399,7 @@ const RbsOperasionalForm = () => {
                     unit: selectedUnit.value,
                     unitCode: getUnitCode(selectedUnit.value),
                     department: userData.department,
+                    validator: isAdmin ? [selectedValidator.value] : userData.validator,
                     reviewer1: userData.reviewer1,
                     reviewer2: userData.reviewer2
                 },
@@ -415,6 +449,9 @@ const RbsOperasionalForm = () => {
             toast.success('Reimbursement Operasional berhasil diajukan!')
 
             // Reset form setelah berhasil submit
+            if (isAdmin) {
+                setSelectedValidator(null)
+            }
             resetForm()
             setIsSubmitting(false)
         } catch (error) {
@@ -478,80 +515,160 @@ const RbsOperasionalForm = () => {
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
-                <div className="grid grid-cols-2 gap-6 mb-3">
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
-                        <input
-                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                            type="text"
-                            value={userData.nama}
-                            disabled
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">
-                            Unit Bisnis {isAdmin && <span className="text-red-500">*</span>}
-                        </label>
-                        {isAdmin ? (
-                            <Select
-                                options={BUSINESS_UNITS}
-                                value={selectedUnit}
-                                onChange={setSelectedUnit}
-                                placeholder="Pilih Unit Bisnis"
-                                className="basic-single"
-                                classNamePrefix="select"
-                                styles={customStyles}
-                                isSearchable={true}
-                            />
-                        ) : (
-                            <input
-                                className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                                type="text"
-                                value={selectedUnit?.label || ''}
-                                disabled
-                            />
-                        )}
-                    </div>
-                </div>
+                {isAdmin ? (
+                    // Layout untuk Role Admin
+                    <>
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={userData.nama}
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Unit Bisnis <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    options={BUSINESS_UNITS}
+                                    value={selectedUnit}
+                                    onChange={setSelectedUnit}
+                                    placeholder="Pilih Unit Bisnis"
+                                    className="basic-single"
+                                    classNamePrefix="select"
+                                    styles={customStyles}
+                                    isSearchable={true}
+                                />
+                            </div>
+                        </div>
 
-                <div className="grid grid-cols-2 gap-6 mb-3">
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
-                        <input
-                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                            type="text"
-                            value={userData.accountNumber}
-                            disabled
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">Nama Bank</label>
-                        <input
-                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                            type="text"
-                            value={userData.bankName}
-                            disabled
-                        />
-                    </div>
-                </div>
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">Nama Bank</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={userData.bankName}
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Validator <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    options={validatorOptions}
+                                    value={selectedValidator}
+                                    onChange={setSelectedValidator}
+                                    placeholder="Pilih Validator..."
+                                    className="basic-single"
+                                    classNamePrefix="select"
+                                    styles={customStyles}
+                                    isSearchable={true}
+                                    isClearable={true}
+                                />
+                            </div>
+                        </div>
 
-                <div className="grid grid-cols-2 gap-6 mb-3">
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
-                        <input
-                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                            type="text"
-                            value={formatDate(todayDate)}
-                            disabled
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">
-                            Lampiran <span className="text-red-500">*</span>
-                        </label>
-                        {renderFileUpload()}
-                    </div>
-                </div>
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={userData.accountNumber}
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Lampiran <span className="text-red-500">*</span>
+                                </label>
+                                {renderFileUpload()}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={formatDate(todayDate)}
+                                    disabled
+                                />
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    // Layout untuk Role Non-Admin
+                    <>
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={userData.nama}
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Unit Bisnis {isAdmin && <span className="text-red-500">*</span>}
+                                </label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={selectedUnit?.label || ''}
+                                    disabled
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={userData.accountNumber}
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">Nama Bank</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={userData.bankName}
+                                    disabled
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={formatDate(todayDate)}
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Lampiran <span className="text-red-500">*</span>
+                                </label>
+                                {renderFileUpload()}
+                            </div>
+                        </div>
+                    </>
+                )}
 
                 <hr className="border-gray-300 my-6" />
 

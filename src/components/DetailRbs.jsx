@@ -63,14 +63,18 @@ const DetailRbs = () => {
                 }
     
                 // Fetch names for all reviewers in reviewer1 and reviewer2
-                const [reviewer1Names, reviewer2Names] = await Promise.all([
+                const [reviewer1Names, reviewer2Names, validatorNames] = await Promise.all([
                     fetchReviewerNames(reimbursementData?.user?.reviewer1),
                     fetchReviewerNames(reimbursementData?.user?.reviewer2),
+                    fetchReviewerNames(reimbursementData?.user?.validator)
                 ])
     
                 // Combine reviewer names and filter out null values
                 const validReviewerNames = [...reviewer1Names, ...reviewer2Names].filter(name => name !== null)
-                setReviewers(validReviewerNames)
+                setReviewers({ 
+                    reviewerNames: validReviewerNames,
+                    validatorNames: validatorNames.filter(name => name !== null)
+                })
             } catch (error) {
                 console.error("Error fetching data:", error)
                 setError(error.message)
@@ -97,23 +101,41 @@ const DetailRbs = () => {
         const determineApprover = (reviewerArray, roleIndexStart) => {
             // Cari index reviewer di array reviewerNames berdasarkan UID actor
             const reviewerIndex = reviewerArray.findIndex(uid => uid === actor)
-            if (reviewerIndex !== -1) {
-                return reviewerNames[roleIndexStart + reviewerIndex] || 'N/A'
+            if (reviewerIndex !== -1 && reviewerNames.reviewerNames) {
+                return reviewerNames.reviewerNames[roleIndexStart + reviewerIndex] || 'N/A'
             }
             return '-'
         }
     
+        // Helper function khusus untuk validator
+        const determineValidator = (validatorArray, actor) => {
+            const validatorIndex = validatorArray.findIndex(uid => uid === actor)
+            if (validatorIndex !== -1 && reviewers.validatorNames && reviewers.validatorNames[validatorIndex]) {
+                return reviewers.validatorNames[validatorIndex]
+            }
+            return 'N/A'
+        }
+
         // Periksa Reviewer 1 dan Reviewer 2
         const reviewer1Array = reimbursement?.user?.reviewer1 || []
         const reviewer2Array = reimbursement?.user?.reviewer2 || []
+        const validatorArray = reimbursement?.user?.validator || []
 
         // Logika untuk kasus reviewer2 kosong
         const reviewer2Exists = Array.isArray(reviewer2Array) && reviewer2Array.some(uid => uid)
     
+        // Cek status approval dari reviewer
+        if (reimbursement.approvedByReviewer1Status === 'reviewer' && reimbursement.approvedByReviewer1) {
+            const reviewer1 = determineApprover(reviewer1Array, 0)
+            if (reviewer1 !== '-') return reviewer1
+        }
         switch (reimbursement.status) {
             case 'Ditolak': {
                 if (status.includes('Super Admin')) {
                     return 'Super Admin'
+                }
+                if (status.includes('Validator')) {
+                    return determineValidator(validatorArray, actor)
                 }
                 if (status.includes('Reviewer 1')) {
                     return determineApprover(reviewer1Array, 0)
@@ -124,11 +146,21 @@ const DetailRbs = () => {
                 break
             }
     
-            case 'Diproses': {
+            case 'Divalidasi': {
                 if (status.includes('Super Admin')) {
                     return 'Super Admin'
                 }
-                if (status.includes('Reviewer 1')) {
+                if (status.includes('Validator')) {
+                    return determineValidator(validatorArray, actor)
+                }
+                break
+            }
+
+            case 'Diproses': {
+                if (reimbursement.approvedBySuperAdmin) {
+                    return 'Super Admin'
+                }
+                if (reimbursement.approvedByReviewer1) {
                     return determineApprover(reviewer1Array, 0)
                 }
                 break
@@ -351,7 +383,13 @@ const DetailRbs = () => {
                         <p>: {reimbursementDetail?.user?.bankName ?? 'N/A'}</p>
                         <p>Status</p>
                         <p>: {reimbursementDetail?.status ?? 'N/A'}</p>
-                        <p>{reimbursementDetail?.status === 'Ditolak' ? 'Ditolak Oleh' : 'Disetujui Oleh'}</p>
+                        <p>
+                            {reimbursementDetail?.status === 'Ditolak'
+                                ? 'Ditolak Oleh'
+                                : reimbursementDetail?.status === 'Divalidasi'
+                                ? 'Divalidasi Oleh'
+                                : 'Disetujui Oleh'}
+                        </p>
                         <p>: {getDetailedApprovalStatus(reimbursementDetail, reviewers)}</p>
                     </div>
                 </div>

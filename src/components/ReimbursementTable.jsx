@@ -95,17 +95,11 @@ const ReimbursementTable = () => {
                     reimbursements.map((item) => new Date(item.tanggalPengajuan).getFullYear())
                 );
     
-                const updatedYearOptions = [
-                    ...Array.from(existingYears)
-                        .filter((year) => !yearOptions.some((option) => option.value === year))
-                        .map((year) => ({ value: year, label: `${year}` }))
-                ];
-    
-                // Only update if new years are found
-                if (updatedYearOptions.length > 1) {
-                    setYearOptions((prev) => [...prev, ...updatedYearOptions.slice(1)]);
-                }
-    
+                const updatedYearOptions = Array.from(existingYears)
+                .map(year => ({ value: year, label: `${year}` }))
+                .sort((a, b) => b.value - a.value); // Urutkan tahun dari yang terbaru
+
+                setYearOptions(updatedYearOptions)
                 setData({ reimbursements });
             } catch (error) {
                 console.error('Error fetching user or reimbursements data:', error);
@@ -356,7 +350,9 @@ const ReimbursementTable = () => {
                                                         ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600'
                                                         : item.status === 'Ditolak'
                                                           ? 'bg-red-200 text-red-800 border-[1px] border-red-600'
-                                                          : 'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
+                                                          : item.status === 'Divalidasi'
+                                                            ? 'bg-purple-200 text-purple-800 border-[1px] border-purple-600'
+                                                            : 'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
                                             }`}
                                         >
                                             {item.status || 'Tidak Diketahui'}

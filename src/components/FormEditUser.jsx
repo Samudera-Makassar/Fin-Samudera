@@ -15,6 +15,7 @@ const EditUserForm = () => {
         email: '',
         password: '',
         posisi: '',
+        validator: [],
         reviewer1: [],
         reviewer2: [],
         unit: '',
@@ -26,10 +27,12 @@ const EditUserForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [reviewer1Options, setReviewer1Options] = useState([])
     const [reviewer2Options, setReviewer2Options] = useState([])
+    const [validatorOptions, setValidatorOptions] = useState([])
 
     // Options role
     const roleOptions = [
         { value: 'Employee', label: 'Employee' },
+        { value: 'Validator', label: 'Validator' },
         { value: 'Reviewer', label: 'Reviewer' },
         { value: 'Admin', label: 'Admin' },
         { value: 'Super Admin', label: 'Super Admin' }
@@ -42,7 +45,7 @@ const EditUserForm = () => {
         { value: 'PT Kendari Jaya Samudera', label: 'PT Kendari Jaya Samudera' },
         { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
         { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
-        { value: 'PT Silkargo Indonesia', label: 'PT Silkargo Indonesia' },
+        { value: 'PT SILKargo Indonesia', label: 'PT SILKargo Indonesia' },
         { value: 'PT PAD Samudera Indonesia', label: 'PT PAD Samudera Perdana' },
         { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
     ]
@@ -136,6 +139,47 @@ const EditUserForm = () => {
 
         if (formData.nama) {
             fetchReviewers()
+        }
+    }, [formData.nama])
+
+    useEffect(() => {
+        const fetchValidators = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(db, 'users'))
+                const validatorOpts = querySnapshot.docs
+                    .map(doc => doc.data())
+                    .filter(user => 
+                        user.role === 'Validator' || user.role === 'Reviewer'
+                    )
+                    .map(user => ({
+                        value: user.nama,
+                        label: user.nama,
+                        role: user.role,
+                        uid: user.uid
+                    }))
+    
+                // Remove current user from validator options
+                const currentUserName = formData.nama
+                const filteredValidatorOptions = validatorOpts.filter(option => option.value !== currentUserName)
+                
+                setValidatorOptions(filteredValidatorOptions)
+                
+                // Update formData with validator names
+                const validatorNames = filteredValidatorOptions
+                    .filter(opt => formData.validator?.includes(opt.uid))
+                    .map(opt => opt.value)
+    
+                setFormData(prev => ({
+                    ...prev,
+                    validator: validatorNames || []
+                }))
+            } catch (error) {
+                console.error('Error fetching validators:', error)
+            }
+        }
+    
+        if (formData.nama) {
+            fetchValidators()
         }
     }, [formData.nama])
 
@@ -296,6 +340,12 @@ const EditUserForm = () => {
                 return
             }
     
+            // Pemetaan validator dari nama ke UID
+            const validatorUids = formData.validator.map((validatorName) => {
+                const validator = validatorOptions.find((option) => option.value === validatorName)
+                return validator ? validator.uid : null
+            }).filter((uid) => uid !== null)
+    
             // Pemetaan reviewer dari nama ke UID
             const reviewer1Uids = formData.reviewer1.map((reviewerName) => {
                 const reviewer = reviewer1Options.find((option) => option.label === reviewerName)
@@ -310,6 +360,7 @@ const EditUserForm = () => {
             // Update formData dengan UID
             const updatedFormData = {
                 ...formData,
+                validator: validatorUids,
                 reviewer1: reviewer1Uids,
                 reviewer2: reviewer2Uids,
             }
@@ -454,6 +505,40 @@ const EditUserForm = () => {
                     {formData.role !== 'Super Admin' && (
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">
+                                Posisi <span className="text-red-500">*</span>
+                            </label>
+                            <Select
+                                name="posisi"
+                                value={posisiOptions.find(option => option.label === formData.posisi)}
+                                onChange={(selectedOption) => handleSelectChange(selectedOption, 'posisi')}
+                                options={posisiOptions}                        
+                                isClearable
+                                className="mt-1"
+                                />
+                        </div>
+                    )}
+                    {formData.role !== 'Super Admin' && (
+                            <div className="mb-2">
+                            <label className="block font-medium text-gray-700">
+                                Validator {(formData.role !== 'Reviewer' && formData.role !== 'Validator') && <span className="text-red-500">*</span>}
+                            </label>
+                            <Select
+                                isMulti
+                                name="validator"
+                                value={validatorOptions.filter(option => formData.validator?.includes(option.value))}
+                                options={validatorOptions}
+                                className="basic-multi-select mt-1"
+                                classNamePrefix="select"
+                                onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'validator')}
+                            />
+                        </div>                        
+                    )}
+                </div>
+                {formData.role !== 'Super Admin' && (
+                    <div className="grid grid-cols-2 gap-6">
+                    {formData.role !== 'Super Admin' && (
+                        <div className="mb-2">
+                            <label className="block font-medium text-gray-700">
                                 Reviewer 1 {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
                             </label>
                             <Select
@@ -466,27 +551,9 @@ const EditUserForm = () => {
                             />
                         </div>
                     )}
-                    {formData.role !== 'Super Admin' && (
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">
-                                Posisi <span className="text-red-500">*</span>
-                            </label>
-                            <Select
-                                name="posisi"
-                                value={posisiOptions.find(option => option.label === formData.posisi)}
-                                onChange={(selectedOption) => handleSelectChange(selectedOption, 'posisi')}
-                                options={posisiOptions}                        
-                                isClearable
-                                className="mt-1"
-                            />
-                        </div>
-                    )}
-                </div>
-                {formData.role !== 'Super Admin' && (
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Reviewer 2 (Kosongkan jika pengguna hanya memiliki 1 Reviewer)
+                                Reviewer 2 {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
                             </label>
                             <Select
                                 isMulti

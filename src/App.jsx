@@ -11,6 +11,7 @@ import DetailReimbursementPage from './pages/DetailRbsPage';
 import DetailLpjPage from './pages/DetailLpjPage';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import ReviewerDashboard from './pages/ReviewerDashboard';
+import ValidatorDashboard from './pages/ReviewerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/protectedRoute';
@@ -35,6 +36,7 @@ const AppContent = () => {
                 
                 <Route path="/dashboard/admin" element={<AdminDashboard />} />
                 <Route path="/dashboard/reviewer" element={<ReviewerDashboard />} />
+                <Route path="/dashboard/validator" element={<ValidatorDashboard />} />
                 <Route path="/dashboard/employee" element={<EmployeeDashboard />} />
                 
                 <Route path="/reimbursement/bbm" element={<RbsBbm />} />

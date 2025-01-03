@@ -15,6 +15,7 @@ const AddUserForm = () => {
         email: '',
         password: '',
         posisi: '',
+        validator: [],
         reviewer1: [],
         reviewer2: [],
         unit: '',
@@ -25,6 +26,7 @@ const AddUserForm = () => {
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [reviewerOptions, setReviewerOptions] = useState([])
+    const [validatorOptions, setValidatorOptions] = useState([])
 
     // Fetch reviewers from Firestore
     const fetchReviewers = async () => {
@@ -51,8 +53,28 @@ const AddUserForm = () => {
         }
     }
 
+    // Fetch validators from Firestore
+    const fetchValidators = async () => {
+        try {
+            const q = query(collection(db, 'users'),
+            where('role', 'in', ['Validator', 'Reviewer']))
+            const querySnapshot = await getDocs(q)
+
+            const validators = querySnapshot.docs.map((doc) => ({
+                value: doc.data().nama,
+                label: doc.data().nama,
+                uid: doc.data().uid
+            }))
+
+            setValidatorOptions(validators)
+        } catch (error) {
+            console.error('Error fetching validator options:', error)
+        }
+    }
+
     useEffect(() => {
         fetchReviewers()
+        fetchValidators()
     }, [])
 
     const handleChange = (e) => {
@@ -75,6 +97,7 @@ const AddUserForm = () => {
                 accountNumber: '', 
                 reviewer1: [],
                 reviewer2: [],
+                validator: [],
                 [field]: selectedOption.value
             })
         } else if (field === 'department') {
@@ -142,7 +165,9 @@ const AddUserForm = () => {
                     { name: 'department', label: 'Department' },
                     { name: 'bankName', label: 'Nama Bank' },
                     { name: 'accountNumber', label: 'Nomor Rekening' },
-                    { name: 'reviewer1', label: 'Reviewer 1' }
+                    { name: 'reviewer1', label: 'Reviewer 1' },
+                    { name: 'reviewer2', label: 'Reviewer 2' },
+                    { name: 'validator', label: 'Validator' }
                 ]
             }
 
@@ -184,6 +209,7 @@ const AddUserForm = () => {
                 accountNumber: formData.role === 'Super Admin' ? '' : formData.accountNumber,
                 reviewer1: formData.role === 'Super Admin' || formData.role === 'Reviewer' ? [] : formData.reviewer1,
                 reviewer2: formData.role === 'Super Admin' ? [] : formData.reviewer2,
+                validator: formData.role === 'Super Admin' || formData.role === 'Reviewer' || formData.role === 'Validator' ? [] : formData.validator,
             })
 
             toast.success('Pengguna berhasil ditambahkan')
@@ -200,7 +226,8 @@ const AddUserForm = () => {
                 bankName: '',
                 accountNumber: '',
                 reviewer1: [],
-                reviewer2: []
+                reviewer2: [],
+                validator: []
             })
             navigate(-1) // Kembali ke halaman sebelumnya
         } catch (error) {
@@ -214,6 +241,7 @@ const AddUserForm = () => {
     // Options role
     const roleOptions = [
         { value: 'Employee', label: 'Employee' },
+        { value: 'Validator', label: 'Validator' },
         { value: 'Reviewer', label: 'Reviewer' },
         { value: 'Admin', label: 'Admin' },
         { value: 'Super Admin', label: 'Super Admin' }
@@ -226,7 +254,7 @@ const AddUserForm = () => {
         { value: 'PT Kendari Jaya Samudera', label: 'PT Kendari Jaya Samudera' },
         { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
         { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
-        { value: 'PT Silkargo Indonesia', label: 'PT Silkargo Indonesia' },
+        { value: 'PT SILKargo Indonesia', label: 'PT SILKargo Indonesia' },
         { value: 'PT PAD Samudera Indonesia', label: 'PT PAD Samudera Perdana' },
         { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
     ]
@@ -264,7 +292,7 @@ const AddUserForm = () => {
                                 type="text"
                                 name="nama"
                                 value={formData.nama}
-                                onChange={handleChange}                                
+                                onChange={handleChange}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
@@ -279,7 +307,7 @@ const AddUserForm = () => {
                                 classNamePrefix="select"
                                 onChange={(selectedOption) => handleSelectChange(selectedOption, 'role')}
                                 isMulti={false}
-                                isClearable                                
+                                isClearable
                             />
                         </div>
                     </div>
@@ -292,7 +320,7 @@ const AddUserForm = () => {
                                 type="email"
                                 name="email"
                                 value={formData.email}
-                                onChange={handleChange}                                
+                                onChange={handleChange}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
@@ -304,7 +332,7 @@ const AddUserForm = () => {
                                 type="text"
                                 name="password"
                                 value={formData.password}
-                                onChange={handleChange}                                
+                                onChange={handleChange}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
@@ -323,7 +351,7 @@ const AddUserForm = () => {
                                         classNamePrefix="select"
                                         onChange={(selectedOption) => handleSelectChange(selectedOption, 'unit')}
                                         isMulti={false}
-                                        isClearable                                    
+                                        isClearable
                                     />
                                 </div>
                             </div>
@@ -337,7 +365,7 @@ const AddUserForm = () => {
                                     type="text"
                                     name="bankName"
                                     value={formData.bankName}
-                                    onChange={handleChange}                                
+                                    onChange={handleChange}
                                     className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                                 />
                             </div>
@@ -355,7 +383,7 @@ const AddUserForm = () => {
                                     options={departmentOptions}
                                     className="basic-multi-select mt-1"
                                     classNamePrefix="select"
-                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'department')}                                
+                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'department')}
                                 />
                             </div>
                         )}
@@ -368,10 +396,45 @@ const AddUserForm = () => {
                                     type="text"
                                     name="accountNumber"
                                     value={formData.accountNumber}
-                                    onChange={handleChange}                                
+                                    onChange={handleChange}
                                     className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                                 />
                             </div>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                        {formData.role !== 'Super Admin' && (
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Posisi <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <Select
+                                        name="posisi"
+                                        options={posisiOptions}
+                                        className="basic-single-select mt-1"
+                                        classNamePrefix="select"
+                                        onChange={(selectedOption) => handleSelectChange(selectedOption, 'posisi')}
+                                        isMulti={false}
+                                        isClearable
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        {formData.role !== 'Super Admin' && (
+                            <div className="mb-2">
+                            <label className="block font-medium text-gray-700">
+                                Validator {(formData.role !== 'Reviewer') && <span className="text-red-500">*</span>}
+                            </label>
+                            <Select
+                                isMulti
+                                name="validator"
+                                options={validatorOptions}
+                                className="basic-multi-select mt-1"
+                                classNamePrefix="select"
+                                onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'validator')}
+                            />
+                        </div>                        
                         )}
                     </div>
                     <div className="grid grid-cols-2 gap-6">
@@ -386,34 +449,14 @@ const AddUserForm = () => {
                                     options={reviewerOptions}
                                     className="basic-multi-select mt-1"
                                     classNamePrefix="select"
-                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer1')}                                    
+                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer1')}
                                 />
                             </div>
                         )}
                         {formData.role !== 'Super Admin' && (
                             <div className="mb-2">
                                 <label className="block font-medium text-gray-700">
-                                    Posisi <span className="text-red-500">*</span>
-                                </label>
-                                <div className="relative">
-                                    <Select
-                                        name="posisi"
-                                        options={posisiOptions}
-                                        className="basic-single-select mt-1"
-                                        classNamePrefix="select"
-                                        onChange={(selectedOption) => handleSelectChange(selectedOption, 'posisi')}
-                                        isMulti={false}
-                                        isClearable                                    
-                                    />
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                    {formData.role !== 'Super Admin' && (
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="mb-2">
-                                <label className="block font-medium text-gray-700">
-                                    Reviewer 2 (Kosongkan jika pengguna hanya memiliki 1 Reviewer)
+                                    Reviewer 2 {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
                                 </label>
                                 <Select
                                     isMulti
@@ -424,8 +467,8 @@ const AddUserForm = () => {
                                     onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer2')}
                                 />
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
                     <div className="flex justify-end mt-6">
                         <button
@@ -446,13 +489,7 @@ const AddUserForm = () => {
                 </form>
             </div>
 
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                closeOnClick
-                pauseOnHover
-            />
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
         </div>
     )
 }

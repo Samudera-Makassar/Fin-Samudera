@@ -63,14 +63,18 @@ const DetailLpj = () => {
                 }
 
                 // Fetch names for all reviewers in reviewer1 and reviewer2
-                const [reviewer1Names, reviewer2Names] = await Promise.all([
+                const [reviewer1Names, reviewer2Names, validatorNames] = await Promise.all([
                     fetchReviewerNames(lpjData?.user?.reviewer1),
                     fetchReviewerNames(lpjData?.user?.reviewer2),
+                    fetchReviewerNames(lpjData?.user?.validator),
                 ])
 
                 // Combine reviewer names and filter out null values
                 const validReviewerNames = [...reviewer1Names, ...reviewer2Names].filter(name => name !== null)
-                setReviewers(validReviewerNames)
+                setReviewers({ 
+                    reviewerNames: validReviewerNames,
+                    validatorNames: validatorNames.filter(name => name !== null)
+                })
             } catch (error) {
                 console.error("Error fetching data:", error)
                 setError(error.message)
@@ -85,35 +89,54 @@ const DetailLpj = () => {
     }, [uid, id]) // Dependencies array to prevent infinite loop
 
     // Fungsi untuk mendapatkan status approval dengan nama reviewer
-    const getDetailedApprovalStatus = (reimbursement, reviewerNames) => {
-        if (!reimbursement || !reimbursement.statusHistory || reimbursement.statusHistory.length === 0) {
+    const getDetailedApprovalStatus = (lpj, reviewerNames) => {
+        if (!lpj || !lpj.statusHistory || lpj.statusHistory.length === 0) {
             return '-'
         }
     
-        const lastStatus = reimbursement.statusHistory[reimbursement.statusHistory.length - 1]
+        const lastStatus = lpj.statusHistory[lpj.statusHistory.length - 1]
         const { status, actor } = lastStatus
     
         // Helper function to determine approver
         const determineApprover = (reviewerArray, roleIndexStart) => {
             // Cari index reviewer di array reviewerNames berdasarkan UID actor
             const reviewerIndex = reviewerArray.findIndex(uid => uid === actor)
-            if (reviewerIndex !== -1) {
-                return reviewerNames[roleIndexStart + reviewerIndex] || 'N/A'
+            if (reviewerIndex !== -1 && reviewerNames.reviewerNames) {
+                return reviewerNames.reviewerNames[roleIndexStart + reviewerIndex] || 'N/A'
             }
             return '-'
         }
     
+        // Helper function khusus untuk validator
+        const determineValidator = (validatorArray, actor) => {
+            const validatorIndex = validatorArray.findIndex(uid => uid === actor)
+            if (validatorIndex !== -1 && reviewers.validatorNames && reviewers.validatorNames[validatorIndex]) {
+                return reviewers.validatorNames[validatorIndex]
+            }
+            return 'N/A'
+        }
+
         // Periksa Reviewer 1 dan Reviewer 2
-        const reviewer1Array = reimbursement?.user?.reviewer1 || []
-        const reviewer2Array = reimbursement?.user?.reviewer2 || []
+        const reviewer1Array = lpj?.user?.reviewer1 || []
+        const reviewer2Array = lpj?.user?.reviewer2 || []
+        const validatorArray = lpj?.user?.validator || []
 
         // Logika untuk kasus reviewer2 kosong
         const reviewer2Exists = Array.isArray(reviewer2Array) && reviewer2Array.some(uid => uid)
     
-        switch (reimbursement.status) {
+        // Cek status approval dari reviewer
+        if (lpj.approvedByReviewer1Status === 'reviewer' && lpj.approvedByReviewer1) {
+            const reviewer1 = determineApprover(reviewer1Array, 0)
+            if (reviewer1 !== '-') return reviewer1
+        }
+
+        switch (lpj.status) {
             case 'Ditolak': {
                 if (status.includes('Super Admin')) {
                     return 'Super Admin'
+                }
+                if (status.includes('Validator')) {
+                    return determineValidator(validatorArray, actor)
                 }
                 if (status.includes('Reviewer 1')) {
                     return determineApprover(reviewer1Array, 0)
@@ -124,11 +147,21 @@ const DetailLpj = () => {
                 break
             }
     
-            case 'Diproses': {
+            case 'Divalidasi': {
                 if (status.includes('Super Admin')) {
                     return 'Super Admin'
                 }
-                if (status.includes('Reviewer 1')) {
+                if (status.includes('Validator')) {
+                    return determineValidator(validatorArray, actor)
+                }
+                break
+            }
+            
+            case 'Diproses': {
+                if (lpj.approvedBySuperAdmin) {
+                    return 'Super Admin'
+                }
+                if (lpj.approvedByReviewer1) {
                     return determineApprover(reviewer1Array, 0)
                 }
                 break
@@ -336,7 +369,13 @@ const DetailLpj = () => {
                         )}
                         <p>Status</p>
                         <p>: {lpjDetail?.status ?? 'N/A'}</p>
-                        <p>{lpjDetail?.status === 'Ditolak' ? 'Ditolak Oleh' : 'Disetujui Oleh'}</p>
+                        <p>
+                            {lpjDetail?.status === 'Ditolak'
+                                ? 'Ditolak Oleh'
+                                : lpjDetail?.status === 'Divalidasi'
+                                ? 'Divalidasi Oleh'
+                                : 'Disetujui Oleh'}
+                        </p>
                         <p>: {getDetailedApprovalStatus(lpjDetail, reviewers)}</p>
                         <p></p>
                         <p></p>

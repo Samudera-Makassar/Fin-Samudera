@@ -58,87 +58,116 @@ const LpjBsCheck = () => {
                     // Pending lpj for Super Admin
                     const pendingQ = query(
                         collection(db, 'lpj'),
-                        where('status', 'in', ['Diproses', 'Diajukan'])
+                        where('status', 'in', ['Diajukan', 'Divalidasi', 'Diproses'])
                     )
                     const pendingSnapshot = await getDocs(pendingQ)
                     pendingLpj = pendingSnapshot.docs.map((doc) => ({
                         id: doc.id,
                         displayId: doc.data().displayId,
-                        ...doc.data(),
+                        ...doc.data()
                     }))
 
                     // Approved lpj for Super Admin
                     const approvedQ = query(
                         collection(db, 'lpj'),
-                        where('status', 'in', ['Diproses', 'Disetujui'])
+                        where('status', 'in', ['Divalidasi', 'Diproses', 'Disetujui'])
                     )
                     const approvedSnapshot = await getDocs(approvedQ)
                     approvedLpj = approvedSnapshot.docs
                         .map((doc) => ({
                             id: doc.id,
                             displayId: doc.data().displayId,
-                            ...doc.data(),
+                            ...doc.data()
                         }))
                         .filter((doc) =>
-                            doc.statusHistory.some((history) =>
-                                history.actor === uid &&
-                                [
-                                    'Disetujui oleh Super Admin (Pengganti Reviewer 1)',
-                                    'Disetujui oleh Super Admin (Pengganti Reviewer 2)',
-                                    'Disetujui oleh Super Admin',
-                                ].includes(history.status)
+                            doc.statusHistory.some(
+                                (history) =>
+                                    history.actor === uid &&
+                                    [
+                                        'Divalidasi oleh Super Admin (Pengganti Validator)',
+                                        'Disetujui oleh Super Admin (Pengganti Reviewer 1)',
+                                        'Disetujui oleh Super Admin (Pengganti Reviewer 2)',
+                                        'Disetujui oleh Super Admin'
+                                    ].includes(history.status)
                             )
                         )
                 } else {
-                    // For reviewers
-                    const pendingQ1 = query(
-                        collection(db, 'lpj'),
-                        where('status', '==', 'Diajukan'),
-                        where('user.reviewer1', 'array-contains', uid)
-                    )
-                    const pendingQ2 = query(
-                        collection(db, 'lpj'),
-                        where('status', '==', 'Diproses'),
-                        where('user.reviewer2', 'array-contains', uid)
-                    )
-
-                    const [snapshot1, snapshot2] = await Promise.all([
-                        getDocs(pendingQ1),
-                        getDocs(pendingQ2),
+                    // Get all documents where user is assigned in any role
+                    const [validatorDocs, reviewer1Docs, reviewer2Docs] = await Promise.all([
+                        // Get documents where user is assigned as validator
+                        getDocs(
+                            query(
+                                collection(db, 'lpj'),
+                                where('user.validator', 'array-contains', uid),
+                                where('status', '==', 'Diajukan')
+                            )
+                        ),
+                        // Get documents where user is assigned as reviewer1
+                        getDocs(
+                            query(
+                                collection(db, 'lpj'),
+                                where('user.reviewer1', 'array-contains', uid),
+                                where('status', '==', 'Divalidasi')
+                            )
+                        ),
+                        // Get documents where user is assigned as reviewer2
+                        getDocs(
+                            query(
+                                collection(db, 'lpj'),
+                                where('user.reviewer2', 'array-contains', uid),
+                                where('status', '==', 'Diproses')
+                            )
+                        )
                     ])
 
                     pendingLpj = [
-                        ...snapshot1.docs.map((doc) => ({
+                        ...validatorDocs.docs.map((doc) => ({
                             id: doc.id,
                             displayId: doc.data().displayId,
-                            ...doc.data(),
+                            ...doc.data()
                         })),
-                        ...snapshot2.docs.map((doc) => ({
+                        ...reviewer1Docs.docs.map((doc) => ({
                             id: doc.id,
                             displayId: doc.data().displayId,
-                            ...doc.data(),
+                            ...doc.data()
                         })),
+                        ...reviewer2Docs.docs.map((doc) => ({
+                            id: doc.id,
+                            displayId: doc.data().displayId,
+                            ...doc.data()
+                        }))
                     ]
 
-                    // Approved Lpj
+                    // Remove duplicates if any
+                    pendingLpj = Array.from(new Set(pendingLpj.map((item) => item.id))).map(
+                        (id) => pendingLpj.find((item) => item.id === id)
+                    )
+
+                    // Get approved documents
                     const approvedQ = query(
                         collection(db, 'lpj'),
-                        where('status', 'in', ['Diproses', 'Disetujui'])
+                        where('status', 'in', ['Divalidasi', 'Diproses', 'Disetujui'])
                     )
                     const approvedSnapshot = await getDocs(approvedQ)
                     approvedLpj = approvedSnapshot.docs
                         .map((doc) => ({
                             id: doc.id,
                             displayId: doc.data().displayId,
-                            ...doc.data(),
+                            ...doc.data()
                         }))
-                        .filter((doc) =>
-                            doc.statusHistory.some((history) =>
-                                history.actor === uid &&
-                                ['Disetujui oleh Reviewer 1', 'Disetujui oleh Reviewer 2'
-                                ].includes(history.status)
+                        .filter((doc) => {
+                            const isAssignedAsValidator = doc.user.validator?.includes(uid)
+                            const isAssignedAsReviewer1 = doc.user.reviewer1?.includes(uid)
+                            const isAssignedAsReviewer2 = doc.user.reviewer2?.includes(uid)
+
+                            return doc.statusHistory.some(
+                                (history) =>
+                                    history.actor === uid &&
+                                    ((isAssignedAsValidator && history.status === 'Disetujui oleh Validator') ||
+                                        (isAssignedAsReviewer1 && history.status === 'Disetujui oleh Reviewer 1') ||
+                                        (isAssignedAsReviewer2 && history.status === 'Disetujui oleh Reviewer 2'))
                             )
-                        )
+                        })
                 }
 
                 // Sort Lpj by date
@@ -165,21 +194,19 @@ const LpjBsCheck = () => {
 
                 const existingYears = new Set(
                     approvedLpj
-                        .map(item =>
-                            item.statusHistory
-                                .filter(
-                                    status =>
-                                        status.actor === uid && status.status.includes('Disetujui')
-                                )
-                                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]?.timestamp
+                        .map(
+                            (item) =>
+                                item.statusHistory
+                                    .filter((status) => status.actor === uid && status.status.includes('Disetujui'))
+                                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]?.timestamp
                         )
                         .filter(Boolean) // Hilangkan nilai undefined jika tidak ada tanggal
-                        .map(timestamp => new Date(timestamp).getFullYear()) // Ambil tahun dari timestamp
+                        .map((timestamp) => new Date(timestamp).getFullYear()) // Ambil tahun dari timestamp
                 )
 
                 const updatedYearOptions = Array.from(existingYears)
-                    .map(year => ({ value: year, label: `${year}` }))
-                    .sort((a, b) => b.value - a.value); // Urutkan tahun dari yang terbaru
+                    .map((year) => ({ value: year, label: `${year}` }))
+                    .sort((a, b) => b.value - a.value) // Urutkan tahun dari yang terbaru
 
                 setYearOptions(updatedYearOptions)
 
@@ -204,95 +231,97 @@ const LpjBsCheck = () => {
                     const userRole = localStorage.getItem('userRole')
                     const lpjRef = doc(db, 'lpj', item.id)
 
-                    // Cek apakah UID termasuk dalam super admin, reviewer1, atau reviewer2
+                    // Cek apakah UID termasuk dalam super admin, validator, reviewer1, atau reviewer2
                     const isSuperAdmin = userRole === 'Super Admin'
+                    const isValidator = item.user.validator.includes(uid)
                     const isReviewer1 = item.user.reviewer1.includes(uid)
                     const isReviewer2 = item.user.reviewer2.includes(uid)
-
-                    const hasSingleReviewer = !item.user.reviewer2.length
+                    const isValidatorAndReviewer1 = isValidator && isReviewer1
 
                     let updateData = {}
 
                     if (isSuperAdmin) {
                         // Super Admin approval logic
-                        if (hasSingleReviewer) {
-                            // Jika hanya ada satu reviewer, langsung set status ke 'Disetujui'
+                        if (item.status === 'Diajukan') {
                             updateData = {
-                                status: 'Disetujui',
-                                approvedByReviewer1Status: 'superadmin',
+                                status: 'Divalidasi',
+                                approvedByValidator: false,
                                 approvedBySuperAdmin: true,
                                 statusHistory: arrayUnion({
-                                    status: 'Disetujui oleh Super Admin',
+                                    status: 'Divalidasi oleh Super Admin (Pengganti Validator)',
                                     timestamp: new Date().toISOString(),
                                     actor: uid
                                 })
                             }
-                        } else {
-                            if (!item.approvedByReviewer1Status) {
-                                // If not approved by anyone, Super Admin approves as first approver
-                                updateData = {
-                                    status: 'Diproses',
-                                    approvedByReviewer1Status: 'superadmin', // New field to track approval type
-                                    approvedBySuperAdmin: true,
-                                    statusHistory: arrayUnion({
-                                        status: 'Disetujui oleh Super Admin (Pengganti Reviewer 1)',
-                                        timestamp: new Date().toISOString(),
-                                        actor: uid
-                                    })
-                                }
-                            } else if (
-                                item.approvedByReviewer1Status === 'superadmin' ||
-                                item.approvedByReviewer1Status === 'reviewer'
-                            ) {
-                                // If already approved by Reviewer 1 or Super Admin, finalize the approval
-                                updateData = {
-                                    status: 'Disetujui',
-                                    approvedByReviewer2Status: 'superadmin',
-                                    approvedBySuperAdmin: true,
-                                    statusHistory: arrayUnion({
-                                        status: 'Disetujui oleh Super Admin (Pengganti Reviewer 2)',
-                                        timestamp: new Date().toISOString(),
-                                        actor: uid
-                                    })
-                                }
+                        } else if (item.status === 'Divalidasi') {
+                            updateData = {
+                                status: 'Diproses',
+                                approvedByReviewer1Status: 'superadmin',
+                                approvedBySuperAdmin: true,
+                                statusHistory: arrayUnion({
+                                    status: 'Disetujui oleh Super Admin (Pengganti Reviewer 1)',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid
+                                })
+                            }
+                        } else if (item.status === 'Diproses') {
+                            updateData = {
+                                status: 'Disetujui',
+                                approvedByReviewer2Status: 'superadmin',
+                                approvedBySuperAdmin: true,
+                                statusHistory: arrayUnion({
+                                    status: 'Disetujui oleh Super Admin (Pengganti Reviewer 2)',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid
+                                })
                             }
                         }
-                    } else {
-                        if (isReviewer1) {
-                            // Jika reviewer1, dan hanya ada satu reviewer
-                            if (hasSingleReviewer) {
-                                // Jika hanya ada satu reviewer, langsung set status ke 'Disetujui'
-                                updateData = {
-                                    status: 'Disetujui',
-                                    approvedByReviewer1: true,
-                                    approvedByReviewer1Status: 'reviewer',
-                                    statusHistory: arrayUnion({
+                    } else if (item.status === 'Diajukan') {
+                        if (isValidatorAndReviewer1) {
+                            // User is both validator and reviewer1
+                            updateData = {
+                                status: 'Diproses',
+                                approvedByValidator: true,
+                                approvedByReviewer1: true,
+                                approvedByReviewer1Status: 'reviewer',
+                                statusHistory: arrayUnion(
+                                    {
                                         status: 'Disetujui oleh Reviewer 1',
                                         timestamp: new Date().toISOString(),
                                         actor: uid
-                                    })
-                                }
-                            } else {
-                                // Jika ada reviewer 2, set approvedByReviewer1 ke true
-                                updateData = {
-                                    status: 'Diproses',
-                                    approvedByReviewer1: true,
-                                    approvedByReviewer1Status: 'reviewer',
-                                    statusHistory: arrayUnion({
-                                        status: 'Disetujui oleh Reviewer 1',
-                                        timestamp: new Date().toISOString(),
-                                        actor: uid
-                                    })
-                                }
+                                    }
+                                )
+                            }
+                        } else if (isValidator) {
+                            // Regular validator approval
+                            updateData = {
+                                status: 'Divalidasi',
+                                approvedByValidator: true,
+                                statusHistory: arrayUnion({
+                                    status: 'Divalidasi oleh Validator',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid
+                                })
                             }
                         }
-
+                    } else if (item.status === 'Divalidasi' && isReviewer1) {
+                        // Regular reviewer1 approval
+                        updateData = {
+                            status: 'Diproses',
+                            approvedByReviewer1: true,
+                            approvedByReviewer1Status: 'reviewer',
+                            statusHistory: arrayUnion({
+                                status: 'Disetujui oleh Reviewer 1',
+                                timestamp: new Date().toISOString(),
+                                actor: uid
+                            })
+                        }
+                    } else if (item.status === 'Diproses' && isReviewer2) {
+                        // Regular reviewer2 approval
                         if (
-                            isReviewer2 &&
-                            (item.approvedByReviewer1Status === 'reviewer' ||
-                                item.approvedByReviewer1Status === 'superadmin')
+                            item.approvedByReviewer1Status === 'reviewer' ||
+                            item.approvedByReviewer1Status === 'superadmin'
                         ) {
-                            // If reviewer2 and (Reviewer1 or SuperAdmin has approved), set status to 'Disetujui'
                             updateData = {
                                 status: 'Disetujui',
                                 approvedByReviewer2: true,
@@ -335,37 +364,83 @@ const LpjBsCheck = () => {
                     const userRole = localStorage.getItem('userRole')
                     const lpjRef = doc(db, 'lpj', item.id)
 
-                    // Cek apakah UID termasuk dalam super admin, reviewer1, atau reviewer2
+                    // Cek apakah UID termasuk dalam super admin, validator reviewer1, atau reviewer2
                     const isSuperAdmin = userRole === 'Super Admin'
+                    const isValidator = item.user.validator.includes(uid)
                     const isReviewer1 = item.user.reviewer1.includes(uid)
                     const isReviewer2 = item.user.reviewer2.includes(uid)
+                    const isValidatorAndReviewer1 = isValidator && isReviewer1
 
                     let updateData = {}
 
                     if (isSuperAdmin) {
                         // Super Admin rejection logic
-                        if (!item.approvedByReviewer1Status) {
-                            // If not approved by anyone, Super Admin rejects as first reviewer                            
+                        if (!item.approvedByValidatorStatus) {
                             updateData = {
                                 status: 'Ditolak',
-                                approvedByReviewer1Status: "superadmin",
+                                approvedByValidatorStatus: 'superadmin',
+                                rejectedBySuperAdmin: true,
+                                statusHistory: arrayUnion({
+                                    status: 'Ditolak oleh Super Admin (Pengganti Validator)',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid
+                                })
+                            }
+                        } else if (!item.approvedByReviewer1Status) {
+                            updateData = {
+                                status: 'Ditolak',
+                                approvedByReviewer1Status: 'superadmin',
                                 rejectedBySuperAdmin: true,
                                 statusHistory: arrayUnion({
                                     status: 'Ditolak oleh Super Admin (Pengganti Reviewer 1)',
                                     timestamp: new Date().toISOString(),
-                                    actor: uid,
+                                    actor: uid
                                 })
                             }
-                        } else if (item.approvedByReviewer1Status === "superadmin" || item.approvedByReviewer1Status === "reviewer") {
-                            // If already approved by Reviewer 1 or Super Admin, reject at final stage                            
+                        } else if (
+                            item.approvedByReviewer1Status === 'superadmin' ||
+                            item.approvedByReviewer1Status === 'reviewer'
+                        ) {
                             updateData = {
                                 status: 'Ditolak',
-                                approvedByReviewer2Status: "superadmin",
+                                approvedByReviewer2Status: 'superadmin',
                                 rejectedBySuperAdmin: true,
                                 statusHistory: arrayUnion({
                                     status: 'Ditolak oleh Super Admin (Pengganti Reviewer 2)',
                                     timestamp: new Date().toISOString(),
-                                    actor: uid,
+                                    actor: uid
+                                })
+                            }
+                        }
+                    } else if (!item.approvedByValidatorStatus) {
+                        if (isValidatorAndReviewer1) {
+                            // User is both validator and reviewer1, reject with both roles
+                            updateData = {
+                                status: 'Ditolak',
+                                approvedByValidatorStatus: 'validator',
+                                approvedByReviewer1Status: 'reviewer',
+                                statusHistory: arrayUnion(
+                                    {
+                                        status: 'Ditolak oleh Validator',
+                                        timestamp: new Date().toISOString(),
+                                        actor: uid
+                                    },
+                                    {
+                                        status: 'Ditolak oleh Reviewer 1',
+                                        timestamp: new Date().toISOString(),
+                                        actor: uid
+                                    }
+                                )
+                            }
+                        } else if (isValidator) {
+                            // Regular validator rejection
+                            updateData = {
+                                status: 'Ditolak',
+                                approvedByValidatorStatus: 'validator',
+                                statusHistory: arrayUnion({
+                                    status: 'Ditolak oleh Validator',
+                                    timestamp: new Date().toISOString(),
+                                    actor: uid
                                 })
                             }
                         }
@@ -374,20 +449,24 @@ const LpjBsCheck = () => {
                         if (isReviewer1) {
                             updateData = {
                                 status: 'Ditolak',
-                                approvedByReviewer1Status: "reviewer",
+                                approvedByReviewer1Status: 'reviewer',
                                 statusHistory: arrayUnion({
                                     status: 'Ditolak oleh Reviewer 1',
                                     timestamp: new Date().toISOString(),
-                                    actor: uid,
+                                    actor: uid
                                 })
                             }
-                        } else if (isReviewer2 && (item.approvedByReviewer1Status === "reviewer" || item.approvedByReviewer1Status === "superadmin")) {
+                        } else if (
+                            isReviewer2 &&
+                            (item.approvedByReviewer1Status === 'reviewer' ||
+                                item.approvedByReviewer1Status === 'superadmin')
+                        ) {
                             updateData = {
                                 status: 'Ditolak',
                                 statusHistory: arrayUnion({
                                     status: 'Ditolak oleh Reviewer 2',
                                     timestamp: new Date().toISOString(),
-                                    actor: uid,
+                                    actor: uid
                                 })
                             }
                         } else {
@@ -399,8 +478,8 @@ const LpjBsCheck = () => {
                     await updateDoc(lpjRef, updateData)
 
                     // Remove the rejected item from the list
-                    setData(prevData => ({
-                        lpj: prevData.lpj.filter(r => r.id !== item.id)
+                    setData((prevData) => ({
+                        lpj: prevData.lpj.filter((r) => r.id !== item.id)
                     }))
 
                     toast.success('LPJ Bon Sementara berhasil ditolak')
@@ -524,19 +603,21 @@ const LpjBsCheck = () => {
             {/* Tab Navigation */}
             <div className="flex mb-4 space-x-2 justify-end text-sm">
                 <button
-                    className={`px-4 py-2 rounded-full ${activeTab === 'pending'
-                        ? 'bg-red-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
+                    className={`px-4 py-2 rounded-full ${
+                        activeTab === 'pending'
+                            ? 'bg-red-600 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
                     onClick={() => setActiveTab('pending')}
                 >
                     Perlu Ditanggapi
                 </button>
                 <button
-                    className={`px-4 py-2 rounded-full ${activeTab === 'approved'
-                        ? 'bg-red-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
+                    className={`px-4 py-2 rounded-full ${
+                        activeTab === 'approved'
+                            ? 'bg-red-600 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
                     onClick={() => setActiveTab('approved')}
                 >
                     Riwayat Persetujuan
@@ -551,7 +632,11 @@ const LpjBsCheck = () => {
                         {data.lpj.length === 0 ? (
                             <div className="flex justify-center">
                                 <figure className="w-44 h-44">
-                                    <img src={EmptyState} alt="LPJ Bon Sementara icon" className="w-full h-full object-contain" />
+                                    <img
+                                        src={EmptyState}
+                                        alt="LPJ Bon Sementara icon"
+                                        className="w-full h-full object-contain"
+                                    />
                                 </figure>
                             </div>
                         ) : (
@@ -584,15 +669,23 @@ const LpjBsCheck = () => {
                                             <td className="px-4 py-2 border">{item.user.nama}</td>
                                             <td className="px-4 py-2 border">{item.kategori}</td>
                                             <td className="px-4 py-2 border">{item.nomorBS}</td>
-                                            <td className="px-4 py-2 border">Rp{item.jumlahBS.toLocaleString('id-ID')}</td>
+                                            <td className="px-4 py-2 border">
+                                                Rp{item.jumlahBS.toLocaleString('id-ID')}
+                                            </td>
                                             <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
                                             <td className="px-2 py-2 border text-center">
-                                                <span className={`px-4 py-1 rounded-full text-xs font-medium 
-                                                    ${item.status === 'Diajukan' ? 'bg-blue-200 text-blue-800 border-[1px] border-blue-600' :
-                                                        item.status === 'Disetujui' ? 'bg-green-200 text-green-800 border-[1px] border-green-600' :
-                                                            item.status === 'Diproses' ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600' :
-                                                                item.status === 'Ditolak' ? 'bg-red-200 text-red-800 border-[1px] border-red-600' :
-                                                                    'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
+                                                <span
+                                                    className={`px-4 py-1 rounded-full text-xs font-medium 
+                                                    ${
+                                                        item.status === 'Diajukan'
+                                                            ? 'bg-blue-200 text-blue-800 border-[1px] border-blue-600'
+                                                            : item.status === 'Disetujui'
+                                                              ? 'bg-green-200 text-green-800 border-[1px] border-green-600'
+                                                              : item.status === 'Diproses'
+                                                                ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600'
+                                                                : item.status === 'Ditolak'
+                                                                  ? 'bg-red-200 text-red-800 border-[1px] border-red-600'
+                                                                  : 'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
                                                     }`}
                                                 >
                                                     {item.status || 'Tidak Diketahui'}
@@ -660,7 +753,11 @@ const LpjBsCheck = () => {
                         {filteredApprovedData.lpj.length === 0 ? (
                             <div className="flex justify-center">
                                 <figure className="w-44 h-44">
-                                    <img src={EmptyState} alt="LPJ Bon Sementara icon" className="w-full h-full object-contain" />
+                                    <img
+                                        src={EmptyState}
+                                        alt="LPJ Bon Sementara icon"
+                                        className="w-full h-full object-contain"
+                                    />
                                 </figure>
                             </div>
                         ) : (
@@ -683,7 +780,7 @@ const LpjBsCheck = () => {
                                             <td className="px-2 py-2 border text-center w-auto">{index + 1}</td>
                                             <td className="p-4 border">
                                                 <Link
-                                                    to={`/reimbursement/${item.id}`}
+                                                    to={`/lpj/${item.id}`}
                                                     className="text-black hover:text-gray-700 hover:underline cursor-pointer"
                                                 >
                                                     {item.displayId}
@@ -698,10 +795,13 @@ const LpjBsCheck = () => {
                                                 {formatDate(
                                                     item.statusHistory
                                                         .filter(
-                                                            status =>
-                                                                status.actor === uid && status.status.includes('Disetujui')
+                                                            (status) =>
+                                                                status.actor === uid &&
+                                                                status.status.includes('Disetujui')
                                                         )
-                                                        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]?.timestamp
+                                                        .sort(
+                                                            (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+                                                        )[0]?.timestamp
                                                 )}
                                             </td>
                                         </tr>
@@ -719,19 +819,13 @@ const LpjBsCheck = () => {
                 message={modalProps.message}
                 onClose={closeModal}
                 onConfirm={modalProps.onConfirm}
-                cancelText='Batal'
-                confirmText='Ya'
+                cancelText="Batal"
+                confirmText="Ya"
             />
 
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                closeOnClick
-                pauseOnHover
-            />
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
         </div>
-    );
+    )
 };
 
 export default LpjBsCheck;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { doc, setDoc, getDoc, addDoc, collection } from 'firebase/firestore'
+import { doc, setDoc, getDoc, addDoc, collection, getDocs, query, where } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebaseConfig'
 import Select from 'react-select'
@@ -15,6 +15,7 @@ const FormLpjUmum = () => {
         uid: '',
         nama: '',
         unit: '',
+        validator: [],
         reviewer1: [],
         reviewer2: []
     })
@@ -61,6 +62,36 @@ const FormLpjUmum = () => {
 
     const [selectedUnit, setSelectedUnit] = useState('')
     const [isAdmin, setIsAdmin] = useState(false)
+    const [validatorOptions, setValidatorOptions] = useState([])
+    const [selectedValidator, setSelectedValidator] = useState(null)
+
+    useEffect(() => {
+        const fetchValidators = async () => {
+            try {
+                const usersRef = collection(db, 'users')
+                const q = query(usersRef, where('role', 'in', ['Validator']))
+                const querySnapshot = await getDocs(q)
+
+                const options = querySnapshot.docs.map((doc) => {
+                    const userData = doc.data()
+                    return {
+                        value: userData.uid,
+                        label: userData.nama,
+                        role: userData.role
+                    }
+                })
+
+                setValidatorOptions(options)
+            } catch (error) {
+                console.error('Error fetching validators:', error)
+                toast.error('Gagal memuat daftar validator')
+            }
+        }
+
+        if (isAdmin) {
+            fetchValidators()
+        }
+    }, [isAdmin])
 
     const BUSINESS_UNITS = [
         { value: 'PT Makassar Jaya Samudera', label: 'PT Makassar Jaya Samudera' },
@@ -68,7 +99,7 @@ const FormLpjUmum = () => {
         { value: 'PT Kendari Jaya Samudera', label: 'PT Kendari Jaya Samudera' },
         { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
         { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
-        { value: 'PT Silkargo Indonesia', label: 'PT Silkargo Indonesia' },
+        { value: 'PT SILKargo Indonesia', label: 'PT SILKargo Indonesia' },
         { value: 'PT PAD Samudera Indonesia', label: 'PT PAD Samudera Indonesia' },
         { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
     ]
@@ -103,6 +134,7 @@ const FormLpjUmum = () => {
                         accountNumber: data.accountNumber || '',
                         unit: data.unit || '',
                         department: data.department || [],
+                        validator: data.validator || [],
                         reviewer1: data.reviewer1 || [],
                         reviewer2: data.reviewer2 || []
                     })
@@ -210,7 +242,7 @@ const FormLpjUmum = () => {
         'PT Kendari Jaya Samudera': 'KEJS',
         'PT Samudera Kendari Logistik': 'SKEL',
         'PT Samudera Agencies Indonesia': 'SAI',
-        'PT Silkargo Indonesia': 'SKI',
+        'PT SILKargo Indonesia': 'SKI',
         'PT PAD Samudera Indonesia': 'SP',
         'PT Masaji Kargosentra Tama': 'MKT'
     }
@@ -286,6 +318,7 @@ const FormLpjUmum = () => {
             // Validasi data pengguna
             if (!userData.nama) missingFields.push('Nama')
             if (!selectedUnit?.value) missingFields.push('Unit')
+            if (isAdmin && !selectedValidator) missingFields.push('Validator')
 
             // Tambahkan validasi untuk form-level fields
             if (!nomorBS) missingFields.push('Nomor Bon Sementara')
@@ -352,6 +385,7 @@ const FormLpjUmum = () => {
                     unit: selectedUnit.value,
                     unitCode: getUnitCode(selectedUnit.value),
                     department: userData.department,
+                    validator: isAdmin ? [selectedValidator.value] : userData.validator,
                     reviewer1: userData.reviewer1,
                     reviewer2: userData.reviewer2
                 },
@@ -403,6 +437,9 @@ const FormLpjUmum = () => {
             toast.success('LPJ Marketing berhasil dibuat')
 
             // Reset form setelah berhasil submit
+            if (isAdmin) {
+                setSelectedValidator(null)
+            }
             resetForm()
             setIsSubmitting(false)
         } catch (error) {
@@ -488,92 +525,193 @@ const FormLpjUmum = () => {
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
-                <div className="grid grid-cols-2 gap-6 mb-3">
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
-                        <input
-                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                            type="text"
-                            value={userData.nama}
-                            disabled
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">
-                            Unit Bisnis {isAdmin && <span className="text-red-500">*</span>}
-                        </label>
-                        {isAdmin ? (
-                            <Select
-                                options={BUSINESS_UNITS}
-                                value={selectedUnit}
-                                onChange={setSelectedUnit}
-                                placeholder="Pilih Unit Bisnis"
-                                className="basic-single"
-                                classNamePrefix="select"
-                                styles={customStyles}
-                                isSearchable={true}
-                            />
-                        ) : (
-                            <input
-                                className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                                type="text"
-                                value={selectedUnit?.label || ''}
-                                disabled
-                            />
-                        )}
-                    </div>
-                </div>
+                {isAdmin ? (
+                    // Layout untuk Role Admin
+                    <>
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={userData.nama}
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Unit Bisnis {isAdmin && <span className="text-red-500">*</span>}
+                                </label>
+                                {isAdmin ? (
+                                    <Select
+                                        options={BUSINESS_UNITS}
+                                        value={selectedUnit}
+                                        onChange={setSelectedUnit}
+                                        placeholder="Pilih Unit Bisnis"
+                                        className="basic-single"
+                                        classNamePrefix="select"
+                                        styles={customStyles}
+                                        isSearchable={true}
+                                    />
+                                ) : (
+                                    <input
+                                        className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                        type="text"
+                                        value={selectedUnit?.label || ''}
+                                        disabled
+                                    />
+                                )}
+                            </div>
+                        </div>
 
-                <div className="grid grid-cols-2 gap-6 mb-3">
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">
-                            Nomor Bon Sementara <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            className="w-full h-10 px-4 py-2 border text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                            type="text"
-                            value={nomorBS}
-                            onChange={(e) => setNomorBS(e.target.value)}
-                            placeholder="Masukkan nomor bon sementara"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">
-                            Jumlah Bon Sementara <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            className="w-full h-10 px-4 py-2 border text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                            type="text"
-                            value={jumlahBS ? formatRupiah(jumlahBS) : ''}
-                            onChange={(e) => {
-                                const cleanValue = e.target.value.replace(/\D/g, '')
-                                const value = Number(cleanValue)
-                                if (value >= 0) {
-                                    setJumlahBS(value)
-                                }
-                            }}
-                            placeholder="Masukkan jumlah bon sementara tanpa Rp"
-                        />
-                    </div>
-                </div>
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Nomor Bon Sementara <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    type="text"
+                                    value={nomorBS}
+                                    onChange={(e) => setNomorBS(e.target.value)}
+                                    placeholder="Masukkan nomor bon sementara"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Validator <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    options={validatorOptions}
+                                    value={selectedValidator}
+                                    onChange={setSelectedValidator}
+                                    placeholder="Pilih Validator..."
+                                    className="basic-single"
+                                    classNamePrefix="select"
+                                    styles={customStyles}
+                                    isSearchable={true}
+                                    isClearable={true}
+                                />
+                            </div>
+                        </div>
 
-                <div className="grid grid-cols-2 gap-6 mb-3">
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
-                        <input
-                            className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                            type="text"
-                            value={formatDate(todayDate)}
-                            disabled
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">
-                            Lampiran <span className="text-red-500">*</span>
-                        </label>
-                        {renderFileUpload()}
-                    </div>
-                </div>
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Jumlah Bon Sementara <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    type="text"
+                                    value={jumlahBS ? formatRupiah(jumlahBS) : ''}
+                                    onChange={(e) => {
+                                        const cleanValue = e.target.value.replace(/\D/g, '')
+                                        const value = Number(cleanValue)
+                                        if (value >= 0) {
+                                            setJumlahBS(value)
+                                        }
+                                    }}
+                                    placeholder="Masukkan jumlah bon sementara tanpa Rp"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Lampiran <span className="text-red-500">*</span>
+                                </label>
+                                {renderFileUpload()}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={formatDate(todayDate)}
+                                    disabled
+                                />
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    // Layout untuk Role Non-Admin
+                    <>
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={userData.nama}
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Unit Bisnis {isAdmin && <span className="text-red-500">*</span>}
+                                </label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={selectedUnit?.label || ''}
+                                    disabled
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Nomor Bon Sementara <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    type="text"
+                                    value={nomorBS}
+                                    onChange={(e) => setNomorBS(e.target.value)}
+                                    placeholder="Masukkan nomor bon sementara"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Jumlah Bon Sementara <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    type="text"
+                                    value={jumlahBS ? formatRupiah(jumlahBS) : ''}
+                                    onChange={(e) => {
+                                        const cleanValue = e.target.value.replace(/\D/g, '')
+                                        const value = Number(cleanValue)
+                                        if (value >= 0) {
+                                            setJumlahBS(value)
+                                        }
+                                    }}
+                                    placeholder="Masukkan jumlah bon sementara tanpa Rp"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6 mb-3">
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={formatDate(todayDate)}
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Lampiran <span className="text-red-500">*</span>
+                                </label>
+                                {renderFileUpload()}
+                            </div>
+                        </div>
+                    </>
+                )}
 
                 <hr className="border-gray-300 my-6" />
 
@@ -691,11 +829,11 @@ const FormLpjUmum = () => {
                 <hr className="border-gray-300 my-6" />
 
                 {calculatedCosts.sisaLebih > 0 && (
-                    <div className='text-right'>
-                        *Pastikan sudah memasukkan bukti pengembalian dana sebesar {' '}
-                        <span className='font-bold '> {formatRupiah(calculatedCosts.sisaLebih)}</span> di lampiran
+                    <div className="text-right">
+                        *Pastikan sudah memasukkan bukti pengembalian dana sebesar{' '}
+                        <span className="font-bold "> {formatRupiah(calculatedCosts.sisaLebih)}</span> di lampiran
                     </div>
-                )}  
+                )}
 
                 <div className="flex justify-end mt-6">
                     <button

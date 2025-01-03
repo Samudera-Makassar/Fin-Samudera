@@ -351,17 +351,6 @@ const BsPDF = ({ bonSementaraDetail, approvedReviewers }) => {
 
                     {/* Footer */}
                     <View style={styles.footer}>
-                        <Text style={{ fontWeight: 'bold' }}>{bonSementaraDetail.tanggalPengajuan
-                            ? "Makassar, " + new Date(bonSementaraDetail.tanggalPengajuan)
-                                .toLocaleDateString("id-ID", {
-                                    day: "2-digit",
-                                    month: "long",
-                                    year: "numeric",
-                                })
-                                .replace(/\./g, "")
-                                .replace(/\s/g, " ")
-                            : "-"}
-                        </Text>
                         <View style={styles.footerRow}>
                             <Text>Dokumen Ini Sudah Mendukung Signature Digital</Text>
                             <Text>
