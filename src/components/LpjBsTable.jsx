@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebaseConfig'; 
-import EmptyState from '../assets/images/EmptyState.png';
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore'
+import { db } from '../firebaseConfig'
+import EmptyState from '../assets/images/EmptyState.png'
 import Select from 'react-select'
-import Modal from '../components/Modal';
+import Modal from '../components/Modal'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 const LpjBsTable = () => {
-    const [data, setData] = useState({ lpj: [] })    
+    const [data, setData] = useState({ lpj: [] })
     const [loading, setLoading] = useState(true)
     const [currentPage, setCurrentPage] = useState(1)
 
@@ -38,6 +38,7 @@ const LpjBsTable = () => {
     const filterOptions = {
         status: [
             { value: 'Diajukan', label: 'Diajukan' },
+            { value: 'Divalidasi', label: 'Divalidasi' },
             { value: 'Diproses', label: 'Diproses' },
             { value: 'Disetujui', label: 'Disetujui' },
             { value: 'Ditolak', label: 'Ditolak' },
@@ -91,13 +92,11 @@ const LpjBsTable = () => {
                     ...doc.data()
                 }))
 
-                const existingYears = new Set(
-                    lpj.map((item) => new Date(item.tanggalPengajuan).getFullYear())
-                )
+                const existingYears = new Set(lpj.map((item) => new Date(item.tanggalPengajuan).getFullYear()))
 
                 const updatedYearOptions = Array.from(existingYears)
-                .map(year => ({ value: year, label: `${year}` }))
-                .sort((a, b) => b.value - a.value); // Urutkan tahun dari yang terbaru
+                    .map((year) => ({ value: year, label: `${year}` }))
+                    .sort((a, b) => b.value - a.value) // Urutkan tahun dari yang terbaru
 
                 setYearOptions(updatedYearOptions)
                 setData({ lpj })
@@ -247,7 +246,7 @@ const LpjBsTable = () => {
                 options={options}
                 placeholder={label}
                 isClearable={field !== 'bulan' && field !== 'tahun'}
-                className="w-40"
+                className="w-38 lg:w-40"
                 styles={selectStyles}
             />
         )
@@ -270,18 +269,15 @@ const LpjBsTable = () => {
         )
     }
 
-    const shouldShowEmptyState = 
-        data.lpj.length === 0 || filteredLpj.length === 0
+    const shouldShowEmptyState = data.lpj.length === 0 || filteredLpj.length === 0
 
     return (
-        <div>
+        <div className="w-full">
             {shouldShowEmptyState ? (
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-xl font-medium mb-4 items-center">
-                        LPJ Bon Sementara Diajukan
-                        </h3>
-                        <div className="flex space-x-2">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 gap-4">
+                        <h3 className="text-xl font-medium items-center">LPJ Bon Sementara Diajukan</h3>
+                        <div className="grid grid-cols-2 lg:flex lg:flex-row gap-2">
                             <FilterSelect field="status" label="Status" />
                             <FilterSelect field="kategori" label="Kategori" />
                             <FilterSelect field="bulan" label="Bulan" />
@@ -290,91 +286,107 @@ const LpjBsTable = () => {
                     </div>
                     <div className="flex flex-col items-center justify-center mt-4">
                         <figure className="w-44 h-44 mb-4">
-                            <img src={EmptyState} alt="Lpj Bon Sementara icon" className="w-full h-full object-contain" />
+                            <img
+                                src={EmptyState}
+                                alt="Lpj Bon Sementara icon"
+                                className="w-full h-full object-contain"
+                            />
                         </figure>
                     </div>
                 </div>
             ) : (
                 // Jika ada data lpj
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-xl font-medium mb-4">LPJ Bon Sementara Diajukan</h3>
-                        <div className="flex space-x-2">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 gap-4">
+                        <h3 className="text-xl font-medium">LPJ Bon Sementara Diajukan</h3>
+                        <div className="grid grid-cols-2 lg:flex lg:flex-row gap-2">
                             <FilterSelect field="status" label="Status" />
                             <FilterSelect field="kategori" label="Kategori" />
                             <FilterSelect field="bulan" label="Bulan" />
                             <FilterSelect field="tahun" label="Tahun" />
                         </div>
                     </div>
-                    <table className="min-w-full bg-white border rounded-lg text-sm">
-                        <thead>
-                            <tr className="bg-gray-100 text-left">
-                                <th className="px-2 py-2 border text-center w-auto">No.</th>
-                                <th className="px-4 py-2 border">ID</th>
-                                <th className="px-4 py-2 border">Kategori LPJ BS</th>
-                                <th className="px-4 py-2 border">Nomor BS</th>
-                                <th className="px-4 py-2 border">Jumlah BS</th>
-                                <th className="px-4 py-2 border">Tanggal Pengajuan</th>
-                                <th className="py-2 border text-center">Status</th>
-                                <th className="py-2 border text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentLpj.map((item, index) => (
-                                <tr key={index}>
-                                    <td className="px-2 py-2 border text-center w-auto">
-                                        {index + 1 + (currentPage - 1) * itemsPerPage}
-                                    </td>
-                                    <td className="px-4 py-2 border">
-                                        <Link
-                                            to={`/lpj/${item.id}`}
-                                            className="text-black hover:text-gray-700 hover:underline cursor-pointer"
-                                        >
-                                            {item.displayId}
-                                        </Link>
-                                    </td>
-                                    <td className="px-4 py-2 border">{item.kategori}</td>
-                                    <td className="px-4 py-2 border">{item.nomorBS}</td>
-                                    <td className="px-4 py-2 border">Rp{item.jumlahBS.toLocaleString('id-ID')}</td>
-                                    <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
-                                    <td className="py-2 border text-center">
-                                        <span
-                                            className={`px-4 py-1 rounded-full text-xs font-medium 
-                                            ${
-                                                item.status === 'Diajukan'
-                                                    ? 'bg-blue-200 text-blue-800 border-[1px] border-blue-600'
-                                                    : item.status === 'Disetujui'
-                                                      ? 'bg-green-200 text-green-800 border-[1px] border-green-600'
-                                                      : item.status === 'Diproses'
-                                                        ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600'
-                                                        : item.status === 'Ditolak'
-                                                          ? 'bg-red-200 text-red-800 border-[1px] border-red-600'
-                                                          : item.status === 'Divalidasi'
-                                                            ? 'bg-purple-200 text-purple-800 border-[1px] border-purple-600'
-                                                            : 'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
-                                            }`}
-                                        >
-                                            {item.status || 'Tidak Diketahui'}
-                                        </span>
-                                    </td>
-                                    <td className="py-2 border text-center">
-                                        <button
-                                            className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed hover"
-                                            onClick={() => handleCancel(item)}
-                                            disabled={item.status !== 'Diajukan'}
-                                        >
-                                            Batalkan
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
 
-                    {/* Conditional Pagination - hanya muncul jika lebih dari satu page */}
+                    {/* Table container dengan fixed width dan overflow */}
+
+                    <div className="w-full">
+                        <div className="w-full overflow-x-auto">
+                            <div className="inline-block min-w-[800px] w-full">
+                                <table className="w-full bg-white text-sm">
+                                    <thead>
+                                        <tr className="bg-gray-100 text-left">
+                                            <th className="px-2 py-2 border text-center w-auto">No.</th>
+                                            <th className="px-4 py-2 border">ID</th>
+                                            <th className="px-4 py-2 border">Kategori LPJ BS</th>
+                                            <th className="px-4 py-2 border">Nomor BS</th>
+                                            <th className="px-4 py-2 border">Jumlah BS</th>
+                                            <th className="px-4 py-2 border">Tanggal Pengajuan</th>
+                                            <th className="py-2 border text-center">Status</th>
+                                            <th className="py-2 border text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {currentLpj.map((item, index) => (
+                                            <tr key={index}>
+                                                <td className="px-2 py-2 border text-center w-auto">
+                                                    {index + 1 + (currentPage - 1) * itemsPerPage}
+                                                </td>
+                                                <td className="px-4 py-2 border">
+                                                    <Link
+                                                        to={`/lpj/${item.id}`}
+                                                        className="text-black hover:text-gray-700 hover:underline cursor-pointer"
+                                                    >
+                                                        {item.displayId}
+                                                    </Link>
+                                                </td>
+                                                <td className="px-4 py-2 border">{item.kategori}</td>
+                                                <td className="px-4 py-2 border">{item.nomorBS}</td>
+                                                <td className="px-4 py-2 border">
+                                                    Rp{item.jumlahBS.toLocaleString('id-ID')}
+                                                </td>
+                                                <td className="px-4 py-2 border">
+                                                    {formatDate(item.tanggalPengajuan)}
+                                                </td>
+                                                <td className="py-2 border text-center">
+                                                    <span
+                                                        className={`px-4 py-1 rounded-full text-xs font-medium 
+                                                                ${
+                                                                    item.status === 'Diajukan'
+                                                                        ? 'bg-blue-200 text-blue-800 border-[1px] border-blue-600'
+                                                                        : item.status === 'Disetujui'
+                                                                          ? 'bg-green-200 text-green-800 border-[1px] border-green-600'
+                                                                          : item.status === 'Diproses'
+                                                                            ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600'
+                                                                            : item.status === 'Ditolak'
+                                                                              ? 'bg-red-200 text-red-800 border-[1px] border-red-600'
+                                                                              : item.status === 'Divalidasi'
+                                                                                ? 'bg-purple-200 text-purple-800 border-[1px] border-purple-600'
+                                                                                : 'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
+                                                                }`}
+                                                    >
+                                                        {item.status || 'Tidak Diketahui'}
+                                                    </span>
+                                                </td>
+                                                <td className="py-2 border text-center">
+                                                    <button
+                                                        className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed hover"
+                                                        onClick={() => handleCancel(item)}
+                                                        disabled={item.status !== 'Diajukan'}
+                                                    >
+                                                        Batalkan
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Pagination tetap sama */}
                     {totalPages > 1 && (
                         <div className="flex items-center justify-center gap-2 mt-6 text-xs">
-                            {/* Tombol Previous */}
                             <button
                                 onClick={prevPage}
                                 disabled={currentPage === 1}
@@ -392,11 +404,14 @@ const LpjBsTable = () => {
                                     stroke="currentColor"
                                     className="size-4"
                                 >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M15.75 19.5L8.25 12l7.5-7.5"
+                                    />
                                 </svg>
                             </button>
 
-                            {/* Tombol Halaman */}
                             {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
                                 <button
                                     key={page}
@@ -411,7 +426,6 @@ const LpjBsTable = () => {
                                 </button>
                             ))}
 
-                            {/* Tombol Next */}
                             <button
                                 onClick={nextPage}
                                 disabled={currentPage === totalPages}
@@ -453,6 +467,6 @@ const LpjBsTable = () => {
             <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
         </div>
     )
-};
+}
 
-export default LpjBsTable;
+export default LpjBsTable

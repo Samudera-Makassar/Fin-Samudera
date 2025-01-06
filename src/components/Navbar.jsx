@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
 import Logo from '../assets/images/logo-samudera.png'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faBars } from '@fortawesome/free-solid-svg-icons'
 
-function Navbar() {
+function Navbar({ toggleSidebar }) {
     const [user, setUser] = useState(null)
 
     useEffect(() => {
-        const uid = localStorage.getItem('userUid') // Ambil email dari localStorage
+        const uid = localStorage.getItem('userUid')
         const fetchUserData = async () => {
             if (uid) {
                 try {
@@ -18,8 +20,6 @@ function Navbar() {
                             name: userData.nama || 'Anonymous',
                             initials: getInitials(userData.nama || 'Anonymous')
                         })
-                    } else {
-                        console.log('User data not found in Firestore')
                     }
                 } catch (error) {
                     console.error('Error fetching user data:', error)
@@ -31,12 +31,17 @@ function Navbar() {
     }, [])
 
     return (
-        <nav className="bg-white h-16 flex justify-between items-center px-6 shadow fixed top-0 left-64 right-0 z-50">
-            <img src={Logo} alt="Samudera Logo" className="h-8" />
+        <nav className="bg-white h-16 flex justify-between items-center px-4 md:px-6 shadow fixed top-0 left-0 right-0 z-50 lg:left-60">
             <div className="flex items-center space-x-4">
+                <button onClick={toggleSidebar} className="lg:hidden text-gray-600">
+                    <FontAwesomeIcon icon={faBars} size="lg" />
+                </button>
+                <img src={Logo} alt="Samudera Logo" className="h-6 md:h-8" />
+            </div>
+            <div className="flex items-center space-x-2 md:space-x-4">
                 {user ? (
                     <>
-                        <span className="font-medium">{user.name}</span>
+                        <span className="font-medium hidden sm:block">{user.name}</span>
                         <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white">
                             {user.initials}
                         </div>

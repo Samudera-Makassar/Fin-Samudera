@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebaseConfig'; 
-import EmptyState from '../assets/images/EmptyState.png';
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore'
+import { db } from '../firebaseConfig'
+import EmptyState from '../assets/images/EmptyState.png'
 import Select from 'react-select'
-import Modal from '../components/Modal';
+import Modal from '../components/Modal'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 const ReimbursementTable = () => {
     const [data, setData] = useState({ reimbursements: [] })
@@ -38,6 +38,7 @@ const ReimbursementTable = () => {
     const filterOptions = {
         status: [
             { value: 'Diajukan', label: 'Diajukan' },
+            { value: 'Divalidasi', label: 'Divalidasi' },
             { value: 'Diproses', label: 'Diproses' },
             { value: 'Disetujui', label: 'Disetujui' },
             { value: 'Ditolak', label: 'Ditolak' },
@@ -67,49 +68,49 @@ const ReimbursementTable = () => {
 
     useEffect(() => {
         const fetchUserAndReimbursements = async () => {
-            setLoading(true); // Set loading to true before fetching data
+            setLoading(true) // Set loading to true before fetching data
             try {
-                const uid = localStorage.getItem('userUid');
+                const uid = localStorage.getItem('userUid')
                 if (!uid) {
-                    console.error('UID tidak ditemukan di localStorage');
-                    setLoading(false);
-                    return;
+                    console.error('UID tidak ditemukan di localStorage')
+                    setLoading(false)
+                    return
                 }
 
                 // Fetch data user berdasarkan UID
-                const userDocRef = doc(db, 'users', uid);
-                const userDoc = await getDoc(userDocRef);
-    
+                const userDocRef = doc(db, 'users', uid)
+                const userDoc = await getDoc(userDocRef)
+
                 // Query reimbursement berdasarkan UID user
-                const q = query(collection(db, 'reimbursement'), where('user.uid', '==', uid));
-    
-                const querySnapshot = await getDocs(q);
+                const q = query(collection(db, 'reimbursement'), where('user.uid', '==', uid))
+
+                const querySnapshot = await getDocs(q)
                 const reimbursements = querySnapshot.docs.map((doc) => ({
                     id: doc.id,
                     displayId: doc.data().displayId,
                     ...doc.data()
-                }));
-    
+                }))
+
                 // Dynamically update year options based on existing reimbursements
                 const existingYears = new Set(
                     reimbursements.map((item) => new Date(item.tanggalPengajuan).getFullYear())
-                );
-    
+                )
+
                 const updatedYearOptions = Array.from(existingYears)
-                .map(year => ({ value: year, label: `${year}` }))
-                .sort((a, b) => b.value - a.value); // Urutkan tahun dari yang terbaru
+                    .map((year) => ({ value: year, label: `${year}` }))
+                    .sort((a, b) => b.value - a.value) // Urutkan tahun dari yang terbaru
 
                 setYearOptions(updatedYearOptions)
-                setData({ reimbursements });
+                setData({ reimbursements })
             } catch (error) {
-                console.error('Error fetching user or reimbursements data:', error);
+                console.error('Error fetching user or reimbursements data:', error)
             } finally {
-                setLoading(false); // Set loading to false after fetching data
+                setLoading(false) // Set loading to false after fetching data
             }
-        };
-    
-        fetchUserAndReimbursements();
-    }, []);
+        }
+
+        fetchUserAndReimbursements()
+    }, [])
 
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A'
@@ -250,7 +251,7 @@ const ReimbursementTable = () => {
                 options={options}
                 placeholder={label}
                 isClearable={field !== 'bulan' && field !== 'tahun'}
-                className="w-40"
+                className="w-38 lg:w-40"
                 styles={selectStyles}
             />
         )
@@ -260,9 +261,7 @@ const ReimbursementTable = () => {
         return (
             <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
                 <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xl font-medium mb-4 items-center">
-                        Reimbursement Diajukan
-                    </h3>
+                    <h3 className="text-xl font-medium mb-4 items-center">Reimbursement Diajukan</h3>
                     <div className="flex space-x-2">
                         <Skeleton width={100} height={32} />
                         <Skeleton width={100} height={32} />
@@ -272,19 +271,18 @@ const ReimbursementTable = () => {
                 </div>
                 <Skeleton count={5} height={40} />
             </div>
-        );
+        )
     }
 
-    const shouldShowEmptyState = 
-        data.reimbursements.length === 0 || filteredReimbursements.length === 0
+    const shouldShowEmptyState = data.reimbursements.length === 0 || filteredReimbursements.length === 0
 
     return (
         <div>
             {shouldShowEmptyState ? (
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-xl font-medium mb-4 items-center">Reimbursement Diajukan</h3>
-                        <div className="flex space-x-2">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 gap-4">
+                        <h3 className="text-xl font-medium items-center">Reimbursement Diajukan</h3>
+                        <div className="grid grid-cols-2 lg:flex lg:flex-row gap-2">
                             <FilterSelect field="status" label="Status" />
                             <FilterSelect field="kategori" label="Kategori" />
                             <FilterSelect field="bulan" label="Bulan" />
@@ -300,47 +298,55 @@ const ReimbursementTable = () => {
             ) : (
                 // Jika ada data reimbursement
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-xl font-medium mb-4 items-center">Reimbursement Diajukan</h3>
-                        <div className="flex space-x-2">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 gap-4">
+                        <h3 className="text-xl font-medium">Reimbursement Diajukan</h3>
+                        <div className="grid grid-cols-2 lg:flex lg:flex-row gap-2">
                             <FilterSelect field="status" label="Status" />
                             <FilterSelect field="kategori" label="Kategori" />
                             <FilterSelect field="bulan" label="Bulan" />
                             <FilterSelect field="tahun" label="Tahun" />
                         </div>
                     </div>
-                    <table className="min-w-full bg-white border rounded-lg text-sm">
-                        <thead>
-                            <tr className="bg-gray-100 text-left">
-                                <th className="px-2 py-2 border text-center w-auto">No.</th>
-                                <th className="px-4 py-2 border">ID</th>
-                                <th className="px-4 py-2 border">Kategori Reimbursement</th>
-                                <th className="px-4 py-2 border">Jumlah</th>
-                                <th className="px-4 py-2 border">Tanggal Pengajuan</th>
-                                <th className="py-2 border text-center">Status</th>
-                                <th className="py-2 border text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentReimbursements.map((item, index) => (
-                                <tr key={index}>
-                                    <td className="px-2 py-2 border text-center w-auto">
-                                        {index + 1 + (currentPage - 1) * itemsPerPage}
-                                    </td>
-                                    <td className="px-4 py-2 border">
-                                        <Link
-                                            to={`/reimbursement/${item.id}`}
-                                            className="text-black hover:text-gray-700 hover:underline cursor-pointer"
-                                        >
-                                            {item.displayId}
-                                        </Link>
-                                    </td>
-                                    <td className="px-4 py-2 border">{item.kategori}</td>
-                                    <td className="px-4 py-2 border">Rp{item.totalBiaya.toLocaleString('id-ID')}</td>
-                                    <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
-                                    <td className="py-2 border text-center">
-                                        <span
-                                            className={`px-4 py-1 rounded-full text-xs font-medium 
+
+                    <div className="w-full">
+                        <div className="w-full overflow-x-auto">
+                            <div className="inline-block min-w-[800px] w-full">
+                                <table className="w-full bg-white text-sm">
+                                    <thead>
+                                        <tr className="bg-gray-100 text-left">
+                                            <th className="px-2 py-2 border text-center w-auto">No.</th>
+                                            <th className="px-4 py-2 border">ID</th>
+                                            <th className="px-4 py-2 border">Kategori Reimbursement</th>
+                                            <th className="px-4 py-2 border">Jumlah</th>
+                                            <th className="px-4 py-2 border">Tanggal Pengajuan</th>
+                                            <th className="py-2 border text-center">Status</th>
+                                            <th className="py-2 border text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {currentReimbursements.map((item, index) => (
+                                            <tr key={index}>
+                                                <td className="px-2 py-2 border text-center w-auto">
+                                                    {index + 1 + (currentPage - 1) * itemsPerPage}
+                                                </td>
+                                                <td className="px-4 py-2 border">
+                                                    <Link
+                                                        to={`/reimbursement/${item.id}`}
+                                                        className="text-black hover:text-gray-700 hover:underline cursor-pointer"
+                                                    >
+                                                        {item.displayId}
+                                                    </Link>
+                                                </td>
+                                                <td className="px-4 py-2 border">{item.kategori}</td>
+                                                <td className="px-4 py-2 border">
+                                                    Rp{item.totalBiaya.toLocaleString('id-ID')}
+                                                </td>
+                                                <td className="px-4 py-2 border">
+                                                    {formatDate(item.tanggalPengajuan)}
+                                                </td>
+                                                <td className="py-2 border text-center">
+                                                    <span
+                                                        className={`px-4 py-1 rounded-full text-xs font-medium 
                                             ${
                                                 item.status === 'Diajukan'
                                                     ? 'bg-blue-200 text-blue-800 border-[1px] border-blue-600'
@@ -354,23 +360,26 @@ const ReimbursementTable = () => {
                                                             ? 'bg-purple-200 text-purple-800 border-[1px] border-purple-600'
                                                             : 'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
                                             }`}
-                                        >
-                                            {item.status || 'Tidak Diketahui'}
-                                        </span>
-                                    </td>
-                                    <td className="py-2 border text-center">
-                                        <button
-                                            className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed hover"
-                                            onClick={() => handleCancel(item)}
-                                            disabled={item.status !== 'Diajukan'}
-                                        >
-                                            Batalkan
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                                    >
+                                                        {item.status || 'Tidak Diketahui'}
+                                                    </span>
+                                                </td>
+                                                <td className="py-2 border text-center">
+                                                    <button
+                                                        className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed hover"
+                                                        onClick={() => handleCancel(item)}
+                                                        disabled={item.status !== 'Diajukan'}
+                                                    >
+                                                        Batalkan
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Conditional Pagination - hanya muncul jika lebih dari satu page */}
                     {totalPages > 1 && (
@@ -458,6 +467,6 @@ const ReimbursementTable = () => {
             <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
         </div>
     )
-};
+}
 
-export default ReimbursementTable;
+export default ReimbursementTable
