@@ -394,7 +394,7 @@ const DetailRbs = () => {
     const columns = getColumns(reimbursementDetail?.kategori)
 
     return (
-        <div className="container mx-auto py-10 px-4 md:py-8 md:px-0">
+        <div className="container mx-auto py-10 md:py-8">
             <h2 className="text-xl font-medium mb-4">
                 Detail <span className="font-bold">Reimbursement</span>
             </h2>
@@ -408,17 +408,17 @@ const DetailRbs = () => {
                             {/* First column */}
                             <div className="space-y-1 flex-1">
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">ID</p>
+                                    <p>ID</p>
                                     <p className="text-left">:</p>
                                     <p className="break-all">{reimbursementDetail?.displayId ?? 'N/A'}</p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Nama Lengkap</p>
+                                    <p>Nama Lengkap</p>
                                     <p className="text-left">:</p>
                                     <p className="break-words">{reimbursementDetail?.user?.nama ?? 'N/A'}</p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Department</p>
+                                    <p>Department</p>
                                     <p className="text-left">:</p>
                                     <p className="break-words">
                                         {Array.isArray(reimbursementDetail?.user?.department) &&
@@ -428,12 +428,12 @@ const DetailRbs = () => {
                                     </p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Unit Bisnis</p>
+                                    <p>Unit Bisnis</p>
                                     <p className="text-left">:</p>
                                     <p className="break-words">{reimbursementDetail?.user?.unit ?? 'N/A'}</p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Tgl Pengajuan</p>
+                                    <p>Tgl Pengajuan</p>
                                     <p className="text-left">:</p>
                                     <p className="break-words">
                                         {formatDate(reimbursementDetail?.tanggalPengajuan) ?? 'N/A'}
@@ -444,27 +444,27 @@ const DetailRbs = () => {
                             {/* Second column */}
                             <div className="space-y-1 flex-1">
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Kategori</p>
+                                    <p>Kategori</p>
                                     <p className="text-left">:</p>
                                     <p className="break-all">{reimbursementDetail?.kategori ?? 'N/A'}</p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Nomor Rekening</p>
+                                    <p>Nomor Rekening</p>
                                     <p className="text-left">:</p>
                                     <p className="break-all">{reimbursementDetail?.user?.accountNumber ?? 'N/A'}</p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Nama Bank</p>
+                                    <p>Nama Bank</p>
                                     <p className="text-left">:</p>
                                     <p className="break-words">{reimbursementDetail?.user?.bankName ?? 'N/A'}</p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Status</p>
+                                    <p>Status</p>
                                     <p className="text-left">:</p>
                                     <p className="break-words">{reimbursementDetail?.status ?? 'N/A'}</p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">
+                                    <p>
                                         {reimbursementDetail?.status === 'Ditolak'
                                             ? 'Ditolak Oleh'
                                             : reimbursementDetail?.status === 'Divalidasi'
@@ -611,7 +611,18 @@ const DetailRbs = () => {
 
             <ModalPDF showModal={!!modalPdfUrl} previewUrl={modalPdfUrl} onClose={closePreview} title={modalTitle} />
 
-            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+                style={{
+                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
+                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
+                }}
+                toastClassName="toast-item mt-2 xl:mt-0"
+            />
         </div>
     )
 }

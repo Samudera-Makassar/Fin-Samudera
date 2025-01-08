@@ -509,8 +509,8 @@ const CreateBonForm = () => {
     }
 
     return (
-        <div className="container mx-auto py-8">
-            <h2 className="text-xl font-medium mt-1 md:mt-0 mb-2 xl:mb-4">
+        <div className="container mx-auto py-10 md:py-8">
+            <h2 className="text-xl font-medium mb-4">
                 Ajukan <span className="font-bold">Bon Sementara</span>
             </h2>
 

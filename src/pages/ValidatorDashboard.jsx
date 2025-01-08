@@ -39,7 +39,7 @@ const ValidatorDashboard = ({ userUid }) => {
     return (
         <div>
             <Layout>
-                <div className="container mx-auto py-8">
+                <div className="container mx-auto py-10 md:py-8">
                     <div className="w-full">
                         <h2 className="text-xl font-medium mb-4">
                             Welcome, <span className="font-bold">{user?.name || 'User '}</span>

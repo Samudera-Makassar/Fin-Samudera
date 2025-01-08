@@ -595,8 +595,8 @@ const LpjBsCheck = () => {
     }
 
     return (
-        <div className="container mx-auto py-8">
-            <h2 className="text-xl font-medium">
+        <div className="container mx-auto py-10 md:py-8">
+            <h2 className="text-xl font-medium mb-4 md:mb-0">
                 Cek <span className="font-bold">Laporan Bon Sementara</span>
             </h2>
 

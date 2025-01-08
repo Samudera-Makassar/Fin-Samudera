@@ -361,7 +361,7 @@ const DetailLpj = () => {
     }
 
     return (
-        <div className="container mx-auto py-8">
+        <div className="container mx-auto py-10 md:py-8">
             <h2 className="text-xl font-medium mb-4">
                 Detail <span className="font-bold">LPJ Bon Sementara</span>
             </h2>
@@ -375,17 +375,17 @@ const DetailLpj = () => {
                             {/* First column */}
                             <div className="space-y-1 flex-1">
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">ID</p>
+                                    <p>ID</p>
                                     <p className="text-left">:</p>
                                     <p className="break-all">{lpjDetail?.displayId ?? 'N/A'}</p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Nama Lengkap</p>
+                                    <p>Nama Lengkap</p>
                                     <p className="text-left">:</p>
                                     <p className="break-words">{lpjDetail?.user?.nama ?? 'N/A'}</p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Department</p>
+                                    <p>Department</p>
                                     <p className="text-left">:</p>
                                     <p className="break-words">
                                         {Array.isArray(lpjDetail?.user?.department) &&
@@ -395,31 +395,31 @@ const DetailLpj = () => {
                                     </p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Unit Bisnis</p>
+                                    <p>Unit Bisnis</p>
                                     <p className="text-left">:</p>
                                     <p className="break-words">{lpjDetail?.user?.unit ?? 'N/A'}</p>
                                 </div>
                                 {lpjDetail?.kategori?.toLowerCase() === 'marketing/operasional' && (
                                     <>
                                         <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                            <p className="text-gray-600">Project</p>
+                                            <p>Project</p>
                                             <p className="text-left">:</p>
                                             <p className="break-words">{lpjDetail?.project ?? 'N/A'}</p>
                                         </div>
                                         <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                            <p className="text-gray-600">Customer</p>
+                                            <p>Customer</p>
                                             <p className="text-left">:</p>
                                             <p className="break-words">{lpjDetail?.customer ?? 'N/A'}</p>
                                         </div>
                                         <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                            <p className="text-gray-600">Tgl Kegiatan</p>
+                                            <p>Tgl Kegiatan</p>
                                             <p className="text-left">:</p>
-                                            <p className="break-words">{lpjDetail?.tanggal ?? 'N/A'}</p>
+                                            <p className="break-words">{formatDate(lpjDetail.tanggal) ?? 'N/A'}</p>
                                         </div>
                                     </>
                                 )}
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Tgl Pengajuan</p>
+                                    <p>Tgl Pengajuan</p>
                                     <p className="text-left">:</p>
                                     <p className="break-words">{formatDate(lpjDetail?.tanggalPengajuan) ?? 'N/A'}</p>
                                 </div>
@@ -428,17 +428,17 @@ const DetailLpj = () => {
                             {/* Second column */}
                             <div className="space-y-1 flex-1">
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Kategori</p>
+                                    <p>Kategori</p>
                                     <p className="text-left">:</p>
                                     <p className="break-all">{lpjDetail?.kategori ?? 'N/A'}</p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Nomor BS</p>
+                                    <p>Nomor BS</p>
                                     <p className="text-left">:</p>
                                     <p className="break-all">{lpjDetail?.nomorBS ?? 'N/A'}</p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Jumlah BS</p>
+                                    <p>Jumlah BS</p>
                                     <p className="text-left">:</p>
                                     <p className="break-words">
                                         Rp{lpjDetail?.jumlahBS.toLocaleString('id-ID') ?? 'N/A'}
@@ -447,24 +447,24 @@ const DetailLpj = () => {
                                 {lpjDetail?.kategori?.toLowerCase() === 'marketing/operasional' && (
                                     <>
                                         <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                            <p className="text-gray-600">Nomor JO</p>
+                                            <p>Nomor JO</p>
                                             <p className="text-left">:</p>
                                             <p className="break-all">{lpjDetail?.nomorJO ?? 'N/A'}</p>
                                         </div>
                                         <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                            <p className="text-gray-600">Lokasi</p>
+                                            <p>Lokasi</p>
                                             <p className="text-left">:</p>
                                             <p className="break-words">{lpjDetail?.lokasi ?? 'N/A'}</p>
                                         </div>
                                     </>
                                 )}
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">Status</p>
+                                    <p>Status</p>
                                     <p className="text-left">:</p>
                                     <p className="break-words">{lpjDetail?.status ?? 'N/A'}</p>
                                 </div>
                                 <div className="grid grid-cols-[120px_auto_1fr] gap-x-1 text-sm items-start">
-                                    <p className="text-gray-600">
+                                    <p>
                                         {lpjDetail?.status === 'Ditolak'
                                             ? 'Ditolak Oleh'
                                             : lpjDetail?.status === 'Divalidasi'
@@ -645,7 +645,18 @@ const DetailLpj = () => {
 
             <ModalPDF showModal={!!modalPdfUrl} previewUrl={modalPdfUrl} onClose={closePreview} title={modalTitle} />
 
-            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+                style={{
+                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
+                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
+                }}
+                toastClassName="toast-item mt-2 xl:mt-0"
+            />
         </div>
     )
 }
