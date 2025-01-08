@@ -44,54 +44,54 @@ const CreateBonForm = () => {
     }, [todayDate])
 
     useEffect(() => {
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0];
-    const uid = localStorage.getItem('userUid');
+        const today = new Date();
+        const formattedDate = today.toISOString().split('T')[0];
+        const uid = localStorage.getItem('userUid');
 
-    setTodayDate(formattedDate);
+        setTodayDate(formattedDate);
 
-    const fetchUserData = async () => {
-        try {
-            const userDocRef = doc(db, 'users', uid);
-            const userDoc = await getDoc(userDocRef);
+        const fetchUserData = async () => {
+            try {
+                const userDocRef = doc(db, 'users', uid);
+                const userDoc = await getDoc(userDocRef);
 
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                const adminStatus = data.role === 'Admin';
-                setIsAdmin(adminStatus);
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    const adminStatus = data.role === 'Admin';
+                    setIsAdmin(adminStatus);
 
-                // Set user data
-                setUserData({
-                    uid: data.uid || '',
-                    nama: data.nama || '',
-                    bankName: data.bankName || '',
-                    accountNumber: data.accountNumber || '',
-                    unit: data.unit || '',
-                    posisi: data.posisi || '',
-                    department: data.department || [],
-                    validator: data.validator || [],
-                    reviewer1: data.reviewer1 || [],
-                    reviewer2: data.reviewer2 || []
-                });
+                    // Set user data
+                    setUserData({
+                        uid: data.uid || '',
+                        nama: data.nama || '',
+                        bankName: data.bankName || '',
+                        accountNumber: data.accountNumber || '',
+                        unit: data.unit || '',
+                        posisi: data.posisi || '',
+                        department: data.department || [],
+                        validator: data.validator || [],
+                        reviewer1: data.reviewer1 || [],
+                        reviewer2: data.reviewer2 || []
+                    });
 
-                setSelectedUnit(
-                    adminStatus 
-                        ? { value: data.unit || '', label: data.unit || 'No Unit Assigned' } 
-                        : { value: data.unit, label: data.unit }
-                );
+                    setSelectedUnit(
+                        adminStatus
+                            ? { value: data.unit || '', label: data.unit || 'No Unit Assigned' }
+                            : { value: data.unit, label: data.unit }
+                    );
 
-                setIsUserDataLoaded(true);
+                    setIsUserDataLoaded(true);
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                toast.error('Error fetching user data');
             }
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-            toast.error('Error fetching user data');
-        }
-    };
+        };
 
-    if (uid) {
-        fetchUserData();
-    }
-}, []);
+        if (uid) {
+            fetchUserData();
+        }
+    }, []);
 
 
     const BUSINESS_UNITS = [
@@ -116,7 +116,7 @@ const CreateBonForm = () => {
                 const usersRef = collection(db, 'users')
                 const q = query(usersRef, where('role', 'in', ['Validator']))
                 const querySnapshot = await getDocs(q)
-                
+
                 const options = querySnapshot.docs.map(doc => {
                     const userData = doc.data()
                     return {
@@ -125,7 +125,7 @@ const CreateBonForm = () => {
                         role: userData.role
                     }
                 })
-                
+
                 setValidatorOptions(options)
             } catch (error) {
                 console.error('Error fetching validators:', error)
@@ -189,7 +189,7 @@ const CreateBonForm = () => {
                 tanggalPengajuan: todayDate
             }
         ])
-    
+
         // Reset the category selection
         setSelectedKategori(null)
     }
@@ -231,10 +231,10 @@ const CreateBonForm = () => {
         try {
             const counterRef = doc(db, 'businessUnitCounters', unitCode);
             const counterDoc = await getDoc(counterRef);
-            
+
             const today = new Date();
             const month = (today.getMonth() + 1).toString().padStart(2, '0');
-            
+
             if (!counterDoc.exists()) {
                 await setDoc(counterRef, {
                     lastNumber: 500,
@@ -242,9 +242,9 @@ const CreateBonForm = () => {
                 });
                 return '0000501';
             }
-            
+
             const lastResetMonth = counterDoc.data().lastResetMonth || '00';
-            
+
             if (lastResetMonth !== month) {
                 // Reset counter for new month
                 await setDoc(counterRef, {
@@ -253,7 +253,7 @@ const CreateBonForm = () => {
                 });
                 return '0000501';
             }
-            
+
             const currentNumber = counterDoc.data().lastNumber;
             return (currentNumber + 1).toString().padStart(7, '00005');
         } catch (error) {
@@ -272,20 +272,20 @@ const CreateBonForm = () => {
         'PT PAD Samudera Indonesia': 'SP',
         'PT Masaji Kargosentra Tama': 'MKT'
     }
-    
+
     const handleUnitChange = async (selectedOption) => {
         setSelectedUnit(selectedOption);
-        
+
         if (!isAdmin) return;
-        
+
         try {
             const today = new Date();
             const month = (today.getMonth() + 1).toString().padStart(2, '0');
             const year = today.getFullYear().toString().slice(-2);
             const tanggalKode = `${year}${month}`;
-            
+
             const kodeUnitBisnis = BUSINESS_UNIT_CODES[selectedOption.value];
-            
+
             if (!kodeUnitBisnis) {
                 throw new Error(`No code found for business unit: ${selectedOption.value}`);
             }
@@ -294,53 +294,53 @@ const CreateBonForm = () => {
             setCurrentCounter(sequence);
 
             const newNomorBS = `BS${tanggalKode}${kodeUnitBisnis}${sequence}`;
-            
+
             setBonSementara(prevBonSementara =>
                 prevBonSementara.map(item => ({ ...item, nomorBS: newNomorBS }))
             );
-            
+
         } catch (error) {
             console.error('Error generating new BS number:', error);
             toast.error('Error generating new BS number: ' + error.message);
         }
     };
-    
+
     const generateNomorBS = async () => {
         try {
             if (alreadyFetchBS) return;
-            
+
             if (!isUserDataLoaded) {
                 console.error('User data not loaded yet');
                 return null;
             }
-    
+
             setAlreadyFetchBS(true);
-    
+
             const today = new Date();
             const month = (today.getMonth() + 1).toString().padStart(2, '0');
             const year = today.getFullYear().toString().slice(-2);
             const tanggalKode = `${year}${month}`;
-            
-            const currentUnit = isAdmin && selectedUnit 
-                ? selectedUnit.value 
+
+            const currentUnit = isAdmin && selectedUnit
+                ? selectedUnit.value
                 : userData.unit;
-    
+
             if (!currentUnit) {
                 throw new Error('Business unit is not set');
             }
-            
+
             const kodeUnitBisnis = BUSINESS_UNIT_CODES[currentUnit];
-            
+
             if (!kodeUnitBisnis) {
                 throw new Error(`No code found for business unit: ${currentUnit}`);
             }
-    
+
             const sequence = await getCurrentCounter(kodeUnitBisnis);
             setCurrentCounter(sequence);
-            
+
             const nomorBS = `BS${tanggalKode}${kodeUnitBisnis}${sequence}`;
             return nomorBS;
-            
+
         } catch (error) {
             console.error('Error generating nomor BS:', error);
             toast.error('Error: ' + error.message);
@@ -352,10 +352,10 @@ const CreateBonForm = () => {
         const fetchNomorBS = async () => {
             // Only proceed if user data is loaded and we haven't fetched BS yet
             if (!isUserDataLoaded || alreadyFetchBS) return
-            
+
             console.log("Attempting to generate BS number with userData:", userData)
             console.log("Selected Unit:", selectedUnit)
-            
+
             const nomorBS = await generateNomorBS()
             if (nomorBS) {
                 setBonSementara((prevBonSementara) =>
@@ -363,7 +363,7 @@ const CreateBonForm = () => {
                 )
             }
         }
-    
+
         fetchNomorBS()
     }, [todayDate, alreadyFetchBS, isUserDataLoaded])
 
@@ -503,22 +503,22 @@ const CreateBonForm = () => {
         } catch (error) {
             console.error('Error submitting bon sementara:', error)
             toast.error('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
-            
+
             setIsSubmitting(false)
         }
     }
 
     return (
         <div className="container mx-auto py-8">
-            <h2 className="text-xl font-medium mb-4">
-                Ajukan <span className="font-bold">Bon Sementra</span>
+            <h2 className="text-xl font-medium mt-1 md:mt-0 mb-2 xl:mb-4">
+                Ajukan <span className="font-bold">Bon Sementara</span>
             </h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
                 {isAdmin ? (
                     // Layout untuk Role Admin
                     <>
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
                                 <input
@@ -535,7 +535,7 @@ const CreateBonForm = () => {
                                 <Select
                                     options={BUSINESS_UNITS}
                                     value={selectedUnit}
-                                    onChange={handleUnitChange}
+                                    onChange={setSelectedUnit}
                                     placeholder="Pilih Unit Bisnis"
                                     className="basic-single"
                                     classNamePrefix="select"
@@ -545,17 +545,33 @@ const CreateBonForm = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
-                            <div>
-                                <label className="block text-gray-700 font-medium mb-2">Nama Bank</label>
-                                <input
-                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                                    type="text"
-                                    value={userData.bankName}
-                                    disabled
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
+                            <div className='block xl:hidden'>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Validator <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    options={validatorOptions}
+                                    value={selectedValidator}
+                                    onChange={setSelectedValidator}
+                                    placeholder="Pilih Validator..."
+                                    className="basic-single"
+                                    classNamePrefix="select"
+                                    styles={customStyles}
+                                    isSearchable={true}
+                                    isClearable={true}
                                 />
                             </div>
                             <div>
+                                <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={userData.accountNumber}
+                                    disabled
+                                />
+                            </div>
+                            <div className='hidden xl:block'>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Validator <span className="text-red-500">*</span>
                                 </label>
@@ -573,17 +589,17 @@ const CreateBonForm = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
-                                <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
+                                <label className="block text-gray-700 font-medium mb-2">Nama Bank</label>
                                 <input
                                     className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                                     type="text"
-                                    value={userData.accountNumber}
+                                    value={userData.bankName}
                                     disabled
                                 />
                             </div>
-                            <div>
+                            <div className='hidden xl:block'>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Kategori BS <span className="text-red-500">*</span>
                                 </label>
@@ -595,12 +611,11 @@ const CreateBonForm = () => {
                                     className="w-full"
                                     styles={customStyles}
                                     isSearchable={true}
-                                    isClearable={true}
                                 />
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                                 <input
@@ -610,12 +625,26 @@ const CreateBonForm = () => {
                                     disabled
                                 />
                             </div>
+                            <div className='block xl:hidden'>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Kategori BS <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    options={kategoriOptions}
+                                    value={selectedKategori}
+                                    onChange={handleKategoriChange}
+                                    placeholder="Pilih Kategori..."
+                                    className="w-full"
+                                    styles={customStyles}
+                                    isSearchable={true}
+                                />
+                            </div>
                         </div>
                     </>
                 ) : (
                     // Layout untuk Role Non-Admin
                     <>
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
                                 <input
@@ -626,7 +655,9 @@ const CreateBonForm = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-gray-700 font-medium mb-2">Unit Bisnis</label>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Unit Bisnis {isAdmin && <span className="text-red-500">*</span>}
+                                </label>
                                 <input
                                     className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                                     type="text"
@@ -636,7 +667,7 @@ const CreateBonForm = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
                                 <input
@@ -657,7 +688,7 @@ const CreateBonForm = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                                 <input
@@ -687,22 +718,41 @@ const CreateBonForm = () => {
 
                 <hr className="border-gray-300 my-6" />
 
-                {bonSementara.map((bonSementara, index) => (
-                    <div key={index} className="flex justify-stretch gap-4 mb-2">
-                        <div className="flex-1">
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Nomor BS <span className="text-red-500">*</span>
-                                </label>
-                            )}
-                            <input
-                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
-                                type="text"
-                                value={bonSementara.nomorBS}
-                                onChange={(e) => handleInputChange(index, 'nomorBS', e.target.value)}
-                            />
+                {bonSementara.map((bon, index) => (
+                    <div
+                        key={index}
+                        className="flex flex-col xl:flex-row gap-2 mb-2"
+                    >                        
+                        <div className="flex flex-col md:flex-row gap-2 flex-1">                            
+                            <div className="flex-1">
+                                {index === 0 && (
+                                    <label className="block text-gray-700 font-medium mb-2">
+                                        Nomor BS <span className="text-red-500">*</span>
+                                    </label>
+                                )}
+                                <input
+                                    className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
+                                    type="text"
+                                    value={bon.nomorBS}
+                                    onChange={(e) => handleInputChange(index, "nomorBS", e.target.value)}
+                                />
+                            </div>
+                            
+                            <div className="flex-1">
+                                {index === 0 && (
+                                    <label className="block text-gray-700 font-medium mb-2">
+                                        Jumlah BS <span className="text-red-500">*</span>
+                                    </label>
+                                )}
+                                <input
+                                    className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
+                                    type="text"
+                                    value={formatRupiah(bon.jumlahBS)}
+                                    onChange={(e) => handleInputChange(index, "jumlahBS", e.target.value)}
+                                />
+                            </div>
                         </div>
-
+                        
                         <div className="flex-1">
                             {index === 0 && (
                                 <label className="block text-gray-700 font-medium mb-2">
@@ -712,22 +762,8 @@ const CreateBonForm = () => {
                             <input
                                 className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
                                 type="text"
-                                value={bonSementara.aktivitas}
-                                onChange={(e) => handleInputChange(index, 'aktivitas', e.target.value)}
-                            />
-                        </div>
-
-                        <div className="flex-1">
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Jumlah BS <span className="text-red-500">*</span>
-                                </label>
-                            )}
-                            <input
-                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
-                                type="text"
-                                value={formatRupiah(bonSementara.jumlahBS)}
-                                onChange={(e) => handleInputChange(index, 'jumlahBS', e.target.value)}
+                                value={bon.aktivitas}
+                                onChange={(e) => handleInputChange(index, "aktivitas", e.target.value)}
                             />
                         </div>
                     </div>
@@ -737,7 +773,7 @@ const CreateBonForm = () => {
 
                 <div className="flex justify-end mt-6">
                     <button
-                        className={`rounded text-white py-3 
+                        className={`w-full xl:w-0 rounded text-white py-3 
                         ${isSubmitting ? 'px-8 bg-red-700 cursor-not-allowed' : 'px-16 bg-red-600 hover:bg-red-700 hover:text-gray-200'}
                         flex items-center justify-center relative`}
                         onClick={handleSubmit}
@@ -756,13 +792,18 @@ const CreateBonForm = () => {
                     </button>
                 </div>
             </div>
-            
+
             <ToastContainer
                 position="top-right"
                 autoClose={3000}
                 hideProgressBar={false}
                 closeOnClick
                 pauseOnHover
+                style={{
+                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
+                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0                    
+                }}
+                toastClassName="toast-item mt-2 xl:mt-0"
             />
         </div>
     )

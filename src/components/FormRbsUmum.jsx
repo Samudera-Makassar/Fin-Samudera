@@ -110,7 +110,7 @@ const RbsUmumForm = () => {
         const year = today.getFullYear()
 
         const formattedDate = today.toISOString().split('T')[0]
-        
+
         const uid = localStorage.getItem('userUid')
 
         setTodayDate(formattedDate)
@@ -139,8 +139,8 @@ const RbsUmumForm = () => {
                     })
 
                     setSelectedUnit(
-                        isAdmin 
-                            ? null 
+                        isAdmin
+                            ? null
                             : { value: data.unit, label: data.unit }
                     )
                 }
@@ -270,7 +270,7 @@ const RbsUmumForm = () => {
         const day = today.getDate().toString().padStart(2, '0')
         const sequence = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
         const unitCode = getUnitCode(selectedUnit.value)
-                
+
         return `RBS.GAU.${unitCode}.${year}${month}${day}.${sequence}`
     }
 
@@ -325,55 +325,55 @@ const RbsUmumForm = () => {
             setIsSubmitting(true)
 
             // Validasi form dengan pesan spesifik
-                        const missingFields = []
-            
-                        // Validasi data pengguna
-                        if (!userData.nama) missingFields.push('Nama')
-                        if (!selectedUnit?.value) missingFields.push('Unit')
-                        if (isAdmin && !selectedValidator) missingFields.push('Validator')
-            
-                        // Tentukan apakah ada lebih dari satu item reimbursement
-                        const multipleItems = reimbursements.length > 1
-            
-                        // Validasi setiap reimbursement
-                        reimbursements.forEach((r, index) => {
-                            // Fungsi untuk menambahkan keterangan item dengan kondisional
-                            const getFieldLabel = (baseLabel) => {
-                                return multipleItems ? `${baseLabel} (Item ${index + 1})` : baseLabel
-                            }
-            
-                            // Logika validasi tergantung pada apakah isLainnya bernilai true atau false
-                            if (r.isLainnya) {
-                                if (!r.jenisLain) missingFields.push(getFieldLabel('Jenis Reimbursement'))
-                                if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
-                                if (!r.item) missingFields.push(getFieldLabel('Item'))
-                                if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Aktivitas'))
-                            } else {
-                                if (!r.jenis) missingFields.push(getFieldLabel('Jenis Reimbursement'))
-                                if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
-                                if (!r.item) missingFields.push(getFieldLabel('Item'))
-                                if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Aktivitas'))
-                            }
-                        })
-            
-                        // Validasi lampiran file global (jika ada)
-                        if (!attachmentFile) {
-                            missingFields.push('File Lampiran')
-                        }
-            
-                        // Tampilkan pesan warning jika ada field yang kosong
-                        if (missingFields.length > 0) {
-                            missingFields.forEach((field) => {
-                                toast.warning(
-                                    <>
-                                        Mohon lengkapi <b>{field}</b>
-                                    </>
-                                )
-                            })
+            const missingFields = []
 
-                            setIsSubmitting(false);
-                            return
-                        }
+            // Validasi data pengguna
+            if (!userData.nama) missingFields.push('Nama')
+            if (!selectedUnit?.value) missingFields.push('Unit')
+            if (isAdmin && !selectedValidator) missingFields.push('Validator')
+
+            // Tentukan apakah ada lebih dari satu item reimbursement
+            const multipleItems = reimbursements.length > 1
+
+            // Validasi setiap reimbursement
+            reimbursements.forEach((r, index) => {
+                // Fungsi untuk menambahkan keterangan item dengan kondisional
+                const getFieldLabel = (baseLabel) => {
+                    return multipleItems ? `${baseLabel} (Item ${index + 1})` : baseLabel
+                }
+
+                // Logika validasi tergantung pada apakah isLainnya bernilai true atau false
+                if (r.isLainnya) {
+                    if (!r.jenisLain) missingFields.push(getFieldLabel('Jenis Reimbursement'))
+                    if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
+                    if (!r.item) missingFields.push(getFieldLabel('Item'))
+                    if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Aktivitas'))
+                } else {
+                    if (!r.jenis) missingFields.push(getFieldLabel('Jenis Reimbursement'))
+                    if (!r.biaya) missingFields.push(getFieldLabel('Biaya'))
+                    if (!r.item) missingFields.push(getFieldLabel('Item'))
+                    if (!r.tanggal) missingFields.push(getFieldLabel('Tanggal Aktivitas'))
+                }
+            })
+
+            // Validasi lampiran file global (jika ada)
+            if (!attachmentFile) {
+                missingFields.push('File Lampiran')
+            }
+
+            // Tampilkan pesan warning jika ada field yang kosong
+            if (missingFields.length > 0) {
+                missingFields.forEach((field) => {
+                    toast.warning(
+                        <>
+                            Mohon lengkapi <b>{field}</b>
+                        </>
+                    )
+                })
+
+                setIsSubmitting(false);
+                return
+            }
 
             // Generate display ID untuk user
             const displayId = generateDisplayId(userData.unit)
@@ -410,7 +410,7 @@ const RbsUmumForm = () => {
                     biaya: parseRupiah(item.biaya),
                     item: item.item,
                     keterangan: item.keterangan,
-                    tanggal: item.tanggal,                    
+                    tanggal: item.tanggal,
                     isLainnya: item.isLainnya,
                     jenis: item.isLainnya ? item.jenisLain : item.jenis.value,
                 })),
@@ -452,7 +452,7 @@ const RbsUmumForm = () => {
                 displayId: displayId
             })
             toast.success('Reimbursement GA/Umum berhasil diajukan!')
-            
+
             // Reset form setelah berhasil submit
             if (isAdmin) {
                 setSelectedValidator(null)
@@ -462,7 +462,7 @@ const RbsUmumForm = () => {
         } catch (error) {
             console.error('Error submitting reimbursement:', error)
             toast.error('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
-        
+
             setIsSubmitting(false);
 
         }
@@ -471,23 +471,23 @@ const RbsUmumForm = () => {
     // Render file upload section for each reimbursement form
     const renderFileUpload = () => {
         return (
-            <div className="flex items-center">
-                <input 
-                    type="file" 
+            <div className="flex flex-col xl:flex-row items-start xl:items-center">
+                <input
+                    type="file"
                     id="file-upload"
-                    className="hidden" 
+                    className="hidden"
                     accept=".pdf"
                     onChange={handleFileUpload}
                 />
                 <label
                     htmlFor="file-upload"
-                    className="h-10 px-4 py-2 bg-gray-200 border rounded-md cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
+                    className="w-full xl:w-fit text-center h-full xl:h-10 px-4 py-4 xl:py-2 bg-gray-50 xl:bg-gray-200 border rounded-md cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
                 >
                     Upload File
                 </label>
-                <span className="ml-4 text-gray-500">
-                    {attachmentFileName 
-                        ? `File: ${attachmentFileName}` 
+                <span className="ml-0 xl:ml-4 text-gray-500">
+                    {attachmentFileName
+                        ? `File: ${attachmentFileName}`
                         : 'Format .pdf Max Size: 250MB'}
                 </span>
             </div>
@@ -515,7 +515,7 @@ const RbsUmumForm = () => {
 
     return (
         <div className="container mx-auto py-8">
-            <h2 className="text-xl font-medium mb-4">
+            <h2 className="text-xl font-medium mt-1 md:mt-0 mb-2 xl:mb-4">
                 Tambah <span className="font-bold">Reimbursement GA/Umum</span>
             </h2>
 
@@ -523,7 +523,7 @@ const RbsUmumForm = () => {
                 {isAdmin ? (
                     // Layout untuk Role Admin
                     <>
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
                                 <input
@@ -550,17 +550,33 @@ const RbsUmumForm = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
-                            <div>
-                                <label className="block text-gray-700 font-medium mb-2">Nama Bank</label>
-                                <input
-                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
-                                    type="text"
-                                    value={userData.bankName}
-                                    disabled
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
+                            <div className='block xl:hidden'>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Validator <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    options={validatorOptions}
+                                    value={selectedValidator}
+                                    onChange={setSelectedValidator}
+                                    placeholder="Pilih Validator..."
+                                    className="basic-single"
+                                    classNamePrefix="select"
+                                    styles={customStyles}
+                                    isSearchable={true}
+                                    isClearable={true}
                                 />
                             </div>
                             <div>
+                                <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
+                                    type="text"
+                                    value={userData.accountNumber}
+                                    disabled
+                                />
+                            </div>
+                            <div className='hidden xl:block'>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Validator <span className="text-red-500">*</span>
                                 </label>
@@ -578,17 +594,17 @@ const RbsUmumForm = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
-                                <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
+                                <label className="block text-gray-700 font-medium mb-2">Nama Bank</label>
                                 <input
                                     className="w-full h-10 px-4 py-2 border rounded-md text-gray-500 cursor-not-allowed"
                                     type="text"
-                                    value={userData.accountNumber}
+                                    value={userData.bankName}
                                     disabled
                                 />
                             </div>
-                            <div>
+                            <div className='hidden xl:block'>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Lampiran <span className="text-red-500">*</span>
                                 </label>
@@ -596,7 +612,7 @@ const RbsUmumForm = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                                 <input
@@ -606,12 +622,18 @@ const RbsUmumForm = () => {
                                     disabled
                                 />
                             </div>
+                            <div className='block xl:hidden'>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Lampiran <span className="text-red-500">*</span>
+                                </label>
+                                {renderFileUpload()}
+                            </div>
                         </div>
                     </>
                 ) : (
                     // Layout untuk Role Non-Admin
                     <>
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
                                 <input
@@ -634,7 +656,7 @@ const RbsUmumForm = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Nomor Rekening</label>
                                 <input
@@ -655,7 +677,7 @@ const RbsUmumForm = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                                 <input
@@ -678,99 +700,130 @@ const RbsUmumForm = () => {
                 <hr className="border-gray-300 my-6" />
 
                 {reimbursements.map((reimbursement, index) => (
-                    <div key={index} className="flex justify-stretch gap-2 mb-2">
-                        <div className="flex-1 max-w-44">
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Jenis Reimbursement <span className="text-red-500">*</span>
-                                </label>
-                            )}
-                            <div key={index}>
-                                {reimbursement.isLainnya ? (
-                                    <input
-                                        type="text"
-                                        placeholder="Jenis lain"
-                                        value={reimbursement.jenisLain}
-                                        onChange={(e) => handleJenisLainChange(index, e.target.value)}
-                                        className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                                    />
-                                ) : (
-                                    <Select
-                                        options={jenisOptions}
-                                        value={reimbursement.jenis}
-                                        onChange={(selectedOption) => handleJenisChange(index, selectedOption)}
-                                        placeholder="Pilih jenis..."
-                                        className="w-full"
-                                        styles={customStyles}
-                                    />
+                    <div key={index}>
+                        {index > 0 && (
+                            <hr className="border-gray-300 my-6 block xl:hidden" />
+                        )}
+
+                        <div className="flex flex-col xl:flex-row justify-stretch gap-2 mb-2">
+                            <div className="flex-1 w-full xl:max-w-44">
+                                {(index === 0 || window.innerWidth < 1280) && (
+                                    <label className="block text-gray-700 font-medium mb-2 xl:hidden">
+                                        Jenis Reimbursement <span className="text-red-500">*</span>
+                                    </label>
                                 )}
+                                {index === 0 && (
+                                    <label className="hidden xl:block text-gray-700 font-medium mb-2">
+                                        Jenis Reimbursement <span className="text-red-500">*</span>
+                                    </label>
+                                )}
+                                <div key={index}>
+                                    {reimbursement.isLainnya ? (
+                                        <input
+                                            type="text"
+                                            placeholder="Jenis lain"
+                                            value={reimbursement.jenisLain}
+                                            onChange={(e) => handleJenisLainChange(index, e.target.value)}
+                                            className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                        />
+                                    ) : (
+                                        <Select
+                                            options={jenisOptions}
+                                            value={reimbursement.jenis}
+                                            onChange={(selectedOption) => handleJenisChange(index, selectedOption)}
+                                            placeholder="Pilih jenis..."
+                                            className="w-full"
+                                            styles={customStyles}
+                                        />
+                                    )}
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="flex-1 max-w-36">
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Biaya <span className="text-red-500">*</span>
-                                </label>
-                            )}
-                            <input
-                                className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                                type="text"
-                                value={formatRupiah(reimbursement.biaya)}
-                                onChange={(e) => handleInputChange(index, 'biaya', e.target.value)}
-                            />
-                        </div>
+                            <div className="flex-1 w-full xl:max-w-36">
+                                {(index === 0 || window.innerWidth < 1280) && (
+                                    <label className="block text-gray-700 font-medium mb-2 xl:hidden">
+                                        Biaya <span className="text-red-500">*</span>
+                                    </label>
+                                )}
+                                {index === 0 && (
+                                    <label className="hidden xl:block text-gray-700 font-medium mb-2">
+                                        Biaya <span className="text-red-500">*</span>
+                                    </label>
+                                )}
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    type="text"
+                                    value={formatRupiah(reimbursement.biaya)}
+                                    onChange={(e) => handleInputChange(index, 'biaya', e.target.value)}
+                                />
+                            </div>
 
-                        <div className="flex-1 min-w-36">
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Item <span className="text-red-500">*</span>
-                                </label>
-                            )}
-                            <input
-                                className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                                type="text"
-                                value={reimbursement.item}
-                                onChange={(e) => handleInputChange(index, 'item', e.target.value)}
-                            />
-                        </div>
+                            <div className="flex-1 w-full xl:min-w-36">
+                                {(index === 0 || window.innerWidth < 1280) && (
+                                    <label className="block text-gray-700 font-medium mb-2 xl:hidden">
+                                        Item <span className="text-red-500">*</span>
+                                    </label>
+                                )}
+                                {index === 0 && (
+                                    <label className="hidden xl:block text-gray-700 font-medium mb-2">
+                                        Item <span className="text-red-500">*</span>
+                                    </label>
+                                )}
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    type="text"
+                                    value={reimbursement.item}
+                                    onChange={(e) => handleInputChange(index, 'item', e.target.value)}
+                                />
+                            </div>
 
-                        <div className="flex-1 min-w-36">
-                            {index === 0 && <label className="block text-gray-700 font-medium mb-2">Keterangan</label>}
-                            <input
-                                className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                                type="text"
-                                value={reimbursement.keterangan}
-                                onChange={(e) => handleInputChange(index, 'keterangan', e.target.value)}
-                            />
-                        </div>
+                            <div className="flex-1 w-full xl:min-w-36">
+                                {(index === 0 || window.innerWidth < 1280) && (
+                                    <label className="block text-gray-700 font-medium mb-2 xl:hidden">Keterangan</label>
+                                )}
+                                {index === 0 && (
+                                    <label className="hidden xl:block text-gray-700 font-medium mb-2">Keterangan</label>
+                                )}
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    type="text"
+                                    value={reimbursement.keterangan}
+                                    onChange={(e) => handleInputChange(index, 'keterangan', e.target.value)}
+                                />
+                            </div>
 
-                        <div className="flex-1 max-w-40">
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Tanggal Aktivitas <span className="text-red-500">*</span>
-                                </label>
-                            )}
-                            <input
-                                className="w-full h-10 px-4 py-2 border rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                                type="date"
-                                value={reimbursement.tanggal}
-                                onChange={(e) => handleInputChange(index, 'tanggal', e.target.value)}
-                            />
-                        </div>
+                            <div className="flex-1 w-full xl:max-w-40">
+                                {(index === 0 || window.innerWidth < 1280) && (
+                                    <label className="block text-gray-700 font-medium mb-2 xl:hidden">
+                                        Tanggal Aktivitas <span className="text-red-500">*</span>
+                                    </label>
+                                )}
+                                {index === 0 && (
+                                    <label className="hidden xl:block text-gray-700 font-medium mb-2">
+                                        Tanggal Aktivitas <span className="text-red-500">*</span>
+                                    </label>
+                                )}
+                                <input
+                                    className="w-full h-10 px-4 py-2 border rounded-md bg-transparent hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    type="date"
+                                    value={reimbursement.tanggal}
+                                    onChange={(e) => handleInputChange(index, 'tanggal', e.target.value)}
+                                />
+                            </div>
 
-                        <div className="flex items-end ">
-                            <button
-                                className="h-10 px-4 py-2 bg-transparent text-red-500 border border-red-500 rounded-md hover:bg-red-100"
-                                onClick={() => handleRemoveForm(index)}
-                            >
-                                Hapus
-                            </button>
+                            <div className="flex items-end my-2 xl:my-0">
+                                <button
+                                    className="w-full h-10 px-4 py-2 bg-transparent text-red-500 border border-red-500 rounded-md hover:bg-red-100"
+                                    onClick={() => handleRemoveForm(index)}
+                                >
+                                    Hapus
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
 
-                <div className="mb-4">
+                <div className="mb-4 w-full text-center xl:text-start">
                     <span
                         className="text-red-600 font-bold underline cursor-pointer hover:text-red-700"
                         onClick={handleAddForm}
@@ -783,9 +836,9 @@ const RbsUmumForm = () => {
 
                 <div className="flex justify-end mt-6">
                     <button
-                        className={`rounded text-white py-3 
-                                        ${isSubmitting ? 'px-8 bg-red-700 cursor-not-allowed' : 'px-16 bg-red-600 hover:bg-red-700 hover:text-gray-200'}
-                                        flex items-center justify-center relative`}
+                        className={`w-full xl:w-0 rounded text-white py-3 
+                        ${isSubmitting ? 'px-8 bg-red-700 cursor-not-allowed' : 'px-16 bg-red-600 hover:bg-red-700 hover:text-gray-200'}
+                        flex items-center justify-center relative`}
                         onClick={handleSubmit}
                         disabled={isSubmitting}
                     >
@@ -803,7 +856,18 @@ const RbsUmumForm = () => {
                 </div>
             </div>
 
-            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+                style={{
+                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
+                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0                    
+                }}
+                toastClassName="toast-item mt-2 xl:mt-0"
+            />
         </div>
     )
 }
