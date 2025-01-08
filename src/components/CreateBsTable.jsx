@@ -276,7 +276,7 @@ const CreateBsTable = () => {
         <div>
             {shouldShowEmptyState ? (
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 gap-4">
+                    <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between mb-2 gap-4">
                         <h3 className="text-xl font-medium items-center">Bon Sementara Diajukan</h3>
                         <div className="grid grid-cols-2 lg:flex lg:flex-row gap-2">
                             <FilterSelect field="status" label="Status" />
@@ -294,7 +294,7 @@ const CreateBsTable = () => {
             ) : (
                 // Jika ada data bon sementara
                 <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 gap-4">
+                    <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between mb-2 gap-4">
                         <h3 className="text-xl font-medium items-center">Bon Sementara Diajukan</h3>
                         <div className="grid grid-cols-2 lg:flex lg:flex-row gap-2">
                             <FilterSelect field="status" label="Status" />
