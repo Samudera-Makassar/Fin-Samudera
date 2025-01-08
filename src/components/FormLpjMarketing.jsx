@@ -46,7 +46,7 @@ const FormLpjMarketing = () => {
 
     const location = useLocation()
     const [lpj, setLpj] = useState([initialLpjState])
-    const [nomorBS, setNomorBS] = useState(location.state?.nomorBS || '')    
+    const [nomorBS, setNomorBS] = useState(location.state?.nomorBS || '')
     const [jumlahBS, setJumlahBS] = useState(location.state?.jumlahBS || '')
     const [project, setProject] = useState(location.state?.project || '')
     const [nomorJO, setNomorJO] = useState(location.state?.nomorJO || '')
@@ -119,7 +119,7 @@ const FormLpjMarketing = () => {
     useEffect(() => {
         const today = new Date()
         const formattedDate = today.toISOString().split('T')[0]
-        
+
         setTodayDate(formattedDate)
 
         const uid = localStorage.getItem('userUid')
@@ -148,8 +148,8 @@ const FormLpjMarketing = () => {
                     })
 
                     setSelectedUnit(
-                        isAdmin 
-                            ? null 
+                        isAdmin
+                            ? null
                             : { value: data.unit, label: data.unit }
                     )
                 }
@@ -157,7 +157,7 @@ const FormLpjMarketing = () => {
                 console.error('Error fetching user data:', error)
             }
         }
-        
+
         fetchUserData()
     }, [])
 
@@ -217,16 +217,16 @@ const FormLpjMarketing = () => {
             if (i === index) {
                 const cleanValue = value.replace(/\D/g, '')
                 const numValue = Number(cleanValue)
-                
+
                 if (field === 'biaya') {
-                    return { 
-                        ...item, 
+                    return {
+                        ...item,
                         biaya: numValue,
                         jumlahBiaya: numValue * Number(item.jumlah || 0)
                     }
                 } else if (field === 'jumlah') {
-                    return { 
-                        ...item, 
+                    return {
+                        ...item,
                         jumlah: numValue,
                         jumlahBiaya: Number(item.biaya || 0) * numValue
                     }
@@ -240,7 +240,7 @@ const FormLpjMarketing = () => {
 
     const handleAddForm = () => {
         setLpj([
-            ...lpj, 
+            ...lpj,
             { ...initialLpjState }])
     }
 
@@ -272,7 +272,7 @@ const FormLpjMarketing = () => {
         const day = today.getDate().toString().padStart(2, '0')
         const sequence = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
         const unitCode = getUnitCode(selectedUnit.value)
-                
+
         return `LPJ.MRO.${unitCode}.${year}${month}${day}.${sequence}`
     }
 
@@ -310,10 +310,10 @@ const FormLpjMarketing = () => {
 
             // Upload the file
             const snapshot = await uploadBytes(storageRef, file)
-            
+
             // Get the download URL
             const downloadURL = await getDownloadURL(snapshot.ref)
-            
+
             return downloadURL
         } catch (error) {
             console.error('Error uploading file:', error)
@@ -457,7 +457,7 @@ const FormLpjMarketing = () => {
         } catch (error) {
             console.error('Error submitting lpj:', error)
             toast.error('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.')
-            
+
             setIsSubmitting(false)
 
         }
@@ -491,23 +491,23 @@ const FormLpjMarketing = () => {
     // Render file upload section 
     const renderFileUpload = () => {
         return (
-            <div className="flex items-center">
-                <input 
-                    type="file" 
+            <div className="flex flex-col xl:flex-row items-start xl:items-center">
+                <input
+                    type="file"
                     id="file-upload"
-                    className="hidden" 
+                    className="hidden"
                     accept=".pdf"
                     onChange={handleFileUpload}
                 />
                 <label
                     htmlFor="file-upload"
-                    className="h-10 px-4 py-2 bg-gray-200 border rounded-md cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
+                    className="w-full xl:w-fit text-center h-full xl:h-10 px-4 py-4 xl:py-2 bg-gray-50 xl:bg-gray-200 border rounded-md cursor-pointer hover:bg-gray-300 hover:border-gray-400 transition duration-300 ease-in-out"
                 >
                     Upload File
                 </label>
-                <span className="ml-4 text-gray-500">
-                    {attachmentFileName 
-                        ? `File: ${attachmentFileName}` 
+                <span className="ml-0 xl:ml-4 text-gray-500">
+                    {attachmentFileName
+                        ? `File: ${attachmentFileName}`
                         : 'Format .pdf Max Size: 250MB'}
                 </span>
             </div>
@@ -546,7 +546,7 @@ const FormLpjMarketing = () => {
 
     return (
         <div className="container mx-auto py-8">
-            <h2 className="text-xl font-medium mb-4">
+            <h2 className="text-xl font-medium mt-1 md:mt-0 mb-2 xl:mb-4">
                 Tambah <span className="font-bold">LPJ Bon Sementara Marketing/Operasional</span>
             </h2>
 
@@ -554,7 +554,7 @@ const FormLpjMarketing = () => {
                 {isAdmin ? (
                     // Layout untuk Role Admin
                     <>
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
                                 <input
@@ -590,7 +590,23 @@ const FormLpjMarketing = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
+                            <div className='block xl:hidden'>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Validator <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    options={validatorOptions}
+                                    value={selectedValidator}
+                                    onChange={setSelectedValidator}
+                                    placeholder="Pilih Validator..."
+                                    className="basic-single"
+                                    classNamePrefix="select"
+                                    styles={customStyles}
+                                    isSearchable={true}
+                                    isClearable={true}
+                                />
+                            </div>
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Nomor Bon Sementara <span className="text-red-500">*</span>
@@ -603,7 +619,7 @@ const FormLpjMarketing = () => {
                                     placeholder="Masukkan nomor bon sementara"
                                 />
                             </div>
-                            <div>
+                            <div className='hidden xl:block'>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Validator <span className="text-red-500">*</span>
                                 </label>
@@ -621,7 +637,7 @@ const FormLpjMarketing = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Jumlah Bon Sementara <span className="text-red-500">*</span>
@@ -654,7 +670,7 @@ const FormLpjMarketing = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Customer <span className="text-red-500">*</span>
@@ -681,7 +697,7 @@ const FormLpjMarketing = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Tanggal Kegiatan <span className="text-red-500">*</span>
@@ -690,7 +706,7 @@ const FormLpjMarketing = () => {
                                     type="date"
                                     value={tanggal}
                                     onChange={(e) => setTanggal(e.target.value)}
-                                    className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
+                                    className="w-full border border-gray-300 text-gray-900 bg-transparent rounded-md bg-transparent hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
                                 />
                             </div>
                             <div>
@@ -707,7 +723,7 @@ const FormLpjMarketing = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                                 <input
@@ -728,7 +744,7 @@ const FormLpjMarketing = () => {
                 ) : (
                     // Layout untuk Role Non-Admin
                     <>
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
                                 <input
@@ -751,7 +767,7 @@ const FormLpjMarketing = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Nomor Bon Sementara <span className="text-red-500">*</span>
@@ -784,7 +800,7 @@ const FormLpjMarketing = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Project <span className="text-red-500">*</span>
@@ -811,7 +827,7 @@ const FormLpjMarketing = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Customer <span className="text-red-500">*</span>
@@ -838,7 +854,7 @@ const FormLpjMarketing = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Tanggal Kegiatan <span className="text-red-500">*</span>
@@ -847,10 +863,10 @@ const FormLpjMarketing = () => {
                                     type="date"
                                     value={tanggal}
                                     onChange={(e) => setTanggal(e.target.value)}
-                                    className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
+                                    className="w-full border border-gray-300 text-gray-900 bg-transparent rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
                                 />
                             </div>
-                            <div>
+                            <div className='hidden xl:block'>
                                 <label className="block text-gray-700 font-medium mb-2">
                                     Lampiran <span className="text-red-500">*</span>
                                 </label>
@@ -858,7 +874,7 @@ const FormLpjMarketing = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 mb-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 xl:gap-6 mb-2 lg:mb-3">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Tanggal Pengajuan</label>
                                 <input
@@ -868,13 +884,19 @@ const FormLpjMarketing = () => {
                                     disabled
                                 />
                             </div>
+                            <div className='block xl:hidden'>
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Lampiran <span className="text-red-500">*</span>
+                                </label>
+                                {renderFileUpload()}
+                            </div>
                         </div>
                     </>
                 )}
 
                 <hr className="border-gray-300 my-6" />
 
-                {lpj.map((item, index) => (
+                {/* {lpj.map((item, index) => (
                     <div className="flex justify-stretch gap-2 mb-2" key={index}>
                         <div className="flex-grow">
                             {index === 0 && (
@@ -956,27 +978,150 @@ const FormLpjMarketing = () => {
                             </button>
                         </div>
                     </div>
+                ))} */}
+
+                {lpj.map((item, index) => (
+                    <div key={index}>
+                        {index > 0 && (
+                            <hr className="border-gray-300 my-6 block xl:hidden" />
+                        )}
+
+                        <div className="flex flex-col xl:flex-row justify-stretch gap-2 mb-2">
+                            <div className="flex-grow">
+                                {(index === 0 || window.innerWidth < 1280) && (
+                                    <label className="block text-gray-700 font-medium mb-2 xl:hidden">
+                                        Item <span className="text-red-500">*</span>
+                                    </label>
+                                )}
+                                {index === 0 && (
+                                    <label className="hidden xl:block text-gray-700 font-medium mb-2">
+                                        Item <span className="text-red-500">*</span>
+                                    </label>
+                                )}
+                                <input
+                                    type="text"
+                                    value={item.namaItem}
+                                    onChange={(e) => handleInputChange(index, 'namaItem', e.target.value)}
+                                    className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
+                                />
+                            </div>
+                            <div className="flex flex-row gap-2">
+                                <div className="flex-1">
+                                    {(index === 0 || window.innerWidth < 1280) && (
+                                        <label className="block text-gray-700 font-medium mb-2 xl:hidden">
+                                            Biaya <span className="text-red-500">*</span>
+                                        </label>
+                                    )}
+                                    {index === 0 && (
+                                        <label className="hidden xl:block text-gray-700 font-medium mb-2">
+                                            Biaya <span className="text-red-500">*</span>
+                                        </label>
+                                    )}
+                                    <input
+                                        type="text"
+                                        value={formatRupiah(item.biaya)}
+                                        onChange={(e) => handleInputChange(index, 'biaya', e.target.value)}
+                                        className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
+                                    />
+                                </div>
+
+                                <div className="max-w-24">
+                                    {(index === 0 || window.innerWidth < 1280) && (
+                                        <label className="block text-gray-700 font-medium mb-2 xl:hidden">
+                                            Jumlah <span className="text-red-500">*</span>
+                                        </label>
+                                    )}
+                                    {index === 0 && (
+                                        <label className="hidden xl:block text-gray-700 font-medium mb-2">
+                                            Jumlah <span className="text-red-500">*</span>
+                                        </label>
+                                    )}
+                                    <input
+                                        type="number"
+                                        value={item.jumlah}
+                                        onChange={(e) => {
+                                            const inputValue = e.target.value
+                                            const formattedValue = inputValue.replace(/^0+/, '')
+                                            const value = Number(formattedValue)
+                                            if (formattedValue === '' || value >= 0) {
+                                                handleInputChange(index, 'jumlah', formattedValue)
+                                            }
+                                        }}
+                                        className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                {(index === 0 || window.innerWidth < 1280) && (
+                                    <label className="block text-gray-700 font-medium mb-2 xl:hidden">Keterangan</label>
+                                )}
+                                {index === 0 && (
+                                    <label className="hidden xl:block text-gray-700 font-medium mb-2">Keterangan</label>
+                                )}
+                                <input
+                                    type="text"
+                                    value={item.keterangan}
+                                    onChange={(e) => handleInputChange(index, 'keterangan', e.target.value)}
+                                    className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
+                                />
+                            </div>
+
+                            <div>
+                                {(index === 0 || window.innerWidth < 1280) && (
+                                    <label className="block text-gray-700 font-medium mb-2 xl:hidden">Jumlah Biaya</label>
+                                )}
+                                {index === 0 && (
+                                    <label className="hidden xl:block text-gray-700 font-medium mb-2">Jumlah Biaya</label>
+                                )}
+                                <input
+                                    type="text"
+                                    value={formatRupiah(item.jumlahBiaya)}
+                                    className="w-full border border-gray-300 text-gray-900 rounded-md h-10 px-4 py-2 cursor-not-allowed"
+                                    disabled
+                                />
+                            </div>
+
+                            <div className="flex items-end my-2 xl:my-0">
+                                <button
+                                    className="w-full h-10 px-4 py-2 bg-transparent text-red-500 border border-red-500 rounded-md hover:bg-red-100"
+                                    onClick={() => handleRemoveForm(index)}
+                                >
+                                    Hapus
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 ))}
 
-                <button
-                    onClick={handleAddForm}
-                    className="text-red-600 font-bold underline cursor-pointer hover:text-red-700"
-                >
-                    Tambah
-                </button>
+                <div className="mb-4 w-full text-center xl:text-start">
+                    <span
+                        className="text-red-600 font-bold underline cursor-pointer hover:text-red-700"
+                        onClick={handleAddForm}
+                    >
+                        Tambah
+                    </span>
+                </div>
 
                 {/* Bagian Total Biaya */}
-                <div className="grid grid-cols-4 my-6">
+                <div className="grid grid-cols-1 xl:grid-cols-4 gap-0 xl:gap-4 my-6">
                     <div></div>
                     <div></div>
-                    <div className="text-left ">
-                        <span>Total Biaya</span>
-                        <br />
-                        <span>Sisa Lebih Bon Sementara</span>
-                        <br />
-                        <span>Sisa Kurang Dibayarkan ke Pegawai</span>
+                    <div className="text-left flex flex-col xl:block">
+                        <div className='flex flex-col md:flex-row mb-1 md:mb-0'>
+                            <span>Total Biaya</span>
+                            <span className="xl:hidden">: {formatRupiah(calculatedCosts.totalBiaya || 0)}</span>
+                        </div>
+                        <div className='flex flex-col md:flex-row mb-1 md:mb-0'>
+                            <span>Sisa Lebih Bon Sementara</span>
+                            <span className="xl:hidden">: {formatRupiah(calculatedCosts.sisaLebih || 0)}</span>
+                        </div>
+                        <div className='flex flex-col md:flex-row mb-1 md:mb-0'>
+                            <span>Sisa Kurang Dibayarkan ke Pegawai</span>
+                            <span className="xl:hidden">: {formatRupiah(calculatedCosts.sisaKurang || 0)}</span>
+                        </div>
                     </div>
-                    <div className="text-left ">
+                    <div className="text-left hidden xl:block">
                         <span>: {formatRupiah(calculatedCosts.totalBiaya || 0)}</span>
                         <br />
                         <span>: {formatRupiah(calculatedCosts.sisaLebih || 0)}</span>
@@ -996,7 +1141,7 @@ const FormLpjMarketing = () => {
 
                 <div className="flex justify-end mt-6">
                     <button
-                        className={`rounded text-white py-3 
+                        className={`w-full xl:w-0 rounded text-white py-3 
                         ${isSubmitting ? 'px-8 bg-red-700 cursor-not-allowed' : 'px-16 bg-red-600 hover:bg-red-700 hover:text-gray-200'}
                         flex items-center justify-center relative`}
                         onClick={handleSubmit}
@@ -1015,7 +1160,19 @@ const FormLpjMarketing = () => {
                     </button>
                 </div>
             </div>
-            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+                style={{
+                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
+                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
+                }}
+                toastClassName="toast-item mt-2 xl:mt-0"
+            />
         </div>
     )
 }
