@@ -84,7 +84,7 @@ const LpjBsCheck = () => {
                                 (history) =>
                                     history.actor === uid &&
                                     [
-                                        'Divalidasi oleh Super Admin (Pengganti Validator)',
+                                        'Disetujui oleh Super Admin (Pengganti Validator)',
                                         'Disetujui oleh Super Admin (Pengganti Reviewer 1)',
                                         'Disetujui oleh Super Admin (Pengganti Reviewer 2)',
                                         'Disetujui oleh Super Admin'
@@ -248,7 +248,7 @@ const LpjBsCheck = () => {
                                 approvedByValidator: false,
                                 approvedBySuperAdmin: true,
                                 statusHistory: arrayUnion({
-                                    status: 'Divalidasi oleh Super Admin (Pengganti Validator)',
+                                    status: 'Disetujui oleh Super Admin (Pengganti Validator)',
                                     timestamp: new Date().toISOString(),
                                     actor: uid
                                 })
@@ -298,7 +298,7 @@ const LpjBsCheck = () => {
                                 status: 'Divalidasi',
                                 approvedByValidator: true,
                                 statusHistory: arrayUnion({
-                                    status: 'Divalidasi oleh Validator',
+                                    status: 'Disetujui oleh Validator',
                                     timestamp: new Date().toISOString(),
                                     actor: uid
                                 })
@@ -420,11 +420,6 @@ const LpjBsCheck = () => {
                                 approvedByValidatorStatus: 'validator',
                                 approvedByReviewer1Status: 'reviewer',
                                 statusHistory: arrayUnion(
-                                    {
-                                        status: 'Ditolak oleh Validator',
-                                        timestamp: new Date().toISOString(),
-                                        actor: uid
-                                    },
                                     {
                                         status: 'Ditolak oleh Reviewer 1',
                                         timestamp: new Date().toISOString(),
@@ -588,7 +583,7 @@ const LpjBsCheck = () => {
                 onChange={(option) => handleFilterChange(field, option)}
                 options={options}
                 placeholder={label}
-                className="w-40"
+                className="w-full md:w-40"
                 styles={selectStyles}
             />
         )
@@ -601,9 +596,9 @@ const LpjBsCheck = () => {
             </h2>
 
             {/* Tab Navigation */}
-            <div className="flex mb-4 space-x-2 justify-end text-sm">
+            <div className="flex mb-4 space-x-2 justify-center md:justify-end text-sm">
                 <button
-                    className={`px-4 py-2 rounded-full ${
+                    className={`px-4 py-2 rounded-full w-auto max-[426px]:w-full ${
                         activeTab === 'pending'
                             ? 'bg-red-600 text-white'
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -613,7 +608,7 @@ const LpjBsCheck = () => {
                     Perlu Ditanggapi
                 </button>
                 <button
-                    className={`px-4 py-2 rounded-full ${
+                    className={`px-4 py-2 rounded-full w-auto max-[426px]:w-full ${
                         activeTab === 'approved'
                             ? 'bg-red-600 text-white'
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -640,42 +635,47 @@ const LpjBsCheck = () => {
                                 </figure>
                             </div>
                         ) : (
-                            <table className="min-w-full bg-white border rounded-lg text-sm">
-                                <thead>
-                                    <tr className="bg-gray-100 text-left">
-                                        <th className="px-2 py-2 border text-center w-auto">No.</th>
-                                        <th className="px-4 py-2 border">ID</th>
-                                        <th className="px-4 py-2 border">Nama</th>
-                                        <th className="px-4 py-2 border">Kategori LPJ BS</th>
-                                        <th className="px-4 py-2 border">Nomor BS</th>
-                                        <th className="px-4 py-2 border">Jumlah BS</th>
-                                        <th className="px-4 py-2 border">Tanggal Pengajuan</th>
-                                        <th className="p-2 border text-center">Status</th>
-                                        <th className="py-2 border text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {data.lpj.map((item, index) => (
-                                        <tr key={index}>
-                                            <td className="px-2 py-2 border text-center w-auto">{index + 1}</td>
-                                            <td className="px-4 py-2 border">
-                                                <Link
-                                                    to={`/lpj/${item.id}`}
-                                                    className="text-black hover:text-gray-700 hover:underline cursor-pointer"
-                                                >
-                                                    {item.displayId}
-                                                </Link>
-                                            </td>
-                                            <td className="px-4 py-2 border">{item.user.nama}</td>
-                                            <td className="px-4 py-2 border">{item.kategori}</td>
-                                            <td className="px-4 py-2 border">{item.nomorBS}</td>
-                                            <td className="px-4 py-2 border">
-                                                Rp{item.jumlahBS.toLocaleString('id-ID')}
-                                            </td>
-                                            <td className="px-4 py-2 border">{formatDate(item.tanggalPengajuan)}</td>
-                                            <td className="px-2 py-2 border text-center">
-                                                <span
-                                                    className={`px-4 py-1 rounded-full text-xs font-medium 
+                            <div className="w-full">
+                                <div className="w-full overflow-x-auto">
+                                    <div className="inline-block min-w-[900px] w-full">
+                                        <table className="w-full bg-white border rounded-lg text-sm">
+                                            <thead>
+                                                <tr className="bg-gray-100 text-left">
+                                                    <th className="p-2 border text-center w-auto">No.</th>
+                                                    <th className="px-4 py-2 border">ID</th>
+                                                    <th className="px-4 py-2 border">Nama</th>
+                                                    <th className="px-4 py-2 border">Kategori LPJ BS</th>
+                                                    <th className="px-4 py-2 border">Nomor BS</th>
+                                                    <th className="px-4 py-2 border">Jumlah BS</th>
+                                                    <th className="px-4 py-2 border">Tanggal Pengajuan</th>
+                                                    <th className="p-2 border text-center">Status</th>
+                                                    <th className="p-2 border text-center">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {data.lpj.map((item, index) => (
+                                                    <tr key={index}>
+                                                        <td className="p-2 border text-center w-auto">{index + 1}</td>
+                                                        <td className="px-4 py-2 border">
+                                                            <Link
+                                                                to={`/lpj/${item.id}`}
+                                                                className="text-black hover:text-gray-700 hover:underline cursor-pointer"
+                                                            >
+                                                                {item.displayId}
+                                                            </Link>
+                                                        </td>
+                                                        <td className="px-4 py-2 border">{item.user.nama}</td>
+                                                        <td className="px-4 py-2 border">{item.kategori}</td>
+                                                        <td className="px-4 py-2 border">{item.nomorBS}</td>
+                                                        <td className="px-4 py-2 border">
+                                                            Rp{item.jumlahBS.toLocaleString('id-ID')}
+                                                        </td>
+                                                        <td className="px-4 py-2 border">
+                                                            {formatDate(item.tanggalPengajuan)}
+                                                        </td>
+                                                        <td className="p-2 border text-center">
+                                                            <span
+                                                                className={`px-4 py-1 rounded-full text-xs font-medium 
                                                     ${
                                                         item.status === 'Diajukan'
                                                             ? 'bg-blue-200 text-blue-800 border-[1px] border-blue-600'
@@ -687,67 +687,74 @@ const LpjBsCheck = () => {
                                                                   ? 'bg-red-200 text-red-800 border-[1px] border-red-600'
                                                                   : 'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
                                                     }`}
-                                                >
-                                                    {item.status || 'Tidak Diketahui'}
-                                                </span>
-                                            </td>
-                                            <td className="py-2 border text-center">
-                                                <div className="flex justify-center space-x-2">
-                                                    <button
-                                                        className="rounded-full p-1 bg-green-200 hover:bg-green-300 text-green-600 border-[1px] border-green-600"
-                                                        onClick={() => handleApprove(item)}
-                                                        title="Approve"
-                                                    >
-                                                        <svg
-                                                            className="w-6 h-6"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth="2"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M5 13l4 4L19 7"
-                                                            />
-                                                        </svg>
-                                                    </button>
+                                                            >
+                                                                {item.status || 'Tidak Diketahui'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="p-2 border text-center">
+                                                            <div className="flex justify-center space-x-2">
+                                                                <button
+                                                                    className="rounded-full p-1 bg-green-200 hover:bg-green-300 text-green-600 border-[1px] border-green-600"
+                                                                    onClick={() => handleApprove(item)}
+                                                                    title="Approve"
+                                                                >
+                                                                    <svg
+                                                                        className="w-6 h-6"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        strokeWidth="2"
+                                                                    >
+                                                                        <path
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            d="M5 13l4 4L19 7"
+                                                                        />
+                                                                    </svg>
+                                                                </button>
 
-                                                    <button
-                                                        className="rounded-full p-1 bg-red-200 hover:bg-red-300 text-red-600 border-[1px] border-red-600"
-                                                        onClick={() => handleReject(item)}
-                                                        title="Reject"
-                                                    >
-                                                        <svg
-                                                            className="w-6 h-6"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth="2"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M6 18L18 6M6 6l12 12"
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                                                <button
+                                                                    className="rounded-full p-1 bg-red-200 hover:bg-red-300 text-red-600 border-[1px] border-red-600"
+                                                                    onClick={() => handleReject(item)}
+                                                                    title="Reject"
+                                                                >
+                                                                    <svg
+                                                                        className="w-6 h-6"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        strokeWidth="2"
+                                                                    >
+                                                                        <path
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            d="M6 18L18 6M6 6l12 12"
+                                                                        />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         )}
                     </div>
                 ) : (
                     // Approved LPJ Table
                     <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-xl font-medium mb-4">Riwayat Persetujuan LPJ Bon Sementara</h3>
-                            <div className="flex space-x-2">
-                                <FilterSelect field="bulan" label="Bulan" />
-                                <FilterSelect field="tahun" label="Tahun" />
+                        <div className="mb-6">
+                            <div className="flex flex-col md:flex-row items-center justify-between">
+                                <h3 className="text-xl font-medium mb-4 md:mb-0">
+                                    Riwayat Persetujuan LPJ Bon Sementara
+                                </h3>
+                                <div className="flex space-x-2 w-full md:w-auto">
+                                    <FilterSelect field="bulan" label="Bulan" />
+                                    <FilterSelect field="tahun" label="Tahun" />
+                                </div>
                             </div>
                         </div>
                         {filteredApprovedData.lpj.length === 0 ? (
@@ -761,53 +768,65 @@ const LpjBsCheck = () => {
                                 </figure>
                             </div>
                         ) : (
-                            <table className="min-w-full bg-white border rounded-lg text-sm">
-                                <thead>
-                                    <tr className="bg-gray-100 text-left">
-                                        <th className="px-2 py-2 border text-center w-auto">No.</th>
-                                        <th className="px-4 py-2 border">ID</th>
-                                        <th className="px-4 py-2 border">Nama</th>
-                                        <th className="px-4 py-2 border">Kategori LPJ</th>
-                                        <th className="px-4 py-2 border">Nomor BS</th>
-                                        <th className="px-4 py-2 border">Jumlah BS</th>
-                                        <th className="px-4 py-2 border">Tanggal Pengajuan</th>
-                                        <th className="px-4 py-2 border">Tanggal Disetujui</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredApprovedData.lpj.map((item, index) => (
-                                        <tr key={index}>
-                                            <td className="px-2 py-2 border text-center w-auto">{index + 1}</td>
-                                            <td className="p-4 border">
-                                                <Link
-                                                    to={`/lpj/${item.id}`}
-                                                    className="text-black hover:text-gray-700 hover:underline cursor-pointer"
-                                                >
-                                                    {item.displayId}
-                                                </Link>
-                                            </td>
-                                            <td className="p-4 border">{item.user.nama}</td>
-                                            <td className="p-4 border">{item.kategori}</td>
-                                            <td className="p-4 border">{item.nomorBS}</td>
-                                            <td className="p-4 border">Rp{item.jumlahBS.toLocaleString('id-ID')}</td>
-                                            <td className="p-4 border">{formatDate(item.tanggalPengajuan)}</td>
-                                            <td className="p-4 border">
-                                                {formatDate(
-                                                    item.statusHistory
-                                                        .filter(
-                                                            (status) =>
-                                                                status.actor === uid &&
-                                                                status.status.includes('Disetujui')
-                                                        )
-                                                        .sort(
-                                                            (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-                                                        )[0]?.timestamp
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            <div className="w-full">
+                                <div className="w-full overflow-x-auto">
+                                    <div className="inline-block min-w-[1000px] w-full">
+                                        <table className="min-w-full bg-white border rounded-lg text-sm">
+                                            <thead>
+                                                <tr className="bg-gray-100 text-left">
+                                                    <th className="p-2 border text-center w-auto">No.</th>
+                                                    <th className="px-4 py-2 border">ID</th>
+                                                    <th className="px-4 py-2 border">Nama</th>
+                                                    <th className="px-4 py-2 border">Kategori LPJ</th>
+                                                    <th className="px-4 py-2 border">Nomor BS</th>
+                                                    <th className="px-4 py-2 border">Jumlah BS</th>
+                                                    <th className="px-4 py-2 border">Tanggal Pengajuan</th>
+                                                    <th className="px-4 py-2 border">Tanggal Disetujui</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {filteredApprovedData.lpj.map((item, index) => (
+                                                    <tr key={index}>
+                                                        <td className="p-2 border text-center w-auto">{index + 1}</td>
+                                                        <td className="p-4 border">
+                                                            <Link
+                                                                to={`/lpj/${item.id}`}
+                                                                className="text-black hover:text-gray-700 hover:underline cursor-pointer"
+                                                            >
+                                                                {item.displayId}
+                                                            </Link>
+                                                        </td>
+                                                        <td className="p-4 border">{item.user.nama}</td>
+                                                        <td className="p-4 border">{item.kategori}</td>
+                                                        <td className="p-4 border">{item.nomorBS}</td>
+                                                        <td className="p-4 border">
+                                                            Rp{item.jumlahBS.toLocaleString('id-ID')}
+                                                        </td>
+                                                        <td className="p-4 border">
+                                                            {formatDate(item.tanggalPengajuan)}
+                                                        </td>
+                                                        <td className="p-4 border">
+                                                            {formatDate(
+                                                                item.statusHistory
+                                                                    .filter(
+                                                                        (status) =>
+                                                                            status.actor === uid &&
+                                                                            status.status.includes('Disetujui')
+                                                                    )
+                                                                    .sort(
+                                                                        (a, b) =>
+                                                                            new Date(b.timestamp) -
+                                                                            new Date(a.timestamp)
+                                                                    )[0]?.timestamp
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         )}
                     </div>
                 )}
