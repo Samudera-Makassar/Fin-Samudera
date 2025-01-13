@@ -15,12 +15,15 @@ ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 const GAUPieChart = () => {
     const [chartData, setChartData] = useState(null);
     const [rawData, setRawData] = useState([]);
+    const [lpjData, setLpjData] = useState([]);
+    const [reimbursementData, setReimbursementData] = useState([]);
     const [selectedMonth, setSelectedMonth] = useState({ value: "all", label: "Semua Bulan" });
     const [selectedYear, setSelectedYear] = useState({ value: "all", label: "Semua Tahun" });
     const [availableYears, setAvailableYears] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
+    const [showLPJ, setShowLPJ] = useState(false);
 
     const months = [
         { value: "all", label: "Semua Bulan" },
@@ -61,7 +64,9 @@ const GAUPieChart = () => {
         "Jenis Lain": "rgba(201, 203, 207, 1)",
     };
 
-    const updateChartData = (dataItems, month, year) => {
+    const updateChartData = (month, year) => {        
+        const dataItems = showLPJ ? lpjData : reimbursementData;
+
         if (!dataItems.length) {
             setChartData({
                 labels: [],
@@ -73,15 +78,15 @@ const GAUPieChart = () => {
         const filteredData = dataItems.filter(item => {
             if (item.kategori !== "GA/Umum") return false;
 
-            const pengajuanDate = new Date(item.tanggalPengajuan);
-            const itemYear = pengajuanDate.getFullYear();
-            const itemMonth = pengajuanDate.getMonth() + 1;
+            const date = new Date(item.tanggalPengajuan);
+            const itemYear = date.getFullYear();
+            const itemMonth = date.getMonth() + 1;
 
             return (
                 (year.value === "all" || itemYear === parseInt(year.value)) &&
                 (month.value === "all" || itemMonth === parseInt(month.value))
             );
-        });
+        });        
 
         if (!filteredData.length) {
             setChartData({
@@ -91,73 +96,100 @@ const GAUPieChart = () => {
             return;
         }
 
-        const allReimbursements = filteredData.flatMap(item => item.reimbursements);
-        const groupedData = allReimbursements.reduce((acc, reimb) => {
-            const { jenis } = reimb;
-            if (!acc[jenis]) acc[jenis] = 0;
-            acc[jenis] += 1;
-            return acc;
-        }, {});
+        let groupedData;
+        
+        const capitalizeWords = (str) => {
+            return str
+                .toLowerCase()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        };
+
+        if (showLPJ) {
+            // Process LPJ data
+            groupedData = filteredData.reduce((acc, item) => {                
+                if (!item.lpj?.length) return acc;
+                item.lpj.forEach(lpjItem => {
+                    const normalizedItem = capitalizeWords(lpjItem.namaItem); 
+                    const jumlah = lpjItem.jumlah || 1;
+    
+                    if (!acc[normalizedItem]) acc[normalizedItem] = 0;
+                    acc[normalizedItem] += jumlah;
+                });
+                return acc;
+            }, {});
+        } else {
+            // Process reimbursement data
+            groupedData = filteredData.reduce((acc, item) => {
+                if (!item.reimbursements?.length) return acc;
+                item.reimbursements.forEach(reimb => {
+                    const { jenis } = reimb;
+                    if (!acc[jenis]) acc[jenis] = 0;
+                    acc[jenis] += 1;
+                });
+                return acc;
+            }, {});
+        }        
 
         const labels = Object.keys(groupedData);
         const values = Object.values(groupedData);
 
         const labelWithCount = labels.map((label, index) => {
-            const jenisCount = values[index];
-            return `${label} (${jenisCount})`;
+            const count = values[index];
+            return `${label} (${count})`;
         });
-        const backgroundColors = labels.map(label => jenisColors[label] || "rgba(201, 203, 207, 1)"); // Default color if jenis not found
+
+        const backgroundColors = labels.map((label, index) => {
+            const baseColors = [
+                "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40", "#9966FF",
+                "#FFB6C1", "#8B4513", "#00BFFF", "#32CD32", "#FFD700", "#8A2BE2",
+                "#FF6347", "#9ACD32", "#DC143C", "#FF1493", "#00FF7F", "#7FFF00",
+                "#1E90FF", "#D2691E", "#8FBC8F", "#FF4500", "#ADFF2F", "#6495ED",
+                "#BA55D3", "#87CEEB", "#9370DB", "#3CB371", "#FF69B4", "#40E0D0",
+                "#4682B4", "#DA70D6", "#708090", "#2E8B57", "#FFA07A", "#6A5ACD",
+                "#20B2AA", "#5F9EA0", "#FFDAB9", "#EE82EE", "#F08080", "#98FB98"
+            ];
+                    
+            return jenisColors[label] || baseColors[index % baseColors.length];
+        });            
 
         setChartData({
             labels: labelWithCount,
             datasets: [
                 {
-                    label: "Jumlah Pengajuan",
+                    label: showLPJ ? "Jumlah Item" : "Jumlah Pengajuan",
                     data: values,
                     backgroundColor: backgroundColors,
-                    borderColor: backgroundColors,
+                    borderColor: backgroundColors.map(color => color.replace('0.8)', '1)')),
                     borderWidth: 1,
                 },
             ],
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: "right",
-                        labels: {
-                            padding: 4,
-                            usePointStyle: true,
-                            font: { size: 12 },
-                        },
-                    },
-                    datalabels: {
-                        formatter: (value, context) => {                           
-                            const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
-                            const percentage = ((value / total) * 100).toFixed(2);
-                            return `${percentage}%`; 
-                        },
-                        color: '#fff',
-                        font: {
-                            weight: 'bold',
-                            size: 12
-                        },
-                    },
-                },
-            }
         });
     };
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const querySnapshot = await getDocs(collection(db, "reimbursement"));
-                const fetchedData = querySnapshot.docs.map((doc) => ({
+                // Fetch reimbursement data
+                const reimbQuerySnapshot = await getDocs(collection(db, "reimbursement"));
+                const reimbData = reimbQuerySnapshot.docs.map(doc => ({
                     ...doc.data(),
                     id: doc.id
                 }));
+                setReimbursementData(reimbData); // Set reimbursementData
 
-                const years = [...new Set(fetchedData.map(item =>
+                // Fetch LPJ data
+                const lpjQuerySnapshot = await getDocs(collection(db, "lpj"));
+                const lpjFetchedData = lpjQuerySnapshot.docs.map(doc => ({
+                    ...doc.data(),
+                    id: doc.id
+                }));
+                setLpjData(lpjFetchedData); // Set lpjData
+
+                const combinedData = [...reimbData, ...lpjFetchedData];
+
+                const years = [...new Set(combinedData.map(item =>
                     new Date(item.tanggalPengajuan).getFullYear()
                 ))].sort((a, b) => b - a);
 
@@ -167,29 +199,47 @@ const GAUPieChart = () => {
                 }));
 
                 setAvailableYears(yearOptions);
-                setRawData(fetchedData);
+                setRawData(combinedData)
 
                 if (years.length > 0) {
                     const initialYear = yearOptions[0];
                     setSelectedYear(initialYear);
-                    updateChartData(fetchedData, selectedMonth, initialYear);
+                    updateChartData(reimbData, lpjFetchedData, selectedMonth, initialYear);
                 }
             } catch (error) {
-                console.error("Error fetching data from Firestore:", error);
+                console.error("Error fetching data:", error);
             }
         };
 
         fetchData();
-    }, []);
+    }, []); 
+
+    useEffect(() => {
+        updateChartData(selectedMonth, selectedYear);
+    }, [selectedMonth, selectedYear, showLPJ, reimbursementData, lpjData]);
+
+    useEffect(() => {
+        const years = reimbursementData.concat(lpjData).reduce((acc, item) => {
+            const date = new Date(item.tanggalPengajuan);
+            const year = date.getFullYear();
+            if (!acc.includes(year)) acc.push(year);
+            return acc;
+        }, []);
+        setAvailableYears(years.map((year) => ({ value: year.toString(), label: year.toString() })));
+    }, [reimbursementData, lpjData]);
 
     const handleMonthChange = (option) => {
         setSelectedMonth(option);
-        updateChartData(rawData, option, selectedYear);
+        updateChartData(option, selectedYear);
     };
 
     const handleYearChange = (option) => {
         setSelectedYear(option);
-        updateChartData(rawData, selectedMonth, option);
+        updateChartData(selectedMonth, option);
+    };
+
+    const handleToggleChange = (isLPJ) => {
+        setShowLPJ(isLPJ);
     };
 
     const selectStyles = {
@@ -243,38 +293,66 @@ const GAUPieChart = () => {
     return (
         <div className="bg-white px-6 py-4 flex flex-col w-full shadow-sm rounded-lg">
             <div className="flex justify-between items-center">
-                <h2 className="text-xl font-medium">Jumlah Pengajuan GA/Umum</h2>
+                <h2 className="text-xl font-medium">
+                    {showLPJ ? "Pengajuan GA/Umum (LPJ BS)" : "Pengajuan GA/Umum (Reimbursement)"}
+                </h2>                
                 <div
                     className="text-red-500 hover:text-red-600 text-sm font-semibold underline cursor-pointer"
                     onClick={() => setIsComparisonModalOpen(true)}
                 >
                     Lihat Perbandingan
-                </div>
+                </div>                
             </div>
 
             <hr className="border-gray-100 my-2" />
 
             <div className="flex flex-col w-full h-full gap-2">
-                <div className="flex justify-end space-x-2">
-                    <Select
-                        className="w-36"
-                        value={selectedMonth}
-                        onChange={handleMonthChange}
-                        options={months}
-                        styles={selectStyles}
-                    />
-                    <Select
-                        className="w-36"
-                        value={selectedYear}
-                        onChange={handleYearChange}
-                        options={[{ value: "all", label: "Semua Tahun" }, ...availableYears]}
-                        styles={selectStyles}
-                    />
+                <div className="flex justify-between items-center">
+                    <label className="flex items-center cursor-pointer">
+                        <div className="relative">
+                            <div className="flex items-center w-52 p-1 bg-gray-100 rounded-full">                                
+                                <div
+                                    onClick={() => handleToggleChange(false)}
+                                    className={`flex-1 text-center text-xs p-2 rounded-full cursor-pointer transition-all duration-300 ${!showLPJ ? 'bg-red-600 text-white' : 'bg-transparent text-gray-700'
+                                        }`}
+                                >
+                                    Reimbursement
+                                </div>                                
+                                <div
+                                    onClick={() => handleToggleChange(true)}
+                                    className={`flex-1 text-center text-xs p-2 rounded-full cursor-pointer transition-all duration-300 ${showLPJ ? 'bg-red-600 text-white' : 'bg-transparent text-gray-700'
+                                        }`}
+                                >
+                                    LPJ BS
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+
+
+                    <div className="flex space-x-2">
+                        <Select
+                            className="w-36"
+                            value={selectedMonth}
+                            onChange={handleMonthChange}
+                            options={months}
+                            styles={selectStyles}
+                        />
+                        <Select
+                            className="w-36"
+                            value={selectedYear}
+                            onChange={handleYearChange}
+                            options={[{ value: "all", label: "Semua Tahun" }, ...availableYears]}
+                            styles={selectStyles}
+                        />
+                    </div>
                 </div>
 
                 <div className="flex justify-center items-center w-full h-full">
                     {chartData.labels.length === 0 ? (
-                        <p className="text-gray-500 text-sm">Tidak ada pengajuan GA/Umum untuk periode yang dipilih</p>
+                        <p className="text-gray-500 text-sm">
+                            {showLPJ ? "Tidak ada pengajuan LPJ Bon Sementara GA/Umum" : "Tidak ada pengajuan Reimbursement GA/Umum"} untuk periode yang dipilih
+                        </p>
                     ) : (
                         <Pie
                             data={chartData}
@@ -283,7 +361,7 @@ const GAUPieChart = () => {
                                 maintainAspectRatio: false,
                                 plugins: {
                                     legend: {
-                                        position: "right",
+                                        position: "bottom",
                                         labels: {
                                             padding: 12,
                                             usePointStyle: true,
@@ -292,6 +370,7 @@ const GAUPieChart = () => {
                                     },
                                     datalabels: {
                                         formatter: (value, ctx) => {
+                                            if (showLPJ) return '';
                                             const dataset = ctx.chart.data.datasets[0];
                                             const total = dataset.data.reduce((acc, data) => acc + data, 0);
                                             const percentage = ((value / total) * 100).toFixed(1);
@@ -304,13 +383,14 @@ const GAUPieChart = () => {
                                         },
                                         textAlign: 'center',
                                         display: function (context) {
+                                            if (showLPJ) return false;
                                             const dataset = context.dataset;
                                             const value = dataset.data[context.dataIndex];
                                             return value > 0;
                                         },
                                     }
                                 },
-                                onClick: handleChartClick,
+                                onClick: !showLPJ ? handleChartClick : undefined,
                             }}
                         />
                     )}
@@ -337,6 +417,9 @@ const GAUPieChart = () => {
                         <GAUComparisonChart
                             rawData={rawData}
                             selectedYear={selectedYear}
+                            onClose={() => setIsComparisonModalOpen(false)}
+                            data={{ reimbursementData, lpjData }}
+                            showLPJ={showLPJ}
                         />
                     </div>
                 </div>

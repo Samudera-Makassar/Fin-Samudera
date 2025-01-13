@@ -544,7 +544,7 @@ const RbsBbmForm = () => {
                                     className="basic-single"
                                     classNamePrefix="select"
                                     styles={customStyles}
-                                    isSearchable={true}
+                                    isSearchable={false}
                                 />
                             </div>
                         </div>
@@ -732,7 +732,8 @@ const RbsBbmForm = () => {
                                             onChange={(selectedOption) => handleJenisChange(index, selectedOption)}
                                             placeholder="Pilih jenis..."
                                             className="w-full"
-                                            styles={customStyles}
+                                            styles={customStyles}                                            
+                                            isSearchable={false}
                                         />
                                     )}
                                 </div>

@@ -249,6 +249,7 @@ const CreateBsTable = () => {
                 isClearable={field !== 'bulan' && field !== 'tahun'}
                 className="w-38 lg:w-40"
                 styles={selectStyles}
+                isSearchable={false}
             />
         )
     }
@@ -340,7 +341,7 @@ const CreateBsTable = () => {
                                                 <td className="px-4 py-2 border">
                                                     {formatDate(item.tanggalPengajuan)}
                                                 </td>
-                                                <td className="py-2 border text-center">
+                                                <td className="px-2 py-2 border text-center">
                                                     <span
                                                         className={`px-4 py-1 rounded-full text-xs font-medium 
                                             ${
@@ -360,7 +361,7 @@ const CreateBsTable = () => {
                                                         {item.status || 'Tidak Diketahui'}
                                                     </span>
                                                 </td>
-                                                <td className="py-2 border text-center">
+                                                <td className="px-2 py-2 border text-center">
                                                     <button
                                                         className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed hover"
                                                         onClick={() => handleCancel(item)}

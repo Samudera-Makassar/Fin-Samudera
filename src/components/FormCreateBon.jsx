@@ -535,12 +535,12 @@ const CreateBonForm = () => {
                                 <Select
                                     options={BUSINESS_UNITS}
                                     value={selectedUnit}
-                                    onChange={setSelectedUnit}
+                                    onChange={handleUnitChange}
                                     placeholder="Pilih Unit Bisnis"
                                     className="basic-single"
                                     classNamePrefix="select"
                                     styles={customStyles}
-                                    isSearchable={true}
+                                    isSearchable={false}
                                 />
                             </div>
                         </div>
@@ -610,7 +610,7 @@ const CreateBonForm = () => {
                                     placeholder="Pilih Kategori..."
                                     className="w-full"
                                     styles={customStyles}
-                                    isSearchable={true}
+                                    isSearchable={false}
                                 />
                             </div>
                         </div>
@@ -636,7 +636,7 @@ const CreateBonForm = () => {
                                     placeholder="Pilih Kategori..."
                                     className="w-full"
                                     styles={customStyles}
-                                    isSearchable={true}
+                                    isSearchable={false}
                                 />
                             </div>
                         </div>
@@ -708,8 +708,8 @@ const CreateBonForm = () => {
                                     onChange={handleKategoriChange}
                                     placeholder="Pilih Kategori..."
                                     className="w-full"
-                                    styles={customStyles}
-                                    isSearchable={true}
+                                    styles={customStyles}                                    
+                                    isSearchable={false}
                                 />
                             </div>
                         </div>

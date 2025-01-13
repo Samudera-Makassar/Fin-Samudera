@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import Select from 'react-select';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { ClipLoader } from 'react-spinners';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
-
-const GAUComparisonChart = ({ rawData }) => {
+const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
     const [viewType, setViewType] = useState('monthly');
     const [chartData, setChartData] = useState(null);
     const [selectedYears, setSelectedYears] = useState([]);
@@ -38,7 +34,7 @@ const GAUComparisonChart = ({ rawData }) => {
             } else if (yearOptions.length === 1) {
                 setSelectedYears([yearOptions[0]]);
             }
-            setIsLoading(false)
+            setIsLoading(false);
         }
     }, [rawData]);
 
@@ -63,8 +59,11 @@ const GAUComparisonChart = ({ rawData }) => {
         return baseColors[index % baseColors.length];
     };
 
+    const getYearlyColor = (jenis, index, showLPJ = false) => {
+        if (showLPJ) {
+            return getMonthlyColor(index);
+        }
 
-    const getYearlyColor = (jenis) => {
         const jenisColors = {
             ATK: "rgba(255, 99, 132, 1)",
             RTG: "rgba(54, 162, 235, 1)",
@@ -74,14 +73,11 @@ const GAUComparisonChart = ({ rawData }) => {
             "Meals Meeting": "rgba(255, 159, 64, 1)",
             "Jenis Lain": "rgba(201, 203, 207, 1)",
         };
-        return jenisColors[jenis] || "rgba(0, 0, 0, 1)"
+        return jenisColors[jenis] || "rgba(0, 0, 0, 1)";
     };
 
     const prepareMonthlyData = () => {
         const capitalizeWords = (str) => {
-            // if (str === str.toUpperCase()) {
-            //     return str;
-            // }
             return str
                 .toLowerCase()
                 .split(' ')
@@ -89,14 +85,22 @@ const GAUComparisonChart = ({ rawData }) => {
                 .join(' ');
         };
 
-        // Get all unique items
         const allItems = new Set();
         rawData.forEach(item => {
             if (item.kategori === "GA/Umum") {
-                item.reimbursements.forEach(reimb => {
-                    const normalizedItem = capitalizeWords(reimb.item);
-                    allItems.add(normalizedItem);
-                });
+                if (showLPJ && item.lpj) {
+                    item.lpj.forEach(lpjItem => {
+                        if (lpjItem.namaItem) {
+                            allItems.add(capitalizeWords(lpjItem.namaItem));
+                        }
+                    });
+                } else if (!showLPJ && item.reimbursements) {
+                    item.reimbursements.forEach(reimb => {
+                        if (reimb.item) {
+                            allItems.add(capitalizeWords(reimb.item));
+                        }
+                    });
+                }
             }
         });
         const items = Array.from(allItems);
@@ -119,19 +123,25 @@ const GAUComparisonChart = ({ rawData }) => {
             const month = date.getMonth();
 
             if (monthlyData[year]) {
-                item.reimbursements.forEach(reimb => {
-                    const normalizedItem = capitalizeWords(reimb.item);
-                    if (monthlyData[year][month][normalizedItem] !== undefined) {
-                        monthlyData[year][month][normalizedItem]++;
-                    }
-                });
+                if (showLPJ && item.lpj) {
+                    item.lpj.forEach(lpjItem => {
+                        const normalizedItem = capitalizeWords(lpjItem.namaItem);
+                        if (monthlyData[year][month][normalizedItem] !== undefined) {
+                            monthlyData[year][month][normalizedItem] += lpjItem.jumlah || 1;
+                        }
+                    });
+                } else if (!showLPJ && item.reimbursements) {
+                    item.reimbursements.forEach(reimb => {
+                        const normalizedItem = capitalizeWords(reimb.item);
+                        if (monthlyData[year][month][normalizedItem] !== undefined) {
+                            monthlyData[year][month][normalizedItem]++;
+                        }
+                    });
+                }
             }
         });
 
-        // Create labels for months
-        const labels = months.map(month => month);
-
-        // Create datasets - one for each unique item across all years
+        // Create datasets
         const datasets = [];
         items.forEach((item, colorIndex) => {
             selectedYears.forEach(yearOption => {
@@ -141,35 +151,49 @@ const GAUComparisonChart = ({ rawData }) => {
                     return yearData ? yearData[monthIndex][item] : 0;
                 });
 
-                // Skip if all values are zero
                 if (data.every(value => value === 0)) return;
 
                 datasets.push({
-                    label: `${item} (${year})`,  // Add year to label for distinction
+                    label: `${item} (${year})`,
                     data: data,
-                    backgroundColor: getMonthlyColor(colorIndex), // Same color for same item
+                    backgroundColor: getMonthlyColor(colorIndex),
                     borderColor: getMonthlyColor(colorIndex),
                     borderWidth: 1,
                     stack: year,
-                    itemId: item // Add itemId for legend grouping
+                    itemId: item
                 });
             });
         });
 
         setChartData({
-            labels: labels,
+            labels: months,
             datasets: datasets
         });
     };
 
     const prepareYearlyData = () => {
-        // Get all unique types
+        const capitalizeWords = (str) => {
+            return str
+                .toLowerCase()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        };
+
         const allTypes = new Set();
         rawData.forEach(item => {
             if (item.kategori === "GA/Umum") {
-                item.reimbursements.forEach(reimb => {
-                    allTypes.add(reimb.jenis);
-                });
+                if (showLPJ && item.lpj) {
+                    item.lpj.forEach(lpjItem => {
+                        if (lpjItem.namaItem) {
+                            allTypes.add(capitalizeWords(lpjItem.namaItem));
+                        }
+                    });
+                } else if (!showLPJ && item.reimbursements) {
+                    item.reimbursements.forEach(reimb => {
+                        if (reimb.jenis) allTypes.add(reimb.jenis);
+                    });
+                }
             }
         });
         const types = Array.from(allTypes);
@@ -186,23 +210,33 @@ const GAUComparisonChart = ({ rawData }) => {
 
             const year = new Date(item.tanggalPengajuan).getFullYear();
             if (yearlyTotals[year]) {
-                item.reimbursements.forEach(reimb => {
-                    yearlyTotals[year][reimb.jenis]++;
-                });
+                if (showLPJ && item.lpj) {
+                    item.lpj.forEach(lpjItem => {
+                        const normalizedItem = capitalizeWords(lpjItem.namaItem);
+                        if (yearlyTotals[year][normalizedItem] !== undefined) {
+                            yearlyTotals[year][normalizedItem] += lpjItem.jumlah || 1;
+                        }
+                    });
+                } else if (!showLPJ && item.reimbursements) {
+                    item.reimbursements.forEach(reimb => {
+                        if (reimb.jenis) {
+                            yearlyTotals[year][reimb.jenis]++;
+                        }
+                    });
+                }
             }
         });
 
         const datasets = types.map((type, index) => {
             const data = selectedYears.map(year => yearlyTotals[parseInt(year.value)][type]);
 
-            // Exclude datasets with no data
             if (data.every(value => value === 0)) return null;
 
             return {
                 label: type,
                 data: data,
-                backgroundColor: getYearlyColor(type),
-                borderColor: getYearlyColor(type),
+                backgroundColor: getYearlyColor(type, index, showLPJ),
+                borderColor: getYearlyColor(type, index, showLPJ),
                 borderWidth: 1,
                 stack: '',
                 itemId: type
@@ -252,7 +286,9 @@ const GAUComparisonChart = ({ rawData }) => {
     return (
         <div className="w-full">
             <div className="flex items-center justify-between mb-4 mr-12">
-                <h2 className="text-lg font-medium">Perbandingan Pengajuan GA/Umum</h2>
+                <h2 className="text-lg font-medium">
+                    {showLPJ ? "Perbandingan Pengajuan LPJ BS GA/Umum" : "Perbandingan Pengajuan Reimbursement GA/Umum"}
+                </h2>
                 <div className="flex items-center space-x-4">
                     <div className="w-96">
                         <Select
@@ -309,7 +345,7 @@ const GAUComparisonChart = ({ rawData }) => {
                                 stacked: true,
                                 title: {
                                     display: true,
-                                    text: 'Jumlah Pengajuan'
+                                    text: showLPJ ? 'Jumlah Item' : 'Jumlah Pengajuan'
                                 },
                                 ticks: {
                                     stepSize: 2,
@@ -319,46 +355,35 @@ const GAUComparisonChart = ({ rawData }) => {
                         },
                         plugins: {
                             legend: {
+                                position: 'top',
                                 onClick: (e, legendItem, legend) => {
                                     const chart = legend.chart;
                                     const datasets = chart.data.datasets;
-
-                                    // Temukan semua dataset dengan itemId yang sama
                                     const relatedDatasets = datasets.filter(
                                         ds => ds.itemId === legendItem.text
                                     );
-
-                                    // Toggle visibility untuk semua dataset dengan itemId yang sama
                                     relatedDatasets.forEach(dataset => {
                                         const index = datasets.indexOf(dataset);
                                         const meta = chart.getDatasetMeta(index);
                                         meta.hidden = !meta.hidden;
                                     });
-
                                     chart.update();
                                 },
                                 labels: {
                                     generateLabels: (chart) => {
                                         const datasets = chart.data.datasets;
                                         const uniqueItems = new Set();
-
-                                        // Kumpulkan item unik berdasarkan nama
                                         datasets.forEach(dataset => {
                                             if (dataset.itemId) {
                                                 uniqueItems.add(dataset.itemId);
                                             }
                                         });
-
-                                        // Buat label untuk setiap item unik
                                         return Array.from(uniqueItems).map((itemId, index) => {
                                             const dataset = datasets.find(ds => ds.itemId === itemId);
-
-                                            // Cek apakah semua dataset dengan itemId ini tersembunyi
                                             const relatedDatasets = datasets.filter(ds => ds.itemId === itemId);
                                             const isHidden = relatedDatasets.every(ds =>
                                                 chart.getDatasetMeta(datasets.indexOf(ds)).hidden
                                             );
-
                                             return {
                                                 text: itemId,
                                                 fillStyle: dataset.backgroundColor,
@@ -374,20 +399,14 @@ const GAUComparisonChart = ({ rawData }) => {
                             datalabels: {
                                 display: (context) => {
                                     if (viewType !== 'monthly') return false;
-
                                     const stack = context.dataset.stack;
                                     const dataIndex = context.dataIndex;
-
-                                    // Get all datasets in the same stack that are not hidden
                                     const stackDatasets = context.chart.data.datasets.filter(
                                         ds => ds.stack === stack && !context.chart.getDatasetMeta(context.chart.data.datasets.indexOf(ds)).hidden
                                     );
-
-                                    // Calculate total value for this stack at this index
                                     const stackTotal = stackDatasets.reduce((sum, dataset) => {
                                         return sum + (dataset.data[dataIndex] || 0);
                                     }, 0);
-
                                     if (stackTotal === 0) return false;
                                     const middleOfStack = stackTotal / 2;
 
@@ -403,7 +422,6 @@ const GAUComparisonChart = ({ rawData }) => {
                                         const middlePoint = sumBefore + (value / 2);
                                         const distance = Math.abs(middleOfStack - middlePoint);
 
-                                        // Update closest dataset if this one is closer or at same distance but earlier in stack
                                         if (distance < smallestDistance ||
                                             (distance === smallestDistance &&
                                                 stackDatasets.indexOf(dataset) < stackDatasets.indexOf(closestDataset))) {
@@ -412,7 +430,6 @@ const GAUComparisonChart = ({ rawData }) => {
                                         }
                                     });
 
-                                    // Only show label for the closest dataset
                                     return context.dataset === closestDataset;
                                 },
                                 formatter: (value, context) => {

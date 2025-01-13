@@ -434,7 +434,7 @@ const FormLpjUmum = () => {
                 firestoreId: docRef.id,
                 displayId: displayId
             })
-            toast.success('LPJ Marketing berhasil dibuat')
+            toast.success('LPJ GA/Umum berhasil dibuat')
 
             // Reset form setelah berhasil submit
             if (isAdmin) {
@@ -559,7 +559,7 @@ const FormLpjUmum = () => {
                                         className="basic-single"
                                         classNamePrefix="select"
                                         styles={customStyles}
-                                        isSearchable={true}
+                                        isSearchable={false}
                                     />
                                 ) : (
                                     <input

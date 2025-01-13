@@ -446,7 +446,7 @@ const FormLpjMarketing = () => {
                 firestoreId: docRef.id,
                 displayId: displayId
             })
-            toast.success('LPJ Marketing berhasil dibuat')
+            toast.success('LPJ Marketing/Operasional berhasil dibuat')
 
             // Reset form setelah berhasil submit
             if (isAdmin) {
@@ -577,7 +577,7 @@ const FormLpjMarketing = () => {
                                         className="basic-single"
                                         classNamePrefix="select"
                                         styles={customStyles}
-                                        isSearchable={true}
+                                        isSearchable={false}
                                     />
                                 ) : (
                                     <input
@@ -894,91 +894,7 @@ const FormLpjMarketing = () => {
                     </>
                 )}
 
-                <hr className="border-gray-300 my-6" />
-
-                {/* {lpj.map((item, index) => (
-                    <div className="flex justify-stretch gap-2 mb-2" key={index}>
-                        <div className="flex-grow">
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Item <span className="text-red-500">*</span>
-                                </label>
-                            )}
-                            <input
-                                type="text"
-                                value={item.namaItem}
-                                onChange={(e) => handleInputChange(index, 'namaItem', e.target.value)}
-                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
-                            />
-                        </div>
-
-                        <div>
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Biaya <span className="text-red-500">*</span>
-                                </label>
-                            )}
-                            <input
-                                type="text"
-                                value={formatRupiah(item.biaya)}
-                                onChange={(e) => handleInputChange(index, 'biaya', e.target.value)}
-                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
-                            />
-                        </div>
-
-                        <div className="max-w-24">
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Jumlah <span className="text-red-500">*</span>
-                                </label>
-                            )}
-                            <input
-                                type="number"
-                                value={item.jumlah}
-                                onChange={(e) => {
-                                    const inputValue = e.target.value
-                                    const formattedValue = inputValue.replace(/^0+/, '') //Menghapus angka nol di depan
-                                    const value = Number(formattedValue) // Mengonversi ke angka dan memeriksa apakah nilainya positif
-                                    if (formattedValue === '' || value >= 0) {
-                                        handleInputChange(index, 'jumlah', formattedValue)
-                                    }
-                                }}
-                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
-                            />
-                        </div>
-
-                        <div>
-                            {index === 0 && <label className="block text-gray-700 font-medium mb-2">Keterangan</label>}
-                            <input
-                                type="text"
-                                value={item.keterangan}
-                                onChange={(e) => handleInputChange(index, 'keterangan', e.target.value)}
-                                className="w-full border border-gray-300 text-gray-900 rounded-md hover:border-blue-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none h-10 px-4 py-2"
-                            />
-                        </div>
-
-                        <div>
-                            {index === 0 && (
-                                <label className="block text-gray-700 font-medium mb-2">Jumlah Biaya</label>
-                            )}
-                            <input
-                                type="text"
-                                value={formatRupiah(item.jumlahBiaya)}
-                                className="w-full border border-gray-300 text-gray-900 rounded-md h-10 px-4 py-2 cursor-not-allowed"
-                                disabled
-                            />
-                        </div>
-
-                        <div className="flex items-end">
-                            <button
-                                onClick={() => handleRemoveForm(index)}
-                                className="h-10 px-4 py-2 bg-transparent text-red-500 border border-red-500 rounded-md hover:bg-red-100"
-                            >
-                                Hapus
-                            </button>
-                        </div>
-                    </div>
-                ))} */}
+                <hr className="border-gray-300 my-6" />                
 
                 {lpj.map((item, index) => (
                     <div key={index}>
