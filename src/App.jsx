@@ -43,16 +43,16 @@ const AppContent = () => {
                 <Route path="/reimbursement/operasional" element={<RbsOperasional />} />
                 <Route path="/reimbursement/umum" element={<RbsUmum />} />
                 <Route path="/reimbursement/:id" element={<DetailReimbursementPage />} />                
-                <Route path="/reimbursement/cek-laporan" element={<RbsCheckPage />} />
+                <Route path="/reimbursement/cek-pengajuan" element={<RbsCheckPage />} />
 
                 <Route path="/create-bs/create" element={<CreateBon />} />
-                <Route path="/create-bs/cek-laporan" element={<CreateBsCheckPage />} />
+                <Route path="/create-bs/cek-pengajuan" element={<CreateBsCheckPage />} />
                 <Route path="/create-bs/:id" element={<DetailCreateBsPage />} />
 
                 <Route path="/lpj/umum" element={<LpjUmum />} />
                 <Route path="/lpj/marketing" element={<LpjMarketing />} />
                 <Route path="/lpj/:id" element={<DetailLpjPage />} />
-                <Route path="/lpj/cek-laporan" element={<LpjCheckPage />} />
+                <Route path="/lpj/cek-pengajuan" element={<LpjCheckPage />} />
 
                 <Route path="/manage-users" element={<ManageUserPage />} />
                 <Route path="/manage-users/add" element={<AddUserPage />} />

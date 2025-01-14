@@ -175,7 +175,10 @@ const LpjBsTable = () => {
     }
 
     const handleSubmitCancel = async () => {
-        if (!selectedReport || !cancelReason) return // Pastikan cancelReason ada
+        if (!selectedReport || !cancelReason) {
+            toast.warning('Harap isi alasan pembatalan terlebih dahulu!')
+            return
+        }
 
         try {
             const lpjDocRef = doc(db, 'lpj', selectedReport.id)
@@ -465,7 +468,18 @@ const LpjBsTable = () => {
                 showCancelReason={true}
             />
 
-            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+                style={{
+                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
+                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
+                }}
+                toastClassName="toast-item mt-2 xl:mt-0"
+            />
         </div>
     )
 }

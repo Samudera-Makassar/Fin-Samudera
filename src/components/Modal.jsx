@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 const Modal = ({
     showModal,
@@ -12,39 +12,61 @@ const Modal = ({
     setCancelReason,
     showCancelReason
 }) => {
+    
+    useEffect(() => {
+        if (showModal) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = ''
+        }
+
+        return () => {
+            document.body.style.overflow = ''
+        }
+    }, [showModal])
+
     if (!showModal) return null
 
     const handleReasonChange = (e) => setCancelReason(e.target.value)
 
+    const handleBackdropClick = (e) => {
+        if (e.target === e.currentTarget) {
+            onClose()
+        }
+    }
+
     return (
         <div
-            className="fixed inset-0 flex items-center justify-center z-50"
-            onClick={onClose}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+            onClick={handleBackdropClick}
         >
-            <div className="absolute inset-0 bg-black opacity-50"></div>
-            <div 
-                className="bg-white rounded-lg p-6 z-10 w-full max-w-md mx-auto"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <h3 className="text-lg font-bold mb-4">{title}</h3>
-                <p className="text-sm text-gray-500 mb-4">{message}</p>
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-xl font-semibold mb-4">{title}</h2>
+
+                <p className="mb-6 text-gray-600">{message}</p>
+
                 {showCancelReason && (
-                    <textarea
-                        placeholder="Alasan pembatalan"
-                        value={cancelReason}
-                        onChange={handleReasonChange}
-                        className="w-full p-2 border border-gray-300 rounded mb-4"
-                    />
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Alasan Pembatalan</label>
+                        <textarea
+                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            rows="3"
+                            value={cancelReason}
+                            onChange={handleReasonChange}
+                            placeholder="Masukkan alasan pembatalan..."
+                        />
+                    </div>
                 )}
-                <div className="flex justify-end">
+
+                <div className="flex justify-end space-x-2">
                     <button
-                        className="bg-gray-200 text-gray-600 px-4 py-2 rounded hover:bg-gray-300 hover:text-gray-700 mr-2"
+                        className="bg-gray-200 text-gray-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded text-sm sm:text-base hover:bg-gray-300 hover:text-gray-700 transition-colors"
                         onClick={onClose}
                     >
                         {cancelText}
                     </button>
                     <button
-                        className="bg-red-600 text-white px-8 py-2 rounded hover:bg-red-700 hover:text-gray-200"
+                        className="bg-red-600 text-white px-6 sm:px-8 py-1.5 sm:py-2 rounded text-sm sm:text-base hover:bg-red-700 hover:text-gray-200 transition-colors"
                         onClick={() => onConfirm()}
                     >
                         {confirmText}

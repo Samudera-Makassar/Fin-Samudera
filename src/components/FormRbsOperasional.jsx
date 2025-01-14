@@ -832,7 +832,7 @@ const RbsOperasionalForm = () => {
 
                 <div className="flex justify-end mt-6">
                     <button
-                        className={`w-full xl:w-0 rounded text-white py-3 
+                        className={`w-full xl:w-fit rounded text-white py-3 
                         ${isSubmitting ? 'px-8 bg-red-700 cursor-not-allowed' : 'px-16 bg-red-600 hover:bg-red-700 hover:text-gray-200'}
                         flex items-center justify-center relative`}
                         onClick={handleSubmit}

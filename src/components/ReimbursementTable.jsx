@@ -180,37 +180,36 @@ const ReimbursementTable = () => {
     }
 
     const handleSubmitCancel = async () => {
-        if (!selectedReport || !cancelReason) return // Pastikan cancelReason ada
-
+        if (!selectedReport || !cancelReason) {
+            toast.warning('Harap isi alasan pembatalan terlebih dahulu!');
+            return;
+        }
+    
         try {
-            const reimbursementDocRef = doc(db, 'reimbursement', selectedReport.id)
-
-            // Memperbarui data di Firestore
+            const reimbursementDocRef = doc(db, 'reimbursement', selectedReport.id);
             await updateDoc(reimbursementDocRef, {
                 status: 'Dibatalkan',
                 cancelReason: cancelReason || 'Alasan tidak diberikan'
-            })
-
-            // Menyegarkan data reimbursement setelah pembatalan
-            const uid = localStorage.getItem('userUid')
-            const q = query(collection(db, 'reimbursement'), where('user.uid', '==', uid))
-            const querySnapshot = await getDocs(q)
+            });
+    
+            // Refresh data
+            const uid = localStorage.getItem('userUid');
+            const q = query(collection(db, 'reimbursement'), where('user.uid', '==', uid));
+            const querySnapshot = await getDocs(q);
             const reimbursements = querySnapshot.docs.map((doc) => ({
                 id: doc.id,
                 displayId: doc.data().displayId,
                 ...doc.data()
-            }))
-
-            setData({ reimbursements }) // Mengupdate state dengan data baru
-
-            toast.success('Reimbursement berhasil dibatalkan.')
-            // Menutup modal setelah pembatalan
-            handleCloseModal()
+            }));
+    
+            setData({ reimbursements });
+            toast.success('Reimbursement berhasil dibatalkan.');
+            handleCloseModal();
         } catch (error) {
-            console.error('Error cancelling reimbursement:', error)
-            toast.error('Gagal membatalkan reimbursement. Silakan coba lagi.')
+            console.error('Error cancelling reimbursement:', error);
+            toast.error('Gagal membatalkan reimbursement. Silakan coba lagi.');
         }
-    }
+    };
 
     const selectStyles = {
         control: (base) => ({
@@ -465,7 +464,17 @@ const ReimbursementTable = () => {
                 showCancelReason={true}
             />
 
-            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+            <ToastContainer position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+                style={{
+                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
+                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
+                }}
+                toastClassName="toast-item mt-2 xl:mt-0"
+            />
         </div>
     )
 }

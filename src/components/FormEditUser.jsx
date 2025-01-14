@@ -203,6 +203,7 @@ const EditUserForm = () => {
                     department: [],
                     bankName: '',
                     accountNumber: '',
+                    validator: [],
                     reviewer1: [],
                     reviewer2: []
                 })
@@ -311,7 +312,9 @@ const EditUserForm = () => {
                     { name: 'department', label: 'Department' },
                     { name: 'bankName', label: 'Nama Bank' },
                     { name: 'accountNumber', label: 'Nomor Rekening' },
-                    { name: 'reviewer1', label: 'Reviewer 1' }
+                    { name: 'reviewer1', label: 'Reviewer 1' },
+                    { name: 'reviewer2', label: 'Reviewer 2' },
+                    { name: 'validator', label: 'Validator' }
                 ]
             }
 
@@ -380,13 +383,47 @@ const EditUserForm = () => {
         }
     }
 
+    const selectStyles = {
+        control: (base) => ({
+            ...base,
+            borderColor: '#e5e7eb',
+            '&:hover': {
+                borderColor: '#3b82f6'
+            },
+            minHeight: '32px',
+            fontSize: '14px',
+            display: 'flex',
+            flexWrap: 'nowrap',
+            overflow: 'auto'
+        }),
+        valueContainer: (base) => ({
+            ...base,
+            flexWrap: 'nowrap',
+            whiteSpace: 'nowrap',
+            overflow: 'auto',
+            '::-webkit-scrollbar': {
+                display: 'none'
+            },
+            scrollbarWidth: 'none'
+        }),
+        menu: (base) => ({
+            ...base,
+            zIndex: 100
+        }),
+        multiValue: (base) => ({
+            ...base,
+            fontSize: '14px',
+            flexShrink: 0
+        })
+    }
+
     return (
         <div className="container mx-auto py-8">
             <h2 className="text-xl font-bold mb-4">Manage Users</h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
                 <h3 className="text-xl font-medium mb-4">Ubah Data Pengguna</h3>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="sm:grid sm:grid-cols-2 gap-6">
                     <div className="mb-2">
                         <label className="block font-medium text-gray-700">
                             Nama Lengkap <span className="text-red-500">*</span>
@@ -396,7 +433,7 @@ const EditUserForm = () => {
                             name="nama"
                             value={formData.nama}
                             onChange={handleChange}                        
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
                     </div>
                     <div className="mb-2">
@@ -410,10 +447,12 @@ const EditUserForm = () => {
                             options={roleOptions}                        
                             isClearable
                             className="mt-1"
+                            styles={selectStyles}
+                            isSearchable={false}
                         />
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="sm:grid sm:grid-cols-2 gap-6">
                     <div className="mb-2">
                         <label className="block font-medium text-gray-700">
                             Email <span className="text-red-500">*</span>
@@ -423,7 +462,7 @@ const EditUserForm = () => {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}                        
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
                     </div>
                     <div className="mb-2">
@@ -435,11 +474,11 @@ const EditUserForm = () => {
                             name="password"
                             value={formData.password}
                             onChange={handleChange}                        
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="sm:grid sm:grid-cols-2 gap-6">
                     {formData.role !== 'Super Admin' && (
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">
@@ -452,6 +491,8 @@ const EditUserForm = () => {
                                 options={unitOptions}                        
                                 isClearable
                                 className="mt-1"
+                                styles={selectStyles}
+                                isSearchable={false}
                             />
                         </div>
                     )}
@@ -465,12 +506,12 @@ const EditUserForm = () => {
                                 name="bankName"
                                 value={formData.bankName}
                                 onChange={handleChange}                        
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
                     )}
                 </div>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="sm:grid sm:grid-cols-2 gap-6">
                     {formData.role !== 'Super Admin' && (
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">
@@ -483,6 +524,8 @@ const EditUserForm = () => {
                                 onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'department')}
                                 options={departmentOptions}                        
                                 className="mt-1"
+                                styles={selectStyles}
+                                isSearchable={false}
                             />
                         </div>
                     )}
@@ -496,12 +539,12 @@ const EditUserForm = () => {
                                 name="accountNumber"
                                 value={formData.accountNumber}
                                 onChange={handleChange}                        
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
                     )}
                 </div>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="sm:grid sm:grid-cols-2 gap-6">
                     {formData.role !== 'Super Admin' && (
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">
@@ -514,13 +557,15 @@ const EditUserForm = () => {
                                 options={posisiOptions}                        
                                 isClearable
                                 className="mt-1"
+                                styles={selectStyles}
+                                isSearchable={false}
                                 />
                         </div>
                     )}
                     {formData.role !== 'Super Admin' && (
                             <div className="mb-2">
                             <label className="block font-medium text-gray-700">
-                                Validator {(formData.role !== 'Reviewer' && formData.role !== 'Validator') && <span className="text-red-500">*</span>}
+                                Validator {(formData.role !== 'Reviewer') && <span className="text-red-500">*</span>}
                             </label>
                             <Select
                                 isMulti
@@ -529,13 +574,14 @@ const EditUserForm = () => {
                                 options={validatorOptions}
                                 className="basic-multi-select mt-1"
                                 classNamePrefix="select"
+                                styles={selectStyles}
                                 onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'validator')}
                             />
                         </div>                        
                     )}
                 </div>
                 {formData.role !== 'Super Admin' && (
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="sm:grid sm:grid-cols-2 gap-6">
                     {formData.role !== 'Super Admin' && (
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">
@@ -548,6 +594,7 @@ const EditUserForm = () => {
                                 onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer1')}
                                 options={reviewer1Options}                            
                                 className="mt-1"
+                                styles={selectStyles}
                             />
                         </div>
                     )}
@@ -562,21 +609,22 @@ const EditUserForm = () => {
                                 onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer2')}
                                 options={reviewer2Options}                                
                                 className="mt-1"
+                                styles={selectStyles}
                             />
                         </div>
                     </div>
                 )}
-                <div className="flex justify-end mt-6">
+                <div className="flex flex-col sm:flex-row justify-end mt-6 gap-4">
                     <button
                         onClick={() => navigate(-1)}
-                        className="px-16 py-3 mr-4 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700"
+                        className="px-16 py-3 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700 w-full sm:w-auto"
                         disabled={isSubmitting}
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
+                        className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200 w-full sm:w-auto"
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? 'Saving...' : 'Save'}
