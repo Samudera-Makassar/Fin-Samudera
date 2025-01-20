@@ -128,12 +128,12 @@ const AddUserForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         setIsSubmitting(true)
-
+    
         try {
-            // Validasi untuk memastikan tidak ada field yang kosong selain reviewer2
+            const missingFields = []
+    
             let fieldsToValidate = []
             if (formData.role === 'Super Admin') {
-                // For Super Admin, only validate these fields
                 fieldsToValidate = [
                     { name: 'nama', label: 'Nama' },
                     { name: 'email', label: 'Email' },
@@ -141,7 +141,6 @@ const AddUserForm = () => {
                     { name: 'role', label: 'Role' }
                 ]
             } else if (formData.role === 'Reviewer') {
-                // For Reviewer, exclude reviewer1 validation
                 fieldsToValidate = [
                     { name: 'nama', label: 'Nama' },
                     { name: 'email', label: 'Email' },
@@ -154,7 +153,6 @@ const AddUserForm = () => {
                     { name: 'accountNumber', label: 'Nomor Rekening' }
                 ]
             } else {
-                // For other roles, validate all fields
                 fieldsToValidate = [
                     { name: 'nama', label: 'Nama' },
                     { name: 'email', label: 'Email' },
@@ -170,32 +168,43 @@ const AddUserForm = () => {
                     { name: 'validator', label: 'Validator' }
                 ]
             }
-
+    
             for (let field of fieldsToValidate) {
                 if (!formData[field.name] || (Array.isArray(formData[field.name]) && formData[field.name].length === 0)) {
-                    toast.warning(`${field.label} tidak boleh kosong`)
-                    setIsSubmitting(false)
-                    return
+                    missingFields.push(field.label)
                 }
             }
-
-            // Validasi untuk memastikan reviewer1 dan reviewer2 tidak sama, jika berlaku
-            if (formData.reviewer1.length > 0 && formData.reviewer2.length > 0) {
+    
+            if (missingFields.length > 0) {
+                missingFields.forEach((field) => {
+                    toast.warning(
+                        <>
+                            <b>{field}</b> tidak boleh kosong
+                        </>
+                    )
+                })
+                setIsSubmitting(false)
+                return
+            }
+    
+            // Validasi reviewer1 dan reviewer2 tidak boleh sama
+            if (formData.reviewer1?.length > 0 && formData.reviewer2?.length > 0) {
                 if (formData.reviewer1.some((r) => formData.reviewer2.includes(r))) {
                     toast.warning('Reviewer 1 dan Reviewer 2 tidak boleh sama')
                     setIsSubmitting(false)
                     return
                 }
             }
-
+    
+            // Validasi email sudah terdaftar
             const emailExists = await checkEmailExists(formData.email)
             if (emailExists) {
                 toast.warning('Email sudah terdaftar. Gunakan email lain')
                 setIsSubmitting(false)
                 return
-            }            
-
-            // Menyimpan data pengguna ke Firestore tanpa menambahkan user ke Firebase Auth
+            }
+    
+            // Menyimpan data pengguna ke Firestore
             await setDoc(doc(db, 'users', uid), {
                 uid,
                 nama: formData.nama,
@@ -209,11 +218,11 @@ const AddUserForm = () => {
                 accountNumber: formData.role === 'Super Admin' ? '' : formData.accountNumber,
                 reviewer1: formData.role === 'Super Admin' || formData.role === 'Reviewer' ? [] : formData.reviewer1,
                 reviewer2: formData.role === 'Super Admin' ? [] : formData.reviewer2,
-                validator: formData.role === 'Super Admin' || formData.role === 'Reviewer' || formData.role === 'Validator' ? [] : formData.validator,
+                validator: formData.role === 'Super Admin' || formData.role === 'Reviewer' ? [] : formData.validator,
             })
-
+    
             toast.success('Pengguna berhasil ditambahkan')
-
+    
             // Reset form setelah submit
             setFormData({
                 nama: '',
@@ -229,7 +238,7 @@ const AddUserForm = () => {
                 reviewer2: [],
                 validator: []
             })
-            navigate(-1) // Kembali ke halaman sebelumnya
+            navigate(-1)
         } catch (error) {
             console.error('Error adding user:', error)
             toast.error('Gagal menambahkan pengguna. Silakan coba lagi')
@@ -276,14 +285,48 @@ const AddUserForm = () => {
         { value: 'Direktur', label: 'Direktur' }
     ]
 
+    const selectStyles = {
+        control: (base) => ({
+            ...base,
+            borderColor: '#e5e7eb',
+            '&:hover': {
+                borderColor: '#3b82f6'
+            },
+            minHeight: '32px',
+            fontSize: '14px',
+            display: 'flex',
+            flexWrap: 'nowrap',
+            overflow: 'auto'
+        }),
+        valueContainer: (base) => ({
+            ...base,
+            flexWrap: 'nowrap',
+            whiteSpace: 'nowrap',
+            overflow: 'auto',
+            '::-webkit-scrollbar': {
+                display: 'none'
+            },
+            scrollbarWidth: 'none'
+        }),
+        menu: (base) => ({
+            ...base,
+            zIndex: 100
+        }),
+        multiValue: (base) => ({
+            ...base,
+            fontSize: '14px',
+            flexShrink: 0
+        })
+    }
+
     return (
-        <div className="container mx-auto py-8">
+        <div className="container mx-auto py-10 md:py-8">
             <h2 className="text-xl font-bold mb-4">Manage Users</h2>
 
             <div className="bg-white p-6 rounded-lg shadow">
                 <h3 className="text-xl font-medium mb-4">Tambah Pengguna</h3>
                 <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="sm:grid sm:grid-cols-2 gap-6">
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">
                                 Nama Lengkap <span className="text-red-500">*</span>
@@ -293,7 +336,7 @@ const AddUserForm = () => {
                                 name="nama"
                                 value={formData.nama}
                                 onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
                         <div className="mb-2">
@@ -303,15 +346,17 @@ const AddUserForm = () => {
                             <Select
                                 name="role"
                                 options={roleOptions}
-                                className="basic-single-select mt-1"
+                                className="basic-single-select mt-1 hover:border-blue-400"
                                 classNamePrefix="select"
                                 onChange={(selectedOption) => handleSelectChange(selectedOption, 'role')}
                                 isMulti={false}
                                 isClearable
+                                styles={selectStyles}
+                                isSearchable={false}
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="sm:grid sm:grid-cols-2 gap-6">
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">
                                 Email <span className="text-red-500">*</span>
@@ -321,7 +366,7 @@ const AddUserForm = () => {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
                         <div className="mb-2">
@@ -333,11 +378,11 @@ const AddUserForm = () => {
                                 name="password"
                                 value={formData.password}
                                 onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="sm:grid sm:grid-cols-2 gap-6">
                         {formData.role !== 'Super Admin' && (
                             <div className="mb-2">
                                 <label className="block font-medium text-gray-700">
@@ -352,6 +397,8 @@ const AddUserForm = () => {
                                         onChange={(selectedOption) => handleSelectChange(selectedOption, 'unit')}
                                         isMulti={false}
                                         isClearable
+                                        styles={selectStyles}
+                                        isSearchable={false}
                                     />
                                 </div>
                             </div>
@@ -366,12 +413,12 @@ const AddUserForm = () => {
                                     name="bankName"
                                     value={formData.bankName}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                                 />
                             </div>
                         )}
                     </div>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="sm:grid sm:grid-cols-2 gap-6">
                         {formData.role !== 'Super Admin' && (
                             <div className="mb-2">
                                 <label className="block font-medium text-gray-700">
@@ -383,6 +430,8 @@ const AddUserForm = () => {
                                     options={departmentOptions}
                                     className="basic-multi-select mt-1"
                                     classNamePrefix="select"
+                                    styles={selectStyles}
+                                    isSearchable={false}
                                     onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'department')}
                                 />
                             </div>
@@ -397,12 +446,12 @@ const AddUserForm = () => {
                                     name="accountNumber"
                                     value={formData.accountNumber}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                                 />
                             </div>
                         )}
                     </div>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="sm:grid sm:grid-cols-2 gap-6">
                         {formData.role !== 'Super Admin' && (
                             <div className="mb-2">
                                 <label className="block font-medium text-gray-700">
@@ -417,27 +466,30 @@ const AddUserForm = () => {
                                         onChange={(selectedOption) => handleSelectChange(selectedOption, 'posisi')}
                                         isMulti={false}
                                         isClearable
+                                        styles={selectStyles}
+                                        isSearchable={false}
                                     />
                                 </div>
                             </div>
                         )}
                         {formData.role !== 'Super Admin' && (
                             <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Validator {(formData.role !== 'Reviewer') && <span className="text-red-500">*</span>}
-                            </label>
-                            <Select
-                                isMulti
-                                name="validator"
-                                options={validatorOptions}
-                                className="basic-multi-select mt-1"
-                                classNamePrefix="select"
-                                onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'validator')}
-                            />
-                        </div>                        
+                                <label className="block font-medium text-gray-700">
+                                    Validator {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
+                                </label>
+                                <Select
+                                    isMulti
+                                    name="validator"
+                                    options={validatorOptions}
+                                    className="basic-multi-select mt-1"
+                                    classNamePrefix="select"
+                                    styles={selectStyles}
+                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'validator')}
+                                />
+                            </div>
                         )}
                     </div>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="sm:grid sm:grid-cols-2 gap-6">
                         {formData.role !== 'Super Admin' && (
                             <div className="mb-2">
                                 <label className="block font-medium text-gray-700">
@@ -449,6 +501,7 @@ const AddUserForm = () => {
                                     options={reviewerOptions}
                                     className="basic-multi-select mt-1"
                                     classNamePrefix="select"
+                                    styles={selectStyles}
                                     onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer1')}
                                 />
                             </div>
@@ -464,23 +517,24 @@ const AddUserForm = () => {
                                     options={reviewerOptions}
                                     className="basic-multi-select mt-1"
                                     classNamePrefix="select"
+                                    styles={selectStyles}
                                     onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer2')}
                                 />
                             </div>
                         )}
                     </div>
 
-                    <div className="flex justify-end mt-6">
+                    <div className="flex flex-col sm:flex-row justify-end mt-6 gap-4">
                         <button
                             onClick={() => navigate(-1)}
-                            className="px-16 py-3 mr-4 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700"
+                            className="px-16 py-3 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 hover:text-gray-700 w-full sm:w-auto"
                             disabled={isSubmitting}
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200"
+                            className="px-16 py-3 bg-red-600 text-white rounded hover:bg-red-700 hover:text-gray-200 w-full sm:w-auto"
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? 'Saving...' : 'Save'}
@@ -489,7 +543,18 @@ const AddUserForm = () => {
                 </form>
             </div>
 
-            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+                style={{
+                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
+                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
+                }}
+                toastClassName="toast-item mt-2 xl:mt-0"
+            />
         </div>
     )
 }

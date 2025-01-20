@@ -1,27 +1,22 @@
-import React from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import Modal from './Modal'
+import React, { useEffect } from 'react'
+import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
-const Sidebar = ({ isOpen, toggleSidebar }) => {
-    const [showModal, setShowModal] = React.useState(false)
-    const navigate = useNavigate()
+const Sidebar = ({ isOpen, toggleSidebar, onLogout }) => {
     const role = localStorage.getItem('userRole')
 
-    const onLogoutClick = () => {
-        setShowModal(true)
-    }
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = ''
+        }
 
-    const handleCloseModal = () => {
-        setShowModal(false)
-    }
-
-    const handleConfirmLogout = () => {
-        setShowModal(false)
-        localStorage.removeItem('userRole')
-        navigate('/')
-    }
+        return () => {
+            document.body.style.overflow = ''
+        }
+    }, [isOpen])
 
     if (!role) {
         return null
@@ -62,7 +57,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                             <li>
                                 <hr className="border-red-500" />
                                 <NavLink
-                                    to="/reimbursement/cek-laporan"
+                                    to="/reimbursement/cek-pengajuan"
                                     className={({ isActive }) =>
                                         isActive
                                             ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
@@ -75,7 +70,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                             <li>
                                 <hr className="border-red-500" />
                                 <NavLink
-                                    to="/create-bs/cek-laporan"
+                                    to="/create-bs/cek-pengajuan"
                                     className={({ isActive }) =>
                                         isActive
                                             ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
@@ -88,7 +83,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                             <li>
                                 <hr className="border-red-500" />
                                 <NavLink
-                                    to="/lpj/cek-laporan"
+                                    to="/lpj/cek-pengajuan"
                                     className={({ isActive }) =>
                                         isActive
                                             ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
@@ -153,14 +148,14 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                             {(role === 'Reviewer' || role === 'Validator') && (
                                 <li>
                                     <NavLink
-                                        to="/reimbursement/cek-laporan"
+                                        to="/reimbursement/cek-pengajuan"
                                         className={({ isActive }) =>
                                             isActive
                                                 ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
                                                 : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
                                         }
                                     >
-                                        Cek Laporan
+                                        Cek Pengajuan
                                     </NavLink>
                                 </li>
                             )}
@@ -185,7 +180,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                                 {(role === 'Reviewer' || role === 'Validator') && (
                                     <li>
                                         <NavLink
-                                            to="/create-bs/cek-laporan"
+                                            to="/create-bs/cek-pengajuan"
                                             className={({ isActive }) =>
                                                 isActive
                                                     ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
@@ -226,14 +221,14 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                             {(role === 'Reviewer' || role === 'Validator') && (
                                 <li>
                                     <NavLink
-                                        to="/lpj/cek-laporan"
+                                        to="/lpj/cek-pengajuan"
                                         className={({ isActive }) =>
                                             isActive
                                                 ? 'block w-full py-2 pl-8 text-white bg-[#FF5B5F]'
                                                 : 'block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F]'
                                         }
                                     >
-                                        Cek Laporan
+                                        Cek Pengajuan
                                     </NavLink>
                                 </li>
                             )}
@@ -242,22 +237,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                     <li>
                         <hr className="border-red-500" />
                         <button
-                            onClick={onLogoutClick}
+                            onClick={onLogout}
                             className="block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F] text-left"
                         >
                             Logout
                         </button>
                     </li>
                 </ul>
-                <Modal
-                    showModal={showModal}
-                    title="Konfirmasi Logout"
-                    message="Apakah Anda yakin ingin keluar?"
-                    onClose={handleCloseModal}
-                    onConfirm={handleConfirmLogout}
-                    cancelText="Batal"
-                    confirmText="Ya, Keluar"
-                />
             </aside>
         </>
     )

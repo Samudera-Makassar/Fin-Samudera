@@ -180,37 +180,36 @@ const ReimbursementTable = () => {
     }
 
     const handleSubmitCancel = async () => {
-        if (!selectedReport || !cancelReason) return // Pastikan cancelReason ada
-
+        if (!selectedReport || !cancelReason) {
+            toast.warning('Harap isi alasan pembatalan terlebih dahulu!');
+            return;
+        }
+    
         try {
-            const reimbursementDocRef = doc(db, 'reimbursement', selectedReport.id)
-
-            // Memperbarui data di Firestore
+            const reimbursementDocRef = doc(db, 'reimbursement', selectedReport.id);
             await updateDoc(reimbursementDocRef, {
                 status: 'Dibatalkan',
                 cancelReason: cancelReason || 'Alasan tidak diberikan'
-            })
-
-            // Menyegarkan data reimbursement setelah pembatalan
-            const uid = localStorage.getItem('userUid')
-            const q = query(collection(db, 'reimbursement'), where('user.uid', '==', uid))
-            const querySnapshot = await getDocs(q)
+            });
+    
+            // Refresh data
+            const uid = localStorage.getItem('userUid');
+            const q = query(collection(db, 'reimbursement'), where('user.uid', '==', uid));
+            const querySnapshot = await getDocs(q);
             const reimbursements = querySnapshot.docs.map((doc) => ({
                 id: doc.id,
                 displayId: doc.data().displayId,
                 ...doc.data()
-            }))
-
-            setData({ reimbursements }) // Mengupdate state dengan data baru
-
-            toast.success('Reimbursement berhasil dibatalkan.')
-            // Menutup modal setelah pembatalan
-            handleCloseModal()
+            }));
+    
+            setData({ reimbursements });
+            toast.success('Reimbursement berhasil dibatalkan.');
+            handleCloseModal();
         } catch (error) {
-            console.error('Error cancelling reimbursement:', error)
-            toast.error('Gagal membatalkan reimbursement. Silakan coba lagi.')
+            console.error('Error cancelling reimbursement:', error);
+            toast.error('Gagal membatalkan reimbursement. Silakan coba lagi.');
         }
-    }
+    };
 
     const selectStyles = {
         control: (base) => ({
@@ -261,13 +260,14 @@ const ReimbursementTable = () => {
     if (loading) {
         return (
             <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xl font-medium mb-4 items-center">Reimbursement Diajukan</h3>
-                    <div className="flex space-x-2">
-                        <Skeleton width={100} height={32} />
-                        <Skeleton width={100} height={32} />
-                        <Skeleton width={100} height={32} />
-                        <Skeleton width={100} height={32} />
+                <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between mb-2 gap-4">
+                    <h3 className="text-xl font-medium">Reimbursement Diajukan</h3>
+                    <div className="grid grid-cols-2 lg:flex lg:flex-row gap-2">
+                        {[...Array(4)].map((_, index) => (
+                            <div key={index} className="w-full lg:w-40">
+                                <Skeleton width="100%" height={32} />
+                            </div>
+                        ))}
                     </div>
                 </div>
                 <Skeleton count={5} height={40} />
@@ -465,7 +465,17 @@ const ReimbursementTable = () => {
                 showCancelReason={true}
             />
 
-            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+            <ToastContainer position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+                style={{
+                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
+                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
+                }}
+                toastClassName="toast-item mt-2 xl:mt-0"
+            />
         </div>
     )
 }

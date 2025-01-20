@@ -7,15 +7,15 @@ export const validPaths = [
     "/reimbursement/operasional",
     "/reimbursement/umum", 
     "/reimbursement/detail", 
-    "/reimbursement/cek-laporan",
+    "/reimbursement/cek-pengajuan",
     "/lpj/umum", 
     "/lpj/marketing",
     "/lpj/detail",
-    "/lpj/cek-laporan",
+    "/lpj/cek-pengajuan",
     "/manage-users",
     "/manage-users/add",
     "/manage-users/edit",
     "/create-bs/create",
-    "/create-bs/cek-laporan",
+    "/create-bs/cek-pengajuan",
 
 ];
