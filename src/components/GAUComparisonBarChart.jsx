@@ -3,12 +3,13 @@ import { Bar } from 'react-chartjs-2';
 import Select from 'react-select';
 import { ClipLoader } from 'react-spinners';
 
-const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
+const GAUComparisonChart = ({ rawData, showLPJ = false, onClose }) => {
     const [viewType, setViewType] = useState('monthly');
     const [chartData, setChartData] = useState(null);
     const [selectedYears, setSelectedYears] = useState([]);
     const [availableYears, setAvailableYears] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [legendItems, setLegendItems] = useState([]);
 
     const months = [
         "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -46,6 +47,34 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
         }
     }, [rawData, viewType, selectedYears]);
 
+    const predefinedTypes = {
+        "ATK": "rgba(255, 99, 132, 1)",
+        "RTG": "rgba(54, 162, 235, 1)",
+        "Entertaint": "rgba(255, 206, 86, 1)",
+        "Parkir": "rgba(75, 192, 192, 1)",
+        "Meals Lembur": "rgba(153, 102, 255, 1)",
+        "Meals Meeting": "rgba(255, 159, 64, 1)",
+        "Jenis Lain": "rgba(201, 203, 207, 1)",
+    };
+
+    const normalizeTypeName = (type) => {
+        if (!type) return "Jenis Lain";
+
+        // If it's a predefined type (case-insensitive check)
+        const predefinedType = Object.keys(predefinedTypes).find(
+            key => key.toLowerCase() === type.toLowerCase()
+        );
+        if (predefinedType) return predefinedType;
+
+        return type
+            .toLowerCase()
+            .replace(/\s+/g, ' ')    // Replace multiple spaces with single space
+            .trim()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
+
     const getMonthlyColor = (index) => {
         const baseColors = [
             "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40", "#9966FF",
@@ -59,45 +88,80 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
         return baseColors[index % baseColors.length];
     };
 
-    const getYearlyColor = (jenis, index, showLPJ = false) => {
-        if (showLPJ) {
-            return getMonthlyColor(index);
+    const getYearlyColor = (jenis, index) => {
+        // First check if it's a predefined type (case-insensitive)
+        const predefinedType = Object.keys(predefinedTypes).find(
+            key => key.toLowerCase() === jenis.toLowerCase()
+        );
+        if (predefinedType) {
+            return predefinedTypes[predefinedType];
         }
-
-        const jenisColors = {
-            ATK: "rgba(255, 99, 132, 1)",
-            RTG: "rgba(54, 162, 235, 1)",
-            Entertaint: "rgba(255, 206, 86, 1)",
-            Parkir: "rgba(75, 192, 192, 1)",
-            "Meals Lembur": "rgba(153, 102, 255, 1)",
-            "Meals Meeting": "rgba(255, 159, 64, 1)",
-            "Jenis Lain": "rgba(201, 203, 207, 1)",
-        };
-        return jenisColors[jenis] || "rgba(0, 0, 0, 1)";
+        // For custom types, use the color generation function
+        return getMonthlyColor(index);
     };
 
-    const prepareMonthlyData = () => {
-        const capitalizeWords = (str) => {
-            return str
-                .toLowerCase()
-                .split(' ')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ');
-        };
+    const updateLegendItems = () => {
+        if (!chartData || !chartData.datasets) return;
 
+        const uniqueItems = new Set();
+        chartData.datasets.forEach(dataset => {
+            if (dataset.itemId) {
+                uniqueItems.add(dataset.itemId);
+            }
+        });
+
+        const items = Array.from(uniqueItems).map((itemId, index) => {
+            const dataset = chartData.datasets.find(ds => ds.itemId === itemId);
+            const isHidden = chartData.datasets
+                .filter(ds => ds.itemId === itemId)
+                .every(ds => ds.hidden);
+
+            return {
+                id: itemId,
+                label: itemId,
+                color: dataset.backgroundColor,
+                hidden: isHidden
+            };
+        });
+
+        const itemsPerRow = Math.ceil(items.length / 2);
+        setLegendItems(items);
+    };
+
+    const handleLegendClick = (clickedItem) => {
+        if (!chartData) return;
+
+        const newDatasets = chartData.datasets.map(dataset => {
+            if (dataset.itemId === clickedItem.id) {
+                dataset.hidden = !dataset.hidden;
+            }
+            return dataset;
+        });
+
+        setChartData({ ...chartData, datasets: newDatasets });
+        updateLegendItems();
+    };
+
+    useEffect(() => {
+        if (chartData) {
+            updateLegendItems();
+        }
+    }, [chartData]);
+
+    const prepareMonthlyData = () => {
         const allItems = new Set();
         rawData.forEach(item => {
             if (item.kategori === "GA/Umum") {
                 if (showLPJ && item.lpj) {
                     item.lpj.forEach(lpjItem => {
                         if (lpjItem.namaItem) {
-                            allItems.add(capitalizeWords(lpjItem.namaItem));
+                            allItems.add(normalizeTypeName(lpjItem.namaItem));
                         }
                     });
                 } else if (!showLPJ && item.reimbursements) {
                     item.reimbursements.forEach(reimb => {
                         if (reimb.item) {
-                            allItems.add(capitalizeWords(reimb.item));
+                            allItems.add(normalizeTypeName(reimb.item));
                         }
                     });
                 }
@@ -125,14 +189,14 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
             if (monthlyData[year]) {
                 if (showLPJ && item.lpj) {
                     item.lpj.forEach(lpjItem => {
-                        const normalizedItem = capitalizeWords(lpjItem.namaItem);
+                        const normalizedItem = normalizeTypeName(lpjItem.namaItem);
                         if (monthlyData[year][month][normalizedItem] !== undefined) {
                             monthlyData[year][month][normalizedItem] += lpjItem.jumlah || 1;
                         }
                     });
                 } else if (!showLPJ && item.reimbursements) {
                     item.reimbursements.forEach(reimb => {
-                        const normalizedItem = capitalizeWords(reimb.item);
+                        const normalizedItem = normalizeTypeName(reimb.item);
                         if (monthlyData[year][month][normalizedItem] !== undefined) {
                             monthlyData[year][month][normalizedItem]++;
                         }
@@ -172,26 +236,20 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
     };
 
     const prepareYearlyData = () => {
-        const capitalizeWords = (str) => {
-            return str
-                .toLowerCase()
-                .split(' ')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ');
-        };
-
         const allTypes = new Set();
         rawData.forEach(item => {
             if (item.kategori === "GA/Umum") {
                 if (showLPJ && item.lpj) {
                     item.lpj.forEach(lpjItem => {
                         if (lpjItem.namaItem) {
-                            allTypes.add(capitalizeWords(lpjItem.namaItem));
+                            allTypes.add(normalizeTypeName(lpjItem.namaItem));
                         }
                     });
                 } else if (!showLPJ && item.reimbursements) {
                     item.reimbursements.forEach(reimb => {
-                        if (reimb.jenis) allTypes.add(reimb.jenis);
+                        if (reimb.jenis) {
+                            allTypes.add(normalizeTypeName(reimb.jenis));
+                        }
                     });
                 }
             }
@@ -212,7 +270,7 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
             if (yearlyTotals[year]) {
                 if (showLPJ && item.lpj) {
                     item.lpj.forEach(lpjItem => {
-                        const normalizedItem = capitalizeWords(lpjItem.namaItem);
+                        const normalizedItem = normalizeTypeName(lpjItem.namaItem);
                         if (yearlyTotals[year][normalizedItem] !== undefined) {
                             yearlyTotals[year][normalizedItem] += lpjItem.jumlah || 1;
                         }
@@ -220,7 +278,8 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
                 } else if (!showLPJ && item.reimbursements) {
                     item.reimbursements.forEach(reimb => {
                         if (reimb.jenis) {
-                            yearlyTotals[year][reimb.jenis]++;
+                            const normalizedType = normalizeTypeName(reimb.jenis);
+                            yearlyTotals[year][normalizedType]++;
                         }
                     });
                 }
@@ -235,8 +294,8 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
             return {
                 label: type,
                 data: data,
-                backgroundColor: getYearlyColor(type, index, showLPJ),
-                borderColor: getYearlyColor(type, index, showLPJ),
+                backgroundColor: getYearlyColor(type, index),
+                borderColor: getYearlyColor(type, index),
                 borderWidth: 1,
                 stack: '',
                 itemId: type
@@ -263,7 +322,20 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
         control: (base) => ({
             ...base,
             minHeight: '32px',
-            fontSize: '14px'
+            fontSize: '14px',
+            display: 'flex',
+            flexWrap: 'nowrap',
+            overflow: 'auto'
+        }),
+        valueContainer: (base) => ({
+            ...base,
+            flexWrap: 'nowrap',
+            whiteSpace: 'nowrap',
+            overflow: 'auto',
+            '::-webkit-scrollbar': {
+                display: 'none'
+            },
+            scrollbarWidth: 'none'
         }),
         menu: (base) => ({
             ...base,
@@ -271,8 +343,9 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
         }),
         multiValue: (base) => ({
             ...base,
-            fontSize: '14px'
-        })
+            fontSize: '14px',
+            flexShrink: 0
+        }),
     };
 
     if (isLoading || !chartData) {
@@ -285,12 +358,22 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
 
     return (
         <div className="w-full">
-            <div className="flex items-center justify-between mb-4 mr-12">
-                <h2 className="text-lg font-medium">
-                    {showLPJ ? "Perbandingan Pengajuan LPJ BS GA/Umum" : "Perbandingan Pengajuan Reimbursement GA/Umum"}
-                </h2>
-                <div className="flex items-center space-x-4">
-                    <div className="w-96">
+            <div className="flex flex-col space-y-2 lg:space-y-0 lg:flex-row lg:items-center lg:justify-between mb-4">
+                <div className="flex items-center justify-between w-full">
+                    <h2 className="text-base md:text-lg font-medium">
+                        {showLPJ ? "Perbandingan Pengajuan LPJ BS GA/Umum" : "Perbandingan Pengajuan Reimbursement GA/Umum"}
+                    </h2>
+                    {onClose && (
+                        <button
+                            onClick={onClose}
+                            className="block lg:hidden text-gray-500 hover:text-gray-800 text-4xl"
+                        >
+                            &times;
+                        </button>
+                    )}
+                </div>
+                <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center lg:space-x-4">
+                    <div className="w-full md:w-96 lg:w-64 xl:w-96">
                         <Select
                             isMulti
                             value={selectedYears}
@@ -299,33 +382,74 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
                             styles={selectStyles}
                             placeholder="Pilih tahun untuk dibandingkan"
                             className="text-sm"
+                            isSearchable={false}
                         />
                     </div>
-                    <label className="inline-flex items-center">
-                        <input
-                            type="radio"
-                            className="form-radio text-blue-600"
-                            name="viewType"
-                            value="monthly"
-                            checked={viewType === 'monthly'}
-                            onChange={(e) => setViewType(e.target.value)}
-                        />
-                        <span className="ml-2 text-sm">Per Bulan</span>
-                    </label>
-                    <label className="inline-flex items-center">
-                        <input
-                            type="radio"
-                            className="form-radio text-blue-600"
-                            name="viewType"
-                            value="yearly"
-                            checked={viewType === 'yearly'}
-                            onChange={(e) => setViewType(e.target.value)}
-                        />
-                        <span className="ml-2 text-sm">Per Tahun</span>
-                    </label>
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-4 space-y-4 lg:space-y-0">
+                        <div className="flex space-x-4">
+                            <label className="inline-flex items-center">
+                                <input
+                                    type="radio"
+                                    className="form-radio text-blue-600"
+                                    name="viewType"
+                                    value="monthly"
+                                    checked={viewType === 'monthly'}
+                                    onChange={(e) => setViewType(e.target.value)}
+                                />
+                                <span className="ml-2 text-sm">Per Bulan</span>
+                            </label>
+                            <label className="inline-flex items-center">
+                                <input
+                                    type="radio"
+                                    className="form-radio text-blue-600"
+                                    name="viewType"
+                                    value="yearly"
+                                    checked={viewType === 'yearly'}
+                                    onChange={(e) => setViewType(e.target.value)}
+                                />
+                                <span className="ml-2 text-sm">Per Tahun</span>
+                            </label>
+                        </div>
+                        {onClose && (
+                            <button
+                                onClick={onClose}
+                                className="hidden lg:block text-gray-500 hover:text-gray-800 text-4xl lg:ml-4"
+                            >
+                                &times;
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
-            <div className="h-[400px]">
+            <div className="mb-4">
+                <div
+                    className="grid grid-rows-2 gap-2 overflow-x-auto scrollbar pb-0.5"
+                    style={{ gridAutoFlow: 'column' }}
+                >
+                    {legendItems.map((item, index) => (
+                        <button
+                            key={item.id}
+                            onClick={() => handleLegendClick(item)}
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-all duration-200 ${item.hidden
+                                ? 'bg-gray-100 text-gray-500'
+                                : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                                }`}
+                        >
+                            <span
+                                className="w-2 h-2 rounded-full flex-shrink-0"
+                                style={{
+                                    backgroundColor: item.color,
+                                    opacity: item.hidden ? 0.5 : 1
+                                }}
+                            />
+                            <span className={item.hidden ? 'opacity-50' : ''}>
+                                {item.label}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+            <div className="h-[320px] md:h-[360px] lg:h-[400px] xl:h-[480px]">
                 <Bar
                     data={chartData}
                     options={{
@@ -338,77 +462,63 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
                                 },
                                 title: {
                                     display: true,
-                                    text: viewType === 'monthly' ? 'Bulan' : 'Tahun'
+                                    text: viewType === 'monthly' ? 'Bulan' : 'Tahun',
+                                    font: {
+                                        size: 10,
+                                    }
+                                },
+                                ticks: {
+                                    maxRotation: 45,
+                                    font: {
+                                        size: 10,
+                                    }
                                 }
                             },
                             y: {
                                 stacked: true,
                                 title: {
                                     display: true,
-                                    text: showLPJ ? 'Jumlah Item' : 'Jumlah Pengajuan'
+                                    text: showLPJ ? 'Jumlah Item' : 'Jumlah Pengajuan',
+                                    font: {
+                                        size: 10,
+                                    }
                                 },
                                 ticks: {
                                     stepSize: 2,
-                                    precision: 0
+                                    precision: 0,
+                                    font: {
+                                        size: 10,
+                                    }
                                 }
                             }
                         },
                         plugins: {
                             legend: {
-                                position: 'top',
-                                onClick: (e, legendItem, legend) => {
-                                    const chart = legend.chart;
-                                    const datasets = chart.data.datasets;
-                                    const relatedDatasets = datasets.filter(
-                                        ds => ds.itemId === legendItem.text
-                                    );
-                                    relatedDatasets.forEach(dataset => {
-                                        const index = datasets.indexOf(dataset);
-                                        const meta = chart.getDatasetMeta(index);
-                                        meta.hidden = !meta.hidden;
-                                    });
-                                    chart.update();
-                                },
-                                labels: {
-                                    generateLabels: (chart) => {
-                                        const datasets = chart.data.datasets;
-                                        const uniqueItems = new Set();
-                                        datasets.forEach(dataset => {
-                                            if (dataset.itemId) {
-                                                uniqueItems.add(dataset.itemId);
-                                            }
-                                        });
-                                        return Array.from(uniqueItems).map((itemId, index) => {
-                                            const dataset = datasets.find(ds => ds.itemId === itemId);
-                                            const relatedDatasets = datasets.filter(ds => ds.itemId === itemId);
-                                            const isHidden = relatedDatasets.every(ds =>
-                                                chart.getDatasetMeta(datasets.indexOf(ds)).hidden
-                                            );
-                                            return {
-                                                text: itemId,
-                                                fillStyle: dataset.backgroundColor,
-                                                strokeStyle: dataset.borderColor,
-                                                lineWidth: dataset.borderWidth,
-                                                hidden: isHidden,
-                                                index: index
-                                            };
-                                        });
-                                    }
-                                }
+                                display: false
                             },
                             datalabels: {
                                 display: (context) => {
                                     if (viewType !== 'monthly') return false;
                                     const stack = context.dataset.stack;
                                     const dataIndex = context.dataIndex;
+
+                                    // Get all datasets for this stack
                                     const stackDatasets = context.chart.data.datasets.filter(
-                                        ds => ds.stack === stack && !context.chart.getDatasetMeta(context.chart.data.datasets.indexOf(ds)).hidden
+                                        ds => ds.stack === stack && !ds.hidden
                                     );
+
+                                    // If there are no visible datasets for this stack,
+                                    // show the year label on the first dataset of this stack
+                                    if (stackDatasets.length === 0) {
+                                        const allStackDatasets = context.chart.data.datasets.filter(
+                                            ds => ds.stack === stack
+                                        );
+                                        return context.dataset === allStackDatasets[0];
+                                    }
+
                                     const stackTotal = stackDatasets.reduce((sum, dataset) => {
                                         return sum + (dataset.data[dataIndex] || 0);
                                     }, 0);
-                                    if (stackTotal === 0) return false;
-                                    const middleOfStack = stackTotal / 2;
 
                                     // Find the dataset whose middle point is closest to stack's middle
                                     let closestDataset = null;
@@ -420,11 +530,9 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
                                             .reduce((sum, d) => sum + (d.data[dataIndex] || 0), 0);
                                         const value = dataset.data[dataIndex] || 0;
                                         const middlePoint = sumBefore + (value / 2);
-                                        const distance = Math.abs(middleOfStack - middlePoint);
+                                        const distance = Math.abs((stackTotal / 2) - middlePoint);
 
-                                        if (distance < smallestDistance ||
-                                            (distance === smallestDistance &&
-                                                stackDatasets.indexOf(dataset) < stackDatasets.indexOf(closestDataset))) {
+                                        if (distance < smallestDistance) {
                                             closestDataset = dataset;
                                             smallestDistance = distance;
                                         }
@@ -439,13 +547,15 @@ const GAUComparisonChart = ({ rawData, showLPJ = false }) => {
                                     return '';
                                 },
                                 font: {
-                                    size: 10,
+                                    size: 12,
                                     weight: 'bold'
                                 },
                                 color: '#FFF',
                                 anchor: 'center',
                                 align: 'center',
                                 rotation: -90,
+                                // Add offset to ensure visibility
+                                offset: 4
                             }
                         }
                     }}

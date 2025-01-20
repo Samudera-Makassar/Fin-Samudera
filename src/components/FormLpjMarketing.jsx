@@ -523,7 +523,25 @@ const FormLpjMarketing = () => {
                 }))
             )
         }
-    }, [location.state?.aktivitas])
+
+        if (isAdmin && location.state) {
+            if (location.state.unit) {
+                const unitOption = BUSINESS_UNITS.find(unit => unit.value === location.state.unit)
+                if (unitOption) {
+                    setSelectedUnit(unitOption)
+                }
+            }
+
+            if (location.state.validator?.[0]) {
+                if (validatorOptions.length > 0) {
+                    const validatorOption = validatorOptions.find(v => v.value === location.state.validator[0])
+                    if (validatorOption) {
+                        setSelectedValidator(validatorOption)
+                    }
+                }
+            }
+        }
+    }, [location.state, isAdmin, validatorOptions])
 
     const customStyles = {
         control: (base) => ({
@@ -894,7 +912,7 @@ const FormLpjMarketing = () => {
                     </>
                 )}
 
-                <hr className="border-gray-300 my-6" />                
+                <hr className="border-gray-300 my-6" />
 
                 {lpj.map((item, index) => (
                     <div key={index}>
@@ -1020,9 +1038,8 @@ const FormLpjMarketing = () => {
                 </div>
 
                 {/* Bagian Total Biaya */}
-                <div className="grid grid-cols-1 xl:grid-cols-4 gap-0 xl:gap-4 my-6">
-                    <div></div>
-                    <div></div>
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-0 xl:gap-4 my-6 xl:flex xl:flex-1">
+                    <div className="w-1/2"></div>
                     <div className="text-left flex flex-col xl:block">
                         <div className='flex flex-col md:flex-row mb-1 md:mb-0'>
                             <span>Total Biaya</span>

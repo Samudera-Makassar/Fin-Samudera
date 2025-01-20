@@ -45,7 +45,7 @@ const ReviewerDashboard = ({ userUid }) => {
                         <h2 className="text-xl font-medium mb-4">
                             Welcome, <span className="font-bold">{user?.name || 'User '}</span>
                         </h2>
-                        <div className='flex flex-col lg:flex-row justify-between gap-4 mb-6'>
+                        <div className='flex flex-col xl:flex-row justify-between gap-4 xl:gap-6 mb-6'>
                             <ReportCard />
                             <GAUPieChart />
                         </div>                        

@@ -706,7 +706,7 @@ const RbsUmumForm = () => {
                         )}
 
                         <div className="flex flex-col xl:flex-row justify-stretch gap-2 mb-2">
-                            <div className="flex-1 w-full xl:max-w-44">
+                            <div className="flex-1 w-full xl:min-w-44">
                                 {(index === 0 || window.innerWidth < 1280) && (
                                     <label className="block text-gray-700 font-medium mb-2 xl:hidden">
                                         Jenis Reimbursement <span className="text-red-500">*</span>

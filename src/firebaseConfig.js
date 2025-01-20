@@ -6,12 +6,12 @@ import { getStorage } from 'firebase/storage';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyA_WNYGZiuovpyGyBSbdsbTYiFewWBc0B4",
-    authDomain: "samudera-ee2f8.firebaseapp.com",
-    projectId: "samudera-ee2f8",
-    storageBucket: "samudera-ee2f8.firebasestorage.app",
-    messagingSenderId: "917072991133",
-    appId: "1:917072991133:web:ed74344feeb775f9f89574"
+    apiKey: "AIzaSyB5-x2X8IIbKCvn7OAsbUkDvFB52_jyR9A",
+    authDomain: "samudera-web-cbf2f.firebaseapp.com",
+    projectId: "samudera-web-cbf2f",
+    storageBucket: "samudera-web-cbf2f.firebasestorage.app",
+    messagingSenderId: "914292170028",
+    appId: "1:914292170028:web:c415b02f810d92bfd9e089",
 };
 
 // Initialize Firebase

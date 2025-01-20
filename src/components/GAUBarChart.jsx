@@ -8,9 +8,21 @@ import ClipLoader from "react-spinners/ClipLoader";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ChartDataLabels);
 
-const GAUBarChart = ({ selectedType, selectedMonth, selectedYear, months }) => {
+const GAUBarChart = ({ selectedType, selectedMonth, selectedYear, months, onClose }) => {
     const [chartData, setChartData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const baseColors = [
+        "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40", "#9966FF",
+        "#FFB6C1", "#8B4513", "#00BFFF", "#32CD32", "#FFD700", "#8A2BE2",
+        "#FF6347", "#9ACD32", "#DC143C", "#FF1493", "#00FF7F", "#7FFF00",
+        "#1E90FF", "#D2691E", "#8FBC8F", "#FF4500", "#ADFF2F", "#6495ED",
+        "#BA55D3", "#87CEEB", "#9370DB", "#3CB371", "#FF69B4", "#40E0D0",
+        "#4682B4", "#DA70D6", "#708090", "#2E8B57", "#FFA07A", "#6A5ACD",
+        "#20B2AA", "#5F9EA0", "#FFDAB9", "#EE82EE", "#F08080", "#98FB98"
+    ];
+
+    const getColor = (index) => baseColors[index % baseColors.length];
 
     useEffect(() => {
         const fetchData = async () => {
@@ -70,14 +82,16 @@ const GAUBarChart = ({ selectedType, selectedMonth, selectedYear, months }) => {
         );
         const values = Object.values(itemCounts);
 
+        const backgroundColors = values.map((_, index) => getColor(index));
+
         return {
             labels,
             datasets: [
                 {
                     label: 'Jumlah Item',
                     data: values,
-                    backgroundColor: "rgba(75, 192, 192, 1)",
-                    borderColor: "rgba(75, 192, 192, 1)",
+                    backgroundColor: backgroundColors,
+                    borderColor: backgroundColors,
                     borderWidth: 1,
                 },
             ],
@@ -106,10 +120,20 @@ const GAUBarChart = ({ selectedType, selectedMonth, selectedYear, months }) => {
 
     return (
         <div className="w-full">
-            <h2 className="text-lg font-medium mb-4">
-                Detail Item {selectedType} - {getPeriodText()}
-            </h2>
-            <div className="h-[400px]">
+            <div className="flex items-center justify-between w-full mb-4">
+                <h2 className="text-base md:text-lg font-medium">
+                    Detail Item {selectedType} - {getPeriodText()}
+                </h2>
+                {onClose && (
+                    <button
+                        onClick={onClose}
+                        className="text-gray-500 hover:text-gray-800 text-4xl"
+                    >
+                        &times;
+                    </button>
+                )}
+            </div>
+            <div className="h-[400px] md:h-[420px] lg:h-[460px] xl:h-[500px]">
                 {chartDisplayData && chartDisplayData.labels.length > 0 ? (
                     <Bar
                         data={chartDisplayData}
@@ -118,13 +142,7 @@ const GAUBarChart = ({ selectedType, selectedMonth, selectedYear, months }) => {
                             maintainAspectRatio: false,
                             plugins: {
                                 legend: {
-                                    position: "top",
-                                    labels: {
-                                        padding: 12,
-                                        font: {
-                                            size: 12,
-                                        },
-                                    },
+                                    display: false,
                                 },
                                 datalabels: {
                                     color: '#fff',
@@ -139,24 +157,43 @@ const GAUBarChart = ({ selectedType, selectedMonth, selectedYear, months }) => {
                                     title: {
                                         display: true,
                                         text: "Item",
+                                        font: {
+                                            size: 10,
+                                        }
+                                    },
+                                    ticks: {
+                                        maxRotation: 45,
+                                        font: {
+                                            size: 10,
+                                        }
                                     },
                                 },
                                 y: {
                                     title: {
                                         display: true,
                                         text: "Jumlah",
+                                        font: {
+                                            size: 10,
+                                        }
                                     },
                                     ticks: {
                                         stepSize: 2,
                                         precision: 0,
                                         beginAtZero: true,
+                                        font: {
+                                            size: 10,
+                                        }
                                     },
                                 },
                             },
                         }}
                     />
                 ) : (
-                    <p className="text-gray-500 py-16 text-center">Tidak ada data untuk {selectedType} pada periode {getPeriodText()}.</p>
+                    <div className="flex items-center justify-center h-full">
+                        <p className="text-sm sm:text-base md:text-lg text-gray-500 text-center px-4">
+                            Tidak ada data untuk {selectedType} pada periode {getPeriodText()}.
+                        </p>
+                    </div>
                 )}
             </div>
         </div>

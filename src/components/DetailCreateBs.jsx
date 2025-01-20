@@ -225,12 +225,15 @@ const DetailCreateBs = () => {
 
     const handleBuatLaporan = () => {
         const bonSementara = bonSementaraDetail?.bonSementara?.[0]
+        const userDetail = bonSementaraDetail?.user
         if (bonSementara?.kategori === 'GA/Umum') {
             navigate('/lpj/umum', {
                 state: {
                     nomorBS: bonSementara.nomorBS,
                     jumlahBS: bonSementara.jumlahBS,
-                    aktivitas: bonSementara.aktivitas
+                    aktivitas: bonSementara.aktivitas,
+                    unit: userDetail.unit,
+                    validator: userDetail.validator,
                 }
             })
         } else if (bonSementara?.kategori === 'Marketing/Operasional') {
@@ -238,7 +241,9 @@ const DetailCreateBs = () => {
                 state: {
                     nomorBS: bonSementara.nomorBS,
                     jumlahBS: bonSementara.jumlahBS,
-                    aktivitas: bonSementara.aktivitas
+                    aktivitas: bonSementara.aktivitas,
+                    unit: userDetail.unit,
+                    validator: userDetail.validator,
                 }
             })
         } else {

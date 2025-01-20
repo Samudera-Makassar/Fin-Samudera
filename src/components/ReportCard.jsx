@@ -79,7 +79,7 @@ const ReportCard = () => {
                     fetchCounts('bonSementara'),
                     fetchCounts('lpj')
                 ]);
-                
+
                 setReimbursementCount(reimbursements.length);
                 setBonSementaraCount(bonSementara.length);
                 setLpjCount(lpj.length);
@@ -163,7 +163,7 @@ const ReportCard = () => {
                 <div
                     className={`md:hidden bg-white rounded-lg shadow-sm p-4 ${userRole === 'Reviewer' ? 'mb-2' : 'mb-6'}`}
                 >
-                    <p className="text-lg font-medium mb-2">Laporan Perlu Ditanggapi</p>
+                    <p className="text-lg font-medium mb-2">Pengajuan Perlu Ditanggapi</p>
                     <div className="flex flex-col">
                         {[1, 2, 3].map((index) => (
                             <React.Fragment key={index}>
@@ -212,7 +212,7 @@ const ReportCard = () => {
                             <div className="flex-1">
                                 <p className="text-lg font-medium text-gray-500">Reimbursement</p>
                                 <div className="text-4xl font-bold">{reimbursementCount}</div>
-                                <p className="text-sm text-gray-500">Laporan Perlu Ditanggapi</p>
+                                <p className="text-sm text-gray-500">Pengajuan Perlu Ditanggapi</p>
                             </div>
                         </div>
 
@@ -260,7 +260,7 @@ const ReportCard = () => {
                             <div className="flex-1">
                                 <p className="text-lg font-medium text-gray-500">LPJ Bon Sementara</p>
                                 <div className="text-4xl font-bold">{lpjCount}</div>
-                                <p className="text-sm text-gray-500">Laporan Perlu Ditanggapi</p>
+                                <p className="text-sm text-gray-500">Pengajuan Perlu Ditanggapi</p>
                             </div>
                         </div>
                     </>
@@ -287,7 +287,7 @@ const ReportCard = () => {
                             <div className="flex-1">
                                 <p className="text-lg font-medium text-gray-500">Reimbursement</p>
                                 <div className="text-4xl font-bold">{reimbursementCount}</div>
-                                <p className="text-sm text-gray-500">Laporan Perlu Ditanggapi</p>
+                                <p className="text-sm text-gray-500">Pengajuan Perlu Ditanggapi</p>
                             </div>
                         </div>
 
@@ -335,7 +335,7 @@ const ReportCard = () => {
                             <div className="flex-1">
                                 <p className="text-lg font-medium text-gray-500">LPJ Bon Sementara</p>
                                 <div className="text-4xl font-bold">{lpjCount}</div>
-                                <p className="text-sm text-gray-500">Laporan Perlu Ditanggapi</p>
+                                <p className="text-sm text-gray-500">Pengajuan Perlu Ditanggapi</p>
                             </div>
                         </div>
                     </>
@@ -344,157 +344,79 @@ const ReportCard = () => {
 
             {/* Laptop View (1024) */}
             <div className="hidden lg:block xl:hidden">
-                {userRole === 'Reviewer' ? (
-                    // Laptop layout untuk Reviewer (flex-col)
-                    <div className="flex flex-col gap-6">
-                        <div className="bg-white flex items-center space-x-4 px-6 py-4 shadow-sm rounded-lg">
-                            <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-6 rounded-full">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="1.5"
-                                    stroke="currentColor"
-                                    className="size-8 text-white"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M8.25 9.75h4.875a2.625 2.625 0 0 1 0 5.25H12M8.25 9.75 10.5 7.5M8.25 9.75 10.5 12m9-7.243V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185Z"
-                                    />
-                                </svg>
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-lg font-medium text-gray-500">Reimbursement</p>
-                                <div className="text-4xl font-bold">{reimbursementCount}</div>
-                                <p className="text-sm text-gray-500">Laporan Perlu Ditanggapi</p>
-                            </div>
+                <div className={`flex flex-row gap-4 ${userRole === 'Reviewer' ? 'mb-2' : 'mb-6'}`}>
+                    <div className="flex-1 bg-white p-4 rounded-lg shadow-sm">
+                        <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4 rounded-full w-fit mb-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="1.5"
+                                stroke="currentColor"
+                                className="size-6 text-white"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M8.25 9.75h4.875a2.625 2.625 0 0 1 0 5.25H12M8.25 9.75 10.5 7.5M8.25 9.75 10.5 12m9-7.243V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185Z"
+                                />
+                            </svg>
                         </div>
-
-                        <div className="bg-white flex items-center space-x-4 px-6 py-4 shadow-sm rounded-lg">
-                            <div className="bg-gradient-to-r from-teal-400 to-green-500 p-6 rounded-full">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="1.5"
-                                    stroke="currentColor"
-                                    className="size-8 text-white"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v7.5m2.25-6.466a9.016 9.016 0 0 0-3.461-.203c-.536.072-.974.478-1.021 1.017a4.559 4.559 0 0 0-.018.402c0 .464.336.844.775.994l2.95 1.012c.44.15.775.53.775.994 0 .136-.006.27-.018.402-.047.539-.485.945-1.021 1.017a9.077 9.077 0 0 1-3.461-.203M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                                    />
-                                </svg>
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-lg font-medium text-gray-500">Nomor Bon Sementara</p>
-                                <div className="text-4xl font-bold">{bonSementaraCount}</div>
-                                <p className="text-sm text-gray-500">Pengajuan Perlu Ditanggapi</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-white flex items-center space-x-4 px-6 py-4 shadow-sm rounded-lg">
-                            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-6 rounded-full">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="1.5"
-                                    stroke="currentColor"
-                                    className="size-8 text-white"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6"
-                                    />
-                                </svg>
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-lg font-medium text-gray-500">LPJ Bon Sementara</p>
-                                <div className="text-4xl font-bold">{lpjCount}</div>
-                                <p className="text-sm text-gray-500">Laporan Perlu Ditanggapi</p>
-                            </div>
+                        <p className="text-md font-medium text-gray-500">Reimbursement</p>
+                        <div className="text-xl font-bold">
+                            {reimbursementCount}{' '}
+                            <span className="text-sm font-medium text-gray-500">Pengajuan Perlu Ditanggapi</span>
                         </div>
                     </div>
-                ) : (
-                    // Laptop layout untuk Non-Reviewer (mengikuti tablet style)
-                    <div className="flex flex-row gap-4 mb-6">
-                        <div className="flex-1 bg-white p-4 rounded-lg shadow-sm">
-                            <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4 rounded-full w-fit mb-2">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="1.5"
-                                    stroke="currentColor"
-                                    className="size-6 text-white"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M8.25 9.75h4.875a2.625 2.625 0 0 1 0 5.25H12M8.25 9.75 10.5 7.5M8.25 9.75 10.5 12m9-7.243V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185Z"
-                                    />
-                                </svg>
-                            </div>
-                            <p className="text-sm font-bold text-gray-500">Reimbursement</p>
-                            <div className="text-xl font-bold">
-                                {reimbursementCount}{' '}
-                                <span className="text-sm font-medium text-gray-500">Laporan Perlu Ditanggapi</span>
-                            </div>
-                        </div>
 
-                        <div className="flex-1 bg-white p-4 rounded-lg shadow-sm">
-                            <div className="bg-gradient-to-r from-teal-400 to-green-500 p-4 rounded-full w-fit mb-2">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="1.5"
-                                    stroke="currentColor"
-                                    className="size-6 text-white"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v7.5m2.25-6.466a9.016 9.016 0 0 0-3.461-.203c-.536.072-.974.478-1.021 1.017a4.559 4.559 0 0 0-.018.402c0 .464.336.844.775.994l2.95 1.012c.44.15.775.53.775.994 0 .136-.006.27-.018.402-.047.539-.485.945-1.021 1.017a9.077 9.077 0 0 1-3.461-.203M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                                    />
-                                </svg>
-                            </div>
-                            <p className="text-sm font-bold text-gray-500">Nomor Bon Sementara</p>
-                            <div className="text-xl font-bold">
-                                {bonSementaraCount}{' '}
-                                <span className="text-sm font-medium text-gray-500">Laporan Perlu Ditanggapi</span>
-                            </div>
+                    <div className="flex-1 bg-white p-4 rounded-lg shadow-sm">
+                        <div className="bg-gradient-to-r from-teal-400 to-green-500 p-4 rounded-full w-fit mb-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="1.5"
+                                stroke="currentColor"
+                                className="size-6 text-white"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v7.5m2.25-6.466a9.016 9.016 0 0 0-3.461-.203c-.536.072-.974.478-1.021 1.017a4.559 4.559 0 0 0-.018.402c0 .464.336.844.775.994l2.95 1.012c.44.15.775.53.775.994 0 .136-.006.27-.018.402-.047.539-.485.945-1.021 1.017a9.077 9.077 0 0 1-3.461-.203M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                                />
+                            </svg>
                         </div>
-
-                        <div className="flex-1 bg-white p-4 rounded-lg shadow-sm">
-                            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-4 rounded-full w-fit mb-2">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="1.5"
-                                    stroke="currentColor"
-                                    className="size-6 text-white"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6"
-                                    />
-                                </svg>
-                            </div>
-                            <p className="text-sm font-bold text-gray-500">LPJ Bon Sementara</p>
-                            <div className="text-xl font-bold">
-                                {lpjCount}{' '}
-                                <span className="text-sm font-medium text-gray-500">Laporan Perlu Ditanggapi</span>
-                            </div>
+                        <p className="text-md font-medium text-gray-500">Nomor Bon Sementara</p>
+                        <div className="text-xl font-bold">
+                            {bonSementaraCount}{' '}
+                            <span className="text-sm font-medium text-gray-500">Pengajuan Perlu Ditanggapi</span>
                         </div>
                     </div>
-                )}
+
+                    <div className="flex-1 bg-white p-4 rounded-lg shadow-sm">
+                        <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-4 rounded-full w-fit mb-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="1.5"
+                                stroke="currentColor"
+                                className="size-6 text-white"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6"
+                                />
+                            </svg>
+                        </div>
+                        <p className="text-md font-medium text-gray-500">LPJ Bon Sementara</p>
+                        <div className="text-xl font-bold">
+                            {lpjCount}{' '}
+                            <span className="text-sm font-medium text-gray-500">Pengajuan Perlu Ditanggapi</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Tablet View (768) */}
@@ -518,10 +440,10 @@ const ReportCard = () => {
                             />
                         </svg>
                     </div>
-                    <p className="text-sm font-bold text-gray-500">Reimbursement</p>
+                    <p className="text-md font-medium text-gray-500">Reimbursement</p>
                     <div className="text-xl font-bold">
                         {reimbursementCount}{' '}
-                        <span className="text-sm font-medium text-gray-500">Laporan Perlu Ditanggapi</span>
+                        <span className="text-sm font-medium text-gray-500">Pengajuan Perlu Ditanggapi</span>
                     </div>
                 </div>
 
@@ -542,10 +464,10 @@ const ReportCard = () => {
                             />
                         </svg>
                     </div>
-                    <p className="text-sm font-bold text-gray-500">Nomor Bon Sementara</p>
+                    <p className="text-md font-medium text-gray-500">Nomor Bon Sementara</p>
                     <div className="text-xl font-bold">
                         {bonSementaraCount}{' '}
-                        <span className="text-sm font-medium text-gray-500">Laporan Perlu Ditanggapi</span>
+                        <span className="text-sm font-medium text-gray-500">Pengajuan Perlu Ditanggapi</span>
                     </div>
                 </div>
 
@@ -566,16 +488,16 @@ const ReportCard = () => {
                             />
                         </svg>
                     </div>
-                    <p className="text-sm font-bold text-gray-500">LPJ Bon Sementara</p>
+                    <p className="text-md font-medium text-gray-500">LPJ Bon Sementara</p>
                     <div className="text-xl font-bold">
-                        {lpjCount} <span className="text-sm font-medium text-gray-500">Laporan Perlu Ditanggapi</span>
+                        {lpjCount} <span className="text-sm font-medium text-gray-500">Pengajuan Perlu Ditanggapi</span>
                     </div>
                 </div>
             </div>
 
             {/* Mobile View (below 768px) */}
             <div className={`md:hidden bg-white rounded-lg shadow-sm p-4 ${userRole === 'Reviewer' ? 'mb-2' : 'mb-6'}`}>
-                <p className="text-lg font-medium mb-2">Laporan Perlu Ditanggapi</p>
+                <p className="text-xl font-medium mb-2">Pengajuan Perlu Ditanggapi</p>
                 <div className="flex flex-col">
                     {/* Reimbursement Section */}
                     <div className="flex items-center justify-between w-full bg-white p-3 rounded-lg">
@@ -597,7 +519,7 @@ const ReportCard = () => {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-sm font-medium">Reimbursement</p>
+                                <p className="text-md font-medium">Reimbursement</p>
                             </div>
                         </div>
                         <div className="bg-gray-100 px-3 py-1 rounded-full">
@@ -627,7 +549,7 @@ const ReportCard = () => {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-sm font-medium">Nomor Bon Sementara</p>
+                                <p className="text-md font-medium">Nomor Bon Sementara</p>
                             </div>
                         </div>
                         <div className="bg-gray-100 px-3 py-1 rounded-full">
@@ -657,7 +579,7 @@ const ReportCard = () => {
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-sm font-medium">LPJ Bon Sementara</p>
+                                <p className="text-md font-medium">LPJ Bon Sementara</p>
                             </div>
                         </div>
                         <div className="bg-gray-100 px-3 py-1 rounded-full">
