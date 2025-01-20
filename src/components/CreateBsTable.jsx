@@ -260,13 +260,14 @@ const CreateBsTable = () => {
     if (loading) {
         return (
             <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xl font-medium mb-4 items-center">Bon Sementara Diajukan</h3>
-                    <div className="flex space-x-2">
-                        <Skeleton width={100} height={32} />
-                        <Skeleton width={100} height={32} />
-                        <Skeleton width={100} height={32} />
-                        <Skeleton width={100} height={32} />
+                <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between mb-2 gap-4">
+                    <h3 className="text-xl font-medium">Bon Sementara Diajukan</h3>
+                    <div className="grid grid-cols-2 lg:flex lg:flex-row gap-2">
+                        {[...Array(4)].map((_, index) => (
+                            <div key={index} className="w-full lg:w-40">
+                                <Skeleton width="100%" height={32} />
+                            </div>
+                        ))}
                     </div>
                 </div>
                 <Skeleton count={5} height={40} />

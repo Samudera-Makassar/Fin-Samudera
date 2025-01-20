@@ -7,6 +7,8 @@ import Select from 'react-select'
 import EmptyState from '../assets/images/EmptyState.png'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 const LpjBsCheck = () => {
     const [activeTab, setActiveTab] = useState('pending')
@@ -15,6 +17,7 @@ const LpjBsCheck = () => {
     const [filteredApprovedData, setFilteredApprovedData] = useState({ lpj: [] })
     const [showModal, setShowModal] = useState(false)
     const [modalProps, setModalProps] = useState({})
+        const [loading, setLoading] = useState(true);
 
     const uid = localStorage.getItem('userUid')
     const userRole = localStorage.getItem('userRole')
@@ -45,6 +48,7 @@ const LpjBsCheck = () => {
 
     useEffect(() => {
         const fetchUserAndLpj = async () => {
+            setLoading(true)
             try {
                 if (!uid) {
                     console.error('UID tidak ditemukan di localStorage')
@@ -214,6 +218,8 @@ const LpjBsCheck = () => {
                 setApprovedData({ lpj: approvedLpj })
             } catch (error) {
                 console.error('Error fetching lpj data:', error)
+            } finally {
+                setLoading(false)
             }
         }
 
@@ -585,6 +591,7 @@ const LpjBsCheck = () => {
                 placeholder={label}
                 className="w-full md:w-40"
                 styles={selectStyles}
+                isSearchable={false}
             />
         )
     }
@@ -598,7 +605,7 @@ const LpjBsCheck = () => {
             {/* Tab Navigation */}
             <div className="flex mb-4 space-x-2 justify-center md:justify-end text-sm">
                 <button
-                    className={`px-4 py-2 rounded-full w-auto max-[426px]:w-full ${
+                    className={`px-4 py-2 rounded-full md:w-auto w-full ${
                         activeTab === 'pending'
                             ? 'bg-red-600 text-white'
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -608,7 +615,7 @@ const LpjBsCheck = () => {
                     Perlu Ditanggapi
                 </button>
                 <button
-                    className={`px-4 py-2 rounded-full w-auto max-[426px]:w-full ${
+                    className={`px-4 py-2 rounded-full md:w-auto w-full ${
                         activeTab === 'approved'
                             ? 'bg-red-600 text-white'
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -624,7 +631,9 @@ const LpjBsCheck = () => {
                     // Pending LPJ Table
                     <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
                         <h3 className="text-xl font-medium mb-4">Daftar LPJ Bon Sementara Perlu Ditanggapi</h3>
-                        {data.lpj.length === 0 ? (
+                        {loading ? (
+                            <Skeleton count={5} height={40} />
+                        ) : data.lpj.length === 0 ? (
                             <div className="flex justify-center">
                                 <figure className="w-44 h-44">
                                     <img
@@ -751,13 +760,25 @@ const LpjBsCheck = () => {
                                 <h3 className="text-xl font-medium mb-4 md:mb-0">
                                     Riwayat Persetujuan LPJ Bon Sementara
                                 </h3>
-                                <div className="flex space-x-2 w-full md:w-auto">
-                                    <FilterSelect field="bulan" label="Bulan" />
-                                    <FilterSelect field="tahun" label="Tahun" />
-                                </div>
+                                {loading ? (
+                                    <div className="grid grid-cols-2 md:flex md:flex-row gap-2 w-full md:w-auto">
+                                        {[...Array(2)].map((_, index) => (
+                                            <div key={index} className="w-full md:w-40">
+                                                <Skeleton className="w-full h-8" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex space-x-2 w-full md:w-auto">
+                                        <FilterSelect field="bulan" label="Bulan" />
+                                        <FilterSelect field="tahun" label="Tahun" />
+                                    </div>
+                                )}
                             </div>
                         </div>
-                        {filteredApprovedData.lpj.length === 0 ? (
+                        {loading ? (
+                            <Skeleton count={5} height={40} />
+                        ) : filteredApprovedData.lpj.length === 0 ? (
                             <div className="flex justify-center">
                                 <figure className="w-44 h-44">
                                     <img
@@ -842,7 +863,18 @@ const LpjBsCheck = () => {
                 confirmText="Ya"
             />
 
-            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+                style={{
+                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
+                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
+                }}
+                toastClassName="toast-item mt-2 xl:mt-0"
+            />
         </div>
     )
 };

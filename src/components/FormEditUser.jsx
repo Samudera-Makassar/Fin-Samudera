@@ -432,7 +432,7 @@ const EditUserForm = () => {
                             type="text"
                             name="nama"
                             value={formData.nama}
-                            onChange={handleChange}                        
+                            onChange={handleChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
                     </div>
@@ -442,9 +442,9 @@ const EditUserForm = () => {
                         </label>
                         <Select
                             name="role"
-                            value={roleOptions.find(option => option.label === formData.role)}
+                            value={roleOptions.find((option) => option.label === formData.role)}
                             onChange={(selectedOption) => handleSelectChange(selectedOption, 'role')}
-                            options={roleOptions}                        
+                            options={roleOptions}
                             isClearable
                             className="mt-1"
                             styles={selectStyles}
@@ -461,7 +461,7 @@ const EditUserForm = () => {
                             type="email"
                             name="email"
                             value={formData.email}
-                            onChange={handleChange}                        
+                            onChange={handleChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
                     </div>
@@ -473,7 +473,7 @@ const EditUserForm = () => {
                             type="text"
                             name="password"
                             value={formData.password}
-                            onChange={handleChange}                        
+                            onChange={handleChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
                     </div>
@@ -486,9 +486,9 @@ const EditUserForm = () => {
                             </label>
                             <Select
                                 name="unit"
-                                value={unitOptions.find(option => option.value === formData.unit)}
+                                value={unitOptions.find((option) => option.value === formData.unit)}
                                 onChange={(selectedOption) => handleSelectChange(selectedOption, 'unit')}
-                                options={unitOptions}                        
+                                options={unitOptions}
                                 isClearable
                                 className="mt-1"
                                 styles={selectStyles}
@@ -505,7 +505,7 @@ const EditUserForm = () => {
                                 type="text"
                                 name="bankName"
                                 value={formData.bankName}
-                                onChange={handleChange}                        
+                                onChange={handleChange}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
@@ -520,9 +520,11 @@ const EditUserForm = () => {
                             <Select
                                 isMulti
                                 name="department"
-                                value={departmentOptions.filter(option => formData.department?.includes(option.label))}
+                                value={departmentOptions.filter((option) =>
+                                    formData.department?.includes(option.label)
+                                )}
                                 onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'department')}
-                                options={departmentOptions}                        
+                                options={departmentOptions}
                                 className="mt-1"
                                 styles={selectStyles}
                                 isSearchable={false}
@@ -538,7 +540,7 @@ const EditUserForm = () => {
                                 type="text"
                                 name="accountNumber"
                                 value={formData.accountNumber}
-                                onChange={handleChange}                        
+                                onChange={handleChange}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                             />
                         </div>
@@ -552,52 +554,54 @@ const EditUserForm = () => {
                             </label>
                             <Select
                                 name="posisi"
-                                value={posisiOptions.find(option => option.label === formData.posisi)}
+                                value={posisiOptions.find((option) => option.label === formData.posisi)}
                                 onChange={(selectedOption) => handleSelectChange(selectedOption, 'posisi')}
-                                options={posisiOptions}                        
+                                options={posisiOptions}
                                 isClearable
                                 className="mt-1"
                                 styles={selectStyles}
                                 isSearchable={false}
-                                />
+                            />
                         </div>
                     )}
                     {formData.role !== 'Super Admin' && (
-                            <div className="mb-2">
+                        <div className="mb-2">
                             <label className="block font-medium text-gray-700">
-                                Validator {(formData.role !== 'Reviewer') && <span className="text-red-500">*</span>}
+                                Validator {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
                             </label>
                             <Select
                                 isMulti
                                 name="validator"
-                                value={validatorOptions.filter(option => formData.validator?.includes(option.value))}
+                                value={validatorOptions.filter((option) => formData.validator?.includes(option.value))}
                                 options={validatorOptions}
                                 className="basic-multi-select mt-1"
                                 classNamePrefix="select"
                                 styles={selectStyles}
                                 onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'validator')}
                             />
-                        </div>                        
+                        </div>
                     )}
                 </div>
                 {formData.role !== 'Super Admin' && (
                     <div className="sm:grid sm:grid-cols-2 gap-6">
-                    {formData.role !== 'Super Admin' && (
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Reviewer 1 {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
-                            </label>
-                            <Select
-                                isMulti
-                                name="reviewer1"
-                                value={reviewer1Options.filter(option => formData.reviewer1?.includes(option.value))}
-                                onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer1')}
-                                options={reviewer1Options}                            
-                                className="mt-1"
-                                styles={selectStyles}
-                            />
-                        </div>
-                    )}
+                        {formData.role !== 'Super Admin' && (
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Reviewer 1 {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
+                                </label>
+                                <Select
+                                    isMulti
+                                    name="reviewer1"
+                                    value={reviewer1Options.filter((option) =>
+                                        formData.reviewer1?.includes(option.value)
+                                    )}
+                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer1')}
+                                    options={reviewer1Options}
+                                    className="mt-1"
+                                    styles={selectStyles}
+                                />
+                            </div>
+                        )}
                         <div className="mb-2">
                             <label className="block font-medium text-gray-700">
                                 Reviewer 2 {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
@@ -605,9 +609,9 @@ const EditUserForm = () => {
                             <Select
                                 isMulti
                                 name="reviewer2"
-                                value={reviewer2Options.filter(option => formData.reviewer2?.includes(option.value))}
+                                value={reviewer2Options.filter((option) => formData.reviewer2?.includes(option.value))}
                                 onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer2')}
-                                options={reviewer2Options}                                
+                                options={reviewer2Options}
                                 className="mt-1"
                                 styles={selectStyles}
                             />
@@ -635,9 +639,14 @@ const EditUserForm = () => {
             <ToastContainer
                 position="top-right"
                 autoClose={3000}
-                hideProgrssBar={false}
+                hideProgressBar={false}
                 closeOnClick
                 pauseOnHover
+                style={{
+                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
+                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
+                }}
+                toastClassName="toast-item mt-2 xl:mt-0"
             />
         </div>
     )
