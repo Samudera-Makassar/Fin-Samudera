@@ -759,7 +759,7 @@ const ReimbursementCheck = () => {
                     // Approved Reimbursements Table
                     <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
                         <div className="mb-6">
-                            <div className="flex flex-col md:flex-row items-center justify-between">
+                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
                                 <h3 className="text-xl font-medium mb-4 md:mb-0">Riwayat Persetujuan Reimbursement</h3>
                                 {loading ? (
                                     <div className="grid grid-cols-2 md:flex md:flex-row gap-2 w-full md:w-auto">

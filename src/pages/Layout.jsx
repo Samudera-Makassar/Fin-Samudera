@@ -27,7 +27,7 @@ const Layout = ({ children }) => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col relative z-0">
             <Navbar toggleSidebar={toggleSidebar} />
             <div className="flex mt-6 flex-1">
                 <Sidebar 
