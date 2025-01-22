@@ -235,6 +235,10 @@ const LpjBsTable = () => {
             fontSize: '12px',
             padding: '6px 12px',
             cursor: 'pointer'
+        }),
+        menuList: (base) => ({
+            ...base,
+            maxHeight: '160px'
         })
     }
 

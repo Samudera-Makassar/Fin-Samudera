@@ -759,7 +759,7 @@ const CreateBsCheck = () => {
                     </div>
                 ) : (
                     // Approved Bon Sementara Table
-                    <div className="bg-white p-6 rounded-lg mb-6 shadow-sm">
+                    <div className="bg-white p-6 rounded-lg mb-6 shadow-sm min-h-[50vh]">
                         <div className="mb-6">
                             <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
                                 <h3 className="text-xl font-medium mb-4 md:mb-0">Riwayat Persetujuan Bon Sementara</h3>

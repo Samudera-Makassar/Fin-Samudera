@@ -316,11 +316,15 @@ const AddUserForm = () => {
             ...base,
             fontSize: '14px',
             flexShrink: 0
+        }),
+        menuList: (base) => ({
+            ...base,
+            maxHeight: '160px'
         })
     }
 
     return (
-        <div className="container mx-auto py-10 md:py-8">
+        <div className="container mx-auto py-10 md:py-8 md:pb-20">
             <h2 className="text-xl font-bold mb-4">Manage Users</h2>
 
             <div className="bg-white p-6 rounded-lg shadow">

@@ -505,6 +505,10 @@ const RbsOperasionalForm = () => {
             padding: '0 7px',
             height: '40px',
             minHeight: '40px'
+        }),
+        menuList: (base) => ({
+            ...base,
+            maxHeight: '160px'
         })
     }
 
