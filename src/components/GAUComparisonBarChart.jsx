@@ -11,6 +11,16 @@ const GAUComparisonChart = ({ rawData, showLPJ = false, onClose }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [legendItems, setLegendItems] = useState([]);
 
+    useEffect(() => {        
+        if (onClose) {
+            document.body.style.overflow = 'hidden';
+                        
+            return () => {
+                document.body.style.overflow = '';
+            };
+        }
+    }, [onClose]);
+
     const months = [
         "Januari", "Februari", "Maret", "April", "Mei", "Juni",
         "Juli", "Agustus", "September", "Oktober", "November", "Desember"
@@ -68,7 +78,7 @@ const GAUComparisonChart = ({ rawData, showLPJ = false, onClose }) => {
 
         return type
             .toLowerCase()
-            .replace(/\s+/g, ' ')    // Replace multiple spaces with single space
+            .replace(/\s+/g, ' ')    
             .trim()
             .split(' ')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -123,8 +133,7 @@ const GAUComparisonChart = ({ rawData, showLPJ = false, onClose }) => {
                 hidden: isHidden
             };
         });
-
-        const itemsPerRow = Math.ceil(items.length / 2);
+        
         setLegendItems(items);
     };
 
@@ -351,14 +360,14 @@ const GAUComparisonChart = ({ rawData, showLPJ = false, onClose }) => {
     if (isLoading || !chartData) {
         return (
             <div className="flex justify-center items-center h-96">
-                <ClipLoader color="#36D7B7" size={60} />
+                <ClipLoader color="#ED1C24" size={60} />
             </div>
         );
     }
 
     return (
-        <div className="w-full">
-            <div className="flex flex-col space-y-2 lg:space-y-0 lg:flex-row lg:items-center lg:justify-between mb-4">
+        <div className="w-full h-[80vh] md:h-[75vh] flex flex-col overflow-hidden">
+            <div className="flex flex-col space-y-2 lg:space-y-0 landscape:space-y-0 lg:flex-row lg:items-center lg:justify-between mb-4">
                 <div className="flex items-center justify-between w-full">
                     <h2 className="text-base md:text-lg font-medium">
                         {showLPJ ? "Perbandingan Pengajuan LPJ BS GA/Umum" : "Perbandingan Pengajuan Reimbursement GA/Umum"}
@@ -372,8 +381,8 @@ const GAUComparisonChart = ({ rawData, showLPJ = false, onClose }) => {
                         </button>
                     )}
                 </div>
-                <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center lg:space-x-4">
-                    <div className="w-full md:w-96 lg:w-64 xl:w-96">
+                <div className="flex flex-col landscape:flex-row space-y-4 md:space-y-0 landscape:space-y-0 md:flex-row md:justify-between landscape:justify-between md:items-center landscape:items-center lg:space-x-4 landscape:space-x-8">
+                    <div className="w-full md:w-96 lg:w-64 xl:w-96 landscape:w-96">
                         <Select
                             isMulti
                             value={selectedYears}
@@ -423,7 +432,7 @@ const GAUComparisonChart = ({ rawData, showLPJ = false, onClose }) => {
             </div>
             <div className="mb-4">
                 <div
-                    className="grid grid-rows-2 gap-2 overflow-x-auto scrollbar pb-0.5"
+                    className="grid grid-rows-2 landscape:grid-rows-auto gap-2 overflow-x-auto scrollbar pb-1 sm-landscape:grid-rows-1 sm-landscape:grid-cols-auto"
                     style={{ gridAutoFlow: 'column' }}
                 >
                     {legendItems.map((item, index) => (
@@ -449,117 +458,114 @@ const GAUComparisonChart = ({ rawData, showLPJ = false, onClose }) => {
                     ))}
                 </div>
             </div>
-            <div className="h-[320px] md:h-[360px] lg:h-[400px] xl:h-[480px]">
-                <Bar
-                    data={chartData}
-                    options={{
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                grid: {
+            <div className="flex-1 min-h-0 overflow-auto scrollbar">
+                <div className="min-h-[380px] md:min-h-[340px] h-full">
+                    <Bar
+                        data={chartData}
+                        options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    grid: {
+                                        display: false
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: viewType === 'monthly' ? 'Bulan' : 'Tahun',
+                                        font: {
+                                            size: 10,
+                                        }
+                                    },
+                                    ticks: {
+                                        maxRotation: 45,
+                                        font: {
+                                            size: 10,
+                                        }
+                                    }
+                                },
+                                y: {
+                                    stacked: true,
+                                    title: {
+                                        display: true,
+                                        text: showLPJ ? 'Jumlah Item' : 'Jumlah Pengajuan',
+                                        font: {
+                                            size: 10,
+                                        }
+                                    },
+                                    ticks: {
+                                        stepSize: 2,
+                                        precision: 0,
+                                        font: {
+                                            size: 10,
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
                                     display: false
                                 },
-                                title: {
-                                    display: true,
-                                    text: viewType === 'monthly' ? 'Bulan' : 'Tahun',
-                                    font: {
-                                        size: 10,
-                                    }
-                                },
-                                ticks: {
-                                    maxRotation: 45,
-                                    font: {
-                                        size: 10,
-                                    }
-                                }
-                            },
-                            y: {
-                                stacked: true,
-                                title: {
-                                    display: true,
-                                    text: showLPJ ? 'Jumlah Item' : 'Jumlah Pengajuan',
-                                    font: {
-                                        size: 10,
-                                    }
-                                },
-                                ticks: {
-                                    stepSize: 2,
-                                    precision: 0,
-                                    font: {
-                                        size: 10,
-                                    }
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            datalabels: {
-                                display: (context) => {
-                                    if (viewType !== 'monthly') return false;
-                                    const stack = context.dataset.stack;
-                                    const dataIndex = context.dataIndex;
+                                datalabels: {
+                                    display: (context) => {
+                                        if (viewType !== 'monthly') return false;
+                                        const stack = context.dataset.stack;
+                                        const dataIndex = context.dataIndex;
 
-                                    // Get all datasets for this stack
-                                    const stackDatasets = context.chart.data.datasets.filter(
-                                        ds => ds.stack === stack && !ds.hidden
-                                    );
-
-                                    // If there are no visible datasets for this stack,
-                                    // show the year label on the first dataset of this stack
-                                    if (stackDatasets.length === 0) {
-                                        const allStackDatasets = context.chart.data.datasets.filter(
-                                            ds => ds.stack === stack
+                                        const stackDatasets = context.chart.data.datasets.filter(
+                                            ds => ds.stack === stack && !ds.hidden
                                         );
-                                        return context.dataset === allStackDatasets[0];
-                                    }
 
-                                    const stackTotal = stackDatasets.reduce((sum, dataset) => {
-                                        return sum + (dataset.data[dataIndex] || 0);
-                                    }, 0);
-
-                                    // Find the dataset whose middle point is closest to stack's middle
-                                    let closestDataset = null;
-                                    let smallestDistance = Infinity;
-
-                                    stackDatasets.forEach((dataset, idx) => {
-                                        const sumBefore = stackDatasets
-                                            .slice(0, idx)
-                                            .reduce((sum, d) => sum + (d.data[dataIndex] || 0), 0);
-                                        const value = dataset.data[dataIndex] || 0;
-                                        const middlePoint = sumBefore + (value / 2);
-                                        const distance = Math.abs((stackTotal / 2) - middlePoint);
-
-                                        if (distance < smallestDistance) {
-                                            closestDataset = dataset;
-                                            smallestDistance = distance;
+                                        if (stackDatasets.length === 0) {
+                                            const allStackDatasets = context.chart.data.datasets.filter(
+                                                ds => ds.stack === stack
+                                            );
+                                            return context.dataset === allStackDatasets[0];
                                         }
-                                    });
 
-                                    return context.dataset === closestDataset;
-                                },
-                                formatter: (value, context) => {
-                                    if (viewType === 'monthly') {
-                                        return context.dataset.stack;
-                                    }
-                                    return '';
-                                },
-                                font: {
-                                    size: 12,
-                                    weight: 'bold'
-                                },
-                                color: '#FFF',
-                                anchor: 'center',
-                                align: 'center',
-                                rotation: -90,
-                                // Add offset to ensure visibility
-                                offset: 4
+                                        const stackTotal = stackDatasets.reduce((sum, dataset) => {
+                                            return sum + (dataset.data[dataIndex] || 0);
+                                        }, 0);
+
+                                        let closestDataset = null;
+                                        let smallestDistance = Infinity;
+
+                                        stackDatasets.forEach((dataset, idx) => {
+                                            const sumBefore = stackDatasets
+                                                .slice(0, idx)
+                                                .reduce((sum, d) => sum + (d.data[dataIndex] || 0), 0);
+                                            const value = dataset.data[dataIndex] || 0;
+                                            const middlePoint = sumBefore + (value / 2);
+                                            const distance = Math.abs((stackTotal / 2) - middlePoint);
+
+                                            if (distance < smallestDistance) {
+                                                closestDataset = dataset;
+                                                smallestDistance = distance;
+                                            }
+                                        });
+
+                                        return context.dataset === closestDataset;
+                                    },
+                                    formatter: (value, context) => {
+                                        if (viewType === 'monthly') {
+                                            return context.dataset.stack;
+                                        }
+                                        return '';
+                                    },
+                                    font: {
+                                        size: 12,
+                                        weight: 'bold'
+                                    },
+                                    color: '#FFF',
+                                    anchor: 'center',
+                                    align: 'center',
+                                    rotation: -90,
+                                    offset: 4
+                                }
                             }
-                        }
-                    }}
-                />
+                        }}
+                    />
+                </div>
             </div>
         </div>
     );

@@ -12,6 +12,16 @@ const GAUBarChart = ({ selectedType, selectedMonth, selectedYear, months, onClos
     const [chartData, setChartData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    useEffect(() => {
+        if (onClose) {
+            document.body.style.overflow = 'hidden';
+
+            return () => {
+                document.body.style.overflow = '';
+            };
+        }
+    }, [onClose]);
+
     const baseColors = [
         "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40", "#9966FF",
         "#FFB6C1", "#8B4513", "#00BFFF", "#32CD32", "#FFD700", "#8A2BE2",
@@ -43,14 +53,22 @@ const GAUBarChart = ({ selectedType, selectedMonth, selectedYear, months, onClos
 
                     return (
                         item.kategori === "GA/Umum" &&
-                        item.reimbursements.some(r => r.jenis === selectedType) &&
+                        item.reimbursements.some(r => {
+                            const normalizedJenis = r.jenis.trim().toLowerCase();
+                            const normalizedSelectedType = selectedType.trim().toLowerCase();
+                            return normalizedJenis === normalizedSelectedType;
+                        }) &&
                         monthMatch &&
                         yearMatch
                     );
                 });
 
                 const flattenedData = filteredData.flatMap(item =>
-                    item.reimbursements.filter(r => r.jenis === selectedType)
+                    item.reimbursements.filter(r => {
+                        const normalizedJenis = r.jenis.trim().toLowerCase();
+                        const normalizedSelectedType = selectedType.trim().toLowerCase();
+                        return normalizedJenis === normalizedSelectedType;
+                    })
                 );
 
                 setChartData(flattenedData);
@@ -70,7 +88,13 @@ const GAUBarChart = ({ selectedType, selectedMonth, selectedYear, months, onClos
         if (!chartData) return null;
 
         const itemCounts = chartData.reduce((acc, reimb) => {
-            const itemName = reimb.item.toLowerCase();
+            const itemName = reimb.item
+                .toLowerCase()
+                .replace(/\s+/g, ' ')
+                .trim()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
             acc[itemName] = (acc[itemName] || 0) + 1;
             return acc;
         }, {});
@@ -103,7 +127,7 @@ const GAUBarChart = ({ selectedType, selectedMonth, selectedYear, months, onClos
     if (isLoading || !chartData) {
         return (
             <div className="flex justify-center items-center h-96">
-                <ClipLoader color="#36D7B7" size={60} />
+                <ClipLoader color="#ED1C24" size={60} />
             </div>
         );
     }
@@ -119,7 +143,7 @@ const GAUBarChart = ({ selectedType, selectedMonth, selectedYear, months, onClos
     };
 
     return (
-        <div className="w-full">
+        <div className="w-full h-[80vh] md:h-[75vh] flex flex-col overflow-hidden">
             <div className="flex items-center justify-between w-full mb-4">
                 <h2 className="text-base md:text-lg font-medium">
                     Detail Item {selectedType} - {getPeriodText()}
@@ -133,68 +157,70 @@ const GAUBarChart = ({ selectedType, selectedMonth, selectedYear, months, onClos
                     </button>
                 )}
             </div>
-            <div className="h-[400px] md:h-[420px] lg:h-[460px] xl:h-[500px]">
-                {chartDisplayData && chartDisplayData.labels.length > 0 ? (
-                    <Bar
-                        data={chartDisplayData}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false,
-                                },
-                                datalabels: {
-                                    color: '#fff',
-                                    font: {
-                                        weight: 'bold',
-                                        size: 12
+            <div className="flex-1 min-h-0 overflow-auto scrollbar">
+                <div className="min-h-[200px] h-full">
+                    {chartDisplayData && chartDisplayData.labels.length > 0 ? (
+                        <Bar
+                            data={chartDisplayData}
+                            options={{
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false,
                                     },
-                                },
-                            },
-                            scales: {
-                                x: {
-                                    title: {
-                                        display: true,
-                                        text: "Item",
+                                    datalabels: {
+                                        color: '#fff',
                                         font: {
-                                            size: 10,
-                                        }
-                                    },
-                                    ticks: {
-                                        maxRotation: 45,
-                                        font: {
-                                            size: 10,
-                                        }
+                                            weight: 'bold',
+                                            size: 12
+                                        },
                                     },
                                 },
-                                y: {
-                                    title: {
-                                        display: true,
-                                        text: "Jumlah",
-                                        font: {
-                                            size: 10,
-                                        }
+                                scales: {
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: "Item",
+                                            font: {
+                                                size: 10,
+                                            }
+                                        },
+                                        ticks: {
+                                            maxRotation: 45,
+                                            font: {
+                                                size: 10,
+                                            }
+                                        },
                                     },
-                                    ticks: {
-                                        stepSize: 2,
-                                        precision: 0,
-                                        beginAtZero: true,
-                                        font: {
-                                            size: 10,
-                                        }
+                                    y: {
+                                        title: {
+                                            display: true,
+                                            text: "Jumlah",
+                                            font: {
+                                                size: 10,
+                                            }
+                                        },
+                                        ticks: {
+                                            stepSize: 2,
+                                            precision: 0,
+                                            beginAtZero: true,
+                                            font: {
+                                                size: 10,
+                                            }
+                                        },
                                     },
                                 },
-                            },
-                        }}
-                    />
-                ) : (
-                    <div className="flex items-center justify-center h-full">
-                        <p className="text-sm sm:text-base md:text-lg text-gray-500 text-center px-4">
-                            Tidak ada data untuk {selectedType} pada periode {getPeriodText()}.
-                        </p>
-                    </div>
-                )}
+                            }}
+                        />
+                    ) : (
+                        <div className="flex items-center justify-center h-full">
+                            <p className="text-sm sm:text-base md:text-lg text-gray-500 text-center px-4">
+                                Tidak ada data untuk {selectedType} pada periode {getPeriodText()}.
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

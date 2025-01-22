@@ -40,16 +40,16 @@ const Modal = ({
             className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
             onClick={handleBackdropClick}
         >
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative" onClick={(e) => e.stopPropagation()}>
-                <h2 className="text-xl font-semibold mb-4">{title}</h2>
+            <div className="bg-white rounded-lg p-4 lg:p-6 max-w-md w-full mx-4 relative" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">{title}</h2>
 
-                <p className="mb-6 text-gray-600">{message}</p>
+                <p className="mb-2 md:mb-3 text-gray-600 text-sm md:text-base">{message}</p>
 
                 {showCancelReason && (
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Alasan Pembatalan</label>
+                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Alasan Pembatalan <span className="text-red-500">*</span></label>
                         <textarea
-                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base"
                             rows="3"
                             value={cancelReason}
                             onChange={handleReasonChange}
@@ -60,13 +60,13 @@ const Modal = ({
 
                 <div className="flex justify-end space-x-2">
                     <button
-                        className="bg-gray-200 text-gray-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded text-sm sm:text-base hover:bg-gray-300 hover:text-gray-700 transition-colors"
+                        className="bg-gray-200 text-gray-600 px-4 py-2 rounded text-sm md:text-base hover:bg-gray-300 hover:text-gray-700 transition-colors"
                         onClick={onClose}
                     >
                         {cancelText}
                     </button>
                     <button
-                        className="bg-red-600 text-white px-6 sm:px-8 py-1.5 sm:py-2 rounded text-sm sm:text-base hover:bg-red-700 hover:text-gray-200 transition-colors"
+                        className="bg-red-600 text-white px-6 py-2 rounded text-sm md:text-base hover:bg-red-700 hover:text-gray-200 transition-colors"
                         onClick={() => onConfirm()}
                     >
                         {confirmText}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { db } from '../firebaseConfig'
-import { doc, getDocs, where, query, collection } from 'firebase/firestore'
+import { getDocs, where, query, collection } from 'firebase/firestore'
 import { useNavigate } from 'react-router-dom'
 import LogoHero from '../assets/images/login-hero.jpg'
 import Logo from '../assets/images/logo-samudera.png'
@@ -25,7 +25,6 @@ const LoginPage = () => {
         setIsLoading(true)
 
         try {
-            // Query untuk memeriksa email
             const emailQuery = query(collection(db, 'users'), where('email', '==', email));
             const emailSnapshot = await getDocs(emailQuery);
 
@@ -35,7 +34,6 @@ const LoginPage = () => {
                 return;
             }
 
-            // Query untuk memeriksa password
             const userQuery = query(
                 collection(db, 'users'),
                 where('email', '==', email),
@@ -49,7 +47,6 @@ const LoginPage = () => {
                 return;
             }
 
-            // Ambil data user dan lakukan navigasi
             const userDoc = userSnapshot.docs[0];
             const userData = userDoc.data();
 
@@ -57,7 +54,6 @@ const LoginPage = () => {
             localStorage.setItem('userRole', role);
             localStorage.setItem('userUid', userDoc.id);
 
-            // Navigasi ke dashboard sesuai role
             if (role === 'Admin') navigate('/dashboard/admin');
             else if (role === 'Validator') navigate('/dashboard/validator');
             else if (role === 'Reviewer') navigate('/dashboard/reviewer');
@@ -76,26 +72,24 @@ const LoginPage = () => {
 
     return (
         <div className="flex h-screen flex-col lg:flex-row">
-            {/* Logo Hero */}
             <div className="w-full lg:w-[65%] h-full relative">
                 <img src={LogoHero} alt="Login Hero" className="w-full h-full object-cover" />
 
-                {/* Form overlay untuk smartphone/tablet */}
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center lg:hidden">
-                    <div className="bg-white p-4 sm:p-6 rounded-lg w-11/12 max-w-sm sm:max-w-md shadow-lg">
-                        <div className="mb-6 sm:mb-8 text-center">
-                            <img src={Logo} alt="Logo" className="w-5/12 sm:w-6/12 mx-auto" />
+                    <div className="bg-white p-4 md:p-6 rounded-lg w-11/12 max-w-sm md:max-w-md shadow-lg sm:landscape:scale-[0.85] sm:landscape:transform">
+                        <div className="mb-4 md:mb-4 text-center">
+                            <img src={Logo} alt="Logo" className="w-6/12 mx-auto" />
                         </div>
 
-                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Login</h1>
+                        <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-4 text-center">Login</h1>
 
-                        {error && <p className="text-red-500 mb-4 text-center text-sm sm:text-base">{error}</p>}
+                        {error && <p className="text-red-500 text-center text-sm md:text-base">{error}</p>}
 
                         <form onSubmit={handleLogin}>
-                            <div className="mb-4 sm:mb-6">
+                            <div className="mb-4 md:mb-6">
                                 <label
                                     htmlFor="email"
-                                    className="block text-gray-700 font-medium mb-2 text-sm sm:text-base"
+                                    className="block text-gray-700 font-medium mb-2 text-sm md:text-base"
                                 >
                                     Email
                                 </label>
@@ -105,14 +99,14 @@ const LoginPage = () => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="user@gmail.com"
-                                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm sm:text-base"
+                                    className="w-full px-4 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm md:text-base"
                                 />
                             </div>
 
-                            <div className="mb-6 sm:mb-8">
+                            <div className="mb-6 md:mb-8">
                                 <label
                                     htmlFor="password"
-                                    className="block text-gray-700 font-medium mb-2 text-sm sm:text-base"
+                                    className="block text-gray-700 font-medium mb-2 text-sm md:text-base"
                                 >
                                     Password
                                 </label>
@@ -123,7 +117,7 @@ const LoginPage = () => {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="Enter your password"
-                                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm sm:text-base"
+                                        className="w-full px-4 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm md:text-base"
                                     />
                                     <span
                                         onClick={togglePasswordVisibility}
@@ -139,7 +133,7 @@ const LoginPage = () => {
 
                             <button
                                 type="submit"
-                                className="w-full bg-red-600 text-white font-semibold py-2 sm:py-3 rounded-md hover:bg-red-700 transition duration-300 text-sm sm:text-base"
+                                className="w-full bg-red-600 text-white font-semibold py-2 rounded-md hover:bg-red-700 transition duration-300 text-sm md:text-base"
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
@@ -156,7 +150,6 @@ const LoginPage = () => {
                 </div>
             </div>
 
-            {/* Form login untuk desktop */}
             <div className="hidden lg:flex lg:w-[35%] bg-white flex-col justify-center px-16">
                 <div className="mb-8">
                     <img src={Logo} alt="Logo" className="w-8/12 h-full" />
