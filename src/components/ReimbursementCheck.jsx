@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { collection, query, where, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { collection, query, where, getDocs, getDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import Modal from './Modal'
 import Select from 'react-select'
@@ -245,114 +245,116 @@ const ReimbursementCheck = () => {
                     const isValidatorAndReviewer1 = isValidator && isReviewer1
 
                     let updateData = {}
+                    const newStatusHistory = {
+                        timestamp: new Date().toISOString(),
+                        actor: uid
+                    }
 
                     if (isSuperAdmin) {
                         // Super Admin approval logic
                         if (item.status === 'Diajukan') {
+                            newStatusHistory.status = 'Disetujui oleh Super Admin (Pengganti Validator)'
                             updateData = {
                                 status: 'Divalidasi',
                                 approvedByValidator: false,
                                 approvedBySuperAdmin: true,
-                                statusHistory: arrayUnion({
-                                    status: 'Disetujui oleh Super Admin (Pengganti Validator)',
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid
-                                })
                             }
                         } else if (item.status === 'Divalidasi') {
+                            newStatusHistory.status = 'Disetujui oleh Super Admin (Pengganti Reviewer 1)'
                             updateData = {
                                 status: 'Diproses',
                                 approvedByReviewer1Status: 'superadmin',
                                 approvedBySuperAdmin: true,
-                                statusHistory: arrayUnion({
-                                    status: 'Disetujui oleh Super Admin (Pengganti Reviewer 1)',
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid
-                                })
                             }
                         } else if (item.status === 'Diproses') {
+                            newStatusHistory.status = 'Disetujui oleh Super Admin (Pengganti Reviewer 2)'
                             updateData = {
                                 status: 'Disetujui',
                                 approvedByReviewer2Status: 'superadmin',
                                 approvedBySuperAdmin: true,
-                                statusHistory: arrayUnion({
-                                    status: 'Disetujui oleh Super Admin (Pengganti Reviewer 2)',
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid
-                                })
                             }
                         }
                     } else if (item.status === 'Diajukan') {
                         if (isValidatorAndReviewer1) {
+                            newStatusHistory.status = 'Disetujui oleh Reviewer 1'
                             updateData = {
                                 status: 'Diproses',
                                 approvedByValidator: true,
                                 approvedByReviewer1: true,
                                 approvedByReviewer1Status: 'reviewer',
-                                statusHistory: arrayUnion(
-                                    {
-                                        status: 'Disetujui oleh Reviewer 1',
-                                        timestamp: new Date().toISOString(),
-                                        actor: uid
-                                    }
-                                )
                             }
                         } else if (isValidator) {
-                            // Regular validator approval
+                            newStatusHistory.status = 'Disetujui oleh Validator'
                             updateData = {
                                 status: 'Divalidasi',
                                 approvedByValidator: true,
-                                statusHistory: arrayUnion({
-                                    status: 'Disetujui oleh Validator',
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid
-                                })
                             }
                         }
                     } else if (item.status === 'Divalidasi' && isReviewer1) {
-                        // Regular reviewer1 approval
+                        newStatusHistory.status = 'Disetujui oleh Reviewer 1'
                         updateData = {
                             status: 'Diproses',
                             approvedByReviewer1: true,
                             approvedByReviewer1Status: 'reviewer',
-                            statusHistory: arrayUnion({
-                                status: 'Disetujui oleh Reviewer 1',
-                                timestamp: new Date().toISOString(),
-                                actor: uid
-                            })
                         }
                     } else if (item.status === 'Diproses' && isReviewer2) {
-                        // Regular reviewer2 approval
                         if (
                             item.approvedByReviewer1Status === 'reviewer' ||
                             item.approvedByReviewer1Status === 'superadmin'
                         ) {
+                            newStatusHistory.status = 'Disetujui oleh Reviewer 2'
                             updateData = {
                                 status: 'Disetujui',
                                 approvedByReviewer2: true,
                                 approvedByReviewer2Status: 'reviewer',
-                                statusHistory: arrayUnion({
-                                    status: 'Disetujui oleh Reviewer 2',
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid
-                                })
                             }
                         }
                     }
-
+    
                     // Update the document
                     if (Object.keys(updateData).length > 0) {
+                        // Add statusHistory to updateData
+                        updateData.statusHistory = arrayUnion(newStatusHistory)
+
+                        // Update Firestore
                         await updateDoc(reimbursementRef, updateData)
 
-                        // Remove the approved item from the list
-                        setData((prevData) => ({
-                            reimbursements: prevData.reimbursements.filter((r) => r.id !== item.id)
-                        }))
+                        // Get updated document after update
+                        const updatedDoc = await getDoc(reimbursementRef)
+                        const updatedData = { id: updatedDoc.id, ...updatedDoc.data() }
+
+                        const shouldRemoveFromPending = !isSuperAdmin || updateData.status === 'Disetujui';
+
+                        if (shouldRemoveFromPending) {
+                            setData((prevData) => ({
+                                reimbursements: prevData.reimbursements.filter((r) => r.id !== item.id)
+                            }))
+                        } else {
+                            setData((prevData) => ({
+                                reimbursements: prevData.reimbursements.map((r) => 
+                                    r.id === item.id ? updatedData : r
+                                )
+                            }))
+                        }
+    
+                        // Update approved list dengan data terbaru dari Firestore
+                        setApprovedData((prevData) => {
+                            const existingIndex = prevData.reimbursements.findIndex(r => r.id === item.id);
+                            const newReimbursements = [...prevData.reimbursements];
+                            
+                            if (existingIndex !== -1) {
+                                newReimbursements[existingIndex] = updatedData;
+                            } else {
+                                newReimbursements.unshift(updatedData);
+                            }
+                            
+                            return {
+                                reimbursements: newReimbursements
+                            };
+                        });
 
                         toast.success('Reimbursement berhasil disetujui')
                         closeModal()
-                    } else {
-                        toast.error('Anda tidak memiliki izin untuk menyetujui reimbursement ini')
                     }
                 } catch (error) {
                     console.error('Error approving reimbursement:', error)

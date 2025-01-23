@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { collection, query, where, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore'
+import { collection, query, where, getDocs, getDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import Modal from './Modal'
 import Select from 'react-select'
@@ -245,112 +245,115 @@ const LpjBsCheck = () => {
                     const isValidatorAndReviewer1 = isValidator && isReviewer1
 
                     let updateData = {}
+                    const newStatusHistory = {
+                        timestamp: new Date().toISOString(),
+                        actor: uid
+                    }
 
                     if (isSuperAdmin) {
                         // Super Admin approval logic
                         if (item.status === 'Diajukan') {
+                            newStatusHistory.status = 'Disetujui oleh Super Admin (Pengganti Validator)'
                             updateData = {
                                 status: 'Divalidasi',
                                 approvedByValidator: false,
-                                approvedBySuperAdmin: true,
-                                statusHistory: arrayUnion({
-                                    status: 'Disetujui oleh Super Admin (Pengganti Validator)',
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid
-                                })
+                                approvedBySuperAdmin: true
                             }
                         } else if (item.status === 'Divalidasi') {
+                            newStatusHistory.status = 'Disetujui oleh Super Admin (Pengganti Reviewer 1)'
                             updateData = {
                                 status: 'Diproses',
                                 approvedByReviewer1Status: 'superadmin',
-                                approvedBySuperAdmin: true,
-                                statusHistory: arrayUnion({
-                                    status: 'Disetujui oleh Super Admin (Pengganti Reviewer 1)',
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid
-                                })
+                                approvedBySuperAdmin: true
                             }
                         } else if (item.status === 'Diproses') {
+                            newStatusHistory.status = 'Disetujui oleh Super Admin (Pengganti Reviewer 2)'
                             updateData = {
                                 status: 'Disetujui',
                                 approvedByReviewer2Status: 'superadmin',
-                                approvedBySuperAdmin: true,
-                                statusHistory: arrayUnion({
-                                    status: 'Disetujui oleh Super Admin (Pengganti Reviewer 2)',
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid
-                                })
+                                approvedBySuperAdmin: true
                             }
                         }
                     } else if (item.status === 'Diajukan') {
                         if (isValidatorAndReviewer1) {
-                            // User is both validator and reviewer1
+                            newStatusHistory.status = 'Disetujui oleh Reviewer 1'
                             updateData = {
                                 status: 'Diproses',
                                 approvedByValidator: true,
                                 approvedByReviewer1: true,
-                                approvedByReviewer1Status: 'reviewer',
-                                statusHistory: arrayUnion(
-                                    {
-                                        status: 'Disetujui oleh Reviewer 1',
-                                        timestamp: new Date().toISOString(),
-                                        actor: uid
-                                    }
-                                )
+                                approvedByReviewer1Status: 'reviewer'
                             }
                         } else if (isValidator) {
-                            // Regular validator approval
+                            newStatusHistory.status = 'Disetujui oleh Validator'
                             updateData = {
                                 status: 'Divalidasi',
-                                approvedByValidator: true,
-                                statusHistory: arrayUnion({
-                                    status: 'Disetujui oleh Validator',
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid
-                                })
+                                approvedByValidator: true
                             }
                         }
                     } else if (item.status === 'Divalidasi' && isReviewer1) {
-                        // Regular reviewer1 approval
+                        newStatusHistory.status = 'Disetujui oleh Reviewer 1'
                         updateData = {
                             status: 'Diproses',
                             approvedByReviewer1: true,
-                            approvedByReviewer1Status: 'reviewer',
-                            statusHistory: arrayUnion({
-                                status: 'Disetujui oleh Reviewer 1',
-                                timestamp: new Date().toISOString(),
-                                actor: uid
-                            })
+                            approvedByReviewer1Status: 'reviewer'
                         }
                     } else if (item.status === 'Diproses' && isReviewer2) {
-                        // Regular reviewer2 approval
                         if (
                             item.approvedByReviewer1Status === 'reviewer' ||
                             item.approvedByReviewer1Status === 'superadmin'
                         ) {
+                            newStatusHistory.status = 'Disetujui oleh Reviewer 2'
                             updateData = {
                                 status: 'Disetujui',
                                 approvedByReviewer2: true,
-                                approvedByReviewer2Status: 'reviewer',
-                                statusHistory: arrayUnion({
-                                    status: 'Disetujui oleh Reviewer 2',
-                                    timestamp: new Date().toISOString(),
-                                    actor: uid
-                                })
+                                approvedByReviewer2Status: 'reviewer'
                             }
                         }
                     }
 
                     // Update the document
-                    await updateDoc(lpjRef, updateData)
+                    if (Object.keys(updateData).length > 0) {
+                        // Add statusHistory to updateData
+                        updateData.statusHistory = arrayUnion(newStatusHistory)
 
-                    // Remove the approved item from the list
-                    setData((prevData) => ({
-                        lpj: prevData.lpj.filter((r) => r.id !== item.id)
-                    }))
+                        // Update Firestore
+                        await updateDoc(lpjRef, updateData)
 
-                    toast.success('LPJ Bon Sementara berhasil disetujui')
-                    closeModal()
+                        // Get updated document after update
+                        const updatedDoc = await getDoc(lpjRef)
+                        const updatedData = { id: updatedDoc.id, ...updatedDoc.data() }
+
+                        const shouldRemoveFromPending = !isSuperAdmin || updateData.status === 'Disetujui'
+
+                        if (shouldRemoveFromPending) {
+                            setData((prevData) => ({
+                                lpj: prevData.lpj.filter((r) => r.id !== item.id)
+                            }))
+                        } else {
+                            setData((prevData) => ({
+                                lpj: prevData.lpj.map((r) => (r.id === item.id ? updatedData : r))
+                            }))
+                        }
+
+                        // Update approved list dengan data terbaru dari Firestore
+                        setApprovedData((prevData) => {
+                            const existingIndex = prevData.lpj.findIndex((r) => r.id === item.id)
+                            const newLpj = [...prevData.lpj]
+
+                            if (existingIndex !== -1) {
+                                newLpj[existingIndex] = updatedData
+                            } else {
+                                newLpj.unshift(updatedData)
+                            }
+
+                            return {
+                                lpj: newLpj
+                            }
+                        })
+
+                        toast.success('LPJ berhasil disetujui')
+                        closeModal()
+                    }
                 } catch (error) {
                     console.error('Error approving lpj:', error)
                     toast.error('Gagal menyetujui LPJ Bon Sementara')
@@ -694,7 +697,9 @@ const LpjBsCheck = () => {
                                                                 ? 'bg-yellow-200 text-yellow-800 border-[1px] border-yellow-600'
                                                                 : item.status === 'Ditolak'
                                                                   ? 'bg-red-200 text-red-800 border-[1px] border-red-600'
-                                                                  : 'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
+                                                                  : item.status === 'Divalidasi'
+                                                                    ? 'bg-purple-200 text-purple-800 border-[1px] border-purple-600'
+                                                                    : 'bg-gray-300 text-gray-700 border-[1px] border-gray-600'
                                                     }`}
                                                             >
                                                                 {item.status || 'Tidak Diketahui'}
