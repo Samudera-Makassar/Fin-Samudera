@@ -1,21 +1,33 @@
-export const validPaths = [
-    "/", 
-    "/dashboard/employee", 
-    "/dashboard/reviewer", 
-    "/dashboard/admin",
-    "/reimbursement/bbm", 
-    "/reimbursement/operasional",
-    "/reimbursement/umum", 
-    "/reimbursement/detail", 
-    "/reimbursement/cek-pengajuan",
-    "/lpj/umum", 
-    "/lpj/marketing",
-    "/lpj/detail",
-    "/lpj/cek-pengajuan",
-    "/manage-users",
-    "/manage-users/add",
-    "/manage-users/edit",
-    "/create-bs/create",
-    "/create-bs/cek-pengajuan",
+export const routesConfig = [
+    '/', // Login route
+    '/dashboard/admin',
+    '/dashboard/reviewer',
+    '/dashboard/validator',
+    '/dashboard/employee',
 
+    // Reimbursement Routes
+    '/reimbursement/bbm',
+    '/reimbursement/operasional',
+    '/reimbursement/umum',
+    '/reimbursement/cek-pengajuan',
+    '/reimbursement/:id', // Dynamic route
+
+    // Create BS Routes
+    '/create-bs/create',
+    '/create-bs/cek-pengajuan',
+    '/create-bs/:id', // Dynamic route
+
+    // LPJ BS Routes
+    '/lpj/umum',
+    '/lpj/marketing',
+    '/lpj/cek-pengajuan',
+    '/lpj/:id', // Dynamic route
+
+    // User Management Routes
+    '/manage-users',
+    '/manage-users/add',
+    '/manage-users/edit',
+
+    // Catch-all for NotFound
+    '*'
 ];

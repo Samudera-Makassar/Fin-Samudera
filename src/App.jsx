@@ -25,39 +25,135 @@ import CreateBsCheckPage from './pages/CreateBsCheckPage';
 import DetailCreateBsPage from './pages/DetailCreateBsPage';
 
 const AppContent = () => {
-    const userRole = localStorage.getItem('userRole'); // Ambil role dari localStorage
+    const userRole = localStorage.getItem('userRole'); 
 
     return (
         <div>
             <SidebarWrapper role={userRole} />
 
             <Routes>
+                {/* Login Routes */}
                 <Route path="/" element={<Login />} />
-                
-                <Route path="/dashboard/admin" element={<AdminDashboard />} />
-                <Route path="/dashboard/reviewer" element={<ReviewerDashboard />} />
-                <Route path="/dashboard/validator" element={<ValidatorDashboard />} />
-                <Route path="/dashboard/employee" element={<EmployeeDashboard />} />
-                
-                <Route path="/reimbursement/bbm" element={<RbsBbm />} />
-                <Route path="/reimbursement/operasional" element={<RbsOperasional />} />
-                <Route path="/reimbursement/umum" element={<RbsUmum />} />
-                <Route path="/reimbursement/:id" element={<DetailReimbursementPage />} />                
-                <Route path="/reimbursement/cek-pengajuan" element={<RbsCheckPage />} />
 
-                <Route path="/create-bs/create" element={<CreateBon />} />
-                <Route path="/create-bs/cek-pengajuan" element={<CreateBsCheckPage />} />
-                <Route path="/create-bs/:id" element={<DetailCreateBsPage />} />
+                {/* Dashboard Routes */}
+                <Route path="/dashboard/admin" element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                        <AdminDashboard />
+                    </ProtectedRoute>
+                } />
+                <Route path="/dashboard/reviewer" element={
+                    <ProtectedRoute allowedRoles={['Reviewer']}>
+                        <ReviewerDashboard />
+                    </ProtectedRoute>
+                } />
 
-                <Route path="/lpj/umum" element={<LpjUmum />} />
-                <Route path="/lpj/marketing" element={<LpjMarketing />} />
-                <Route path="/lpj/:id" element={<DetailLpjPage />} />
-                <Route path="/lpj/cek-pengajuan" element={<LpjCheckPage />} />
+                <Route path="/dashboard/validator" element={
+                    <ProtectedRoute allowedRoles={['Validator']}>
+                        <ValidatorDashboard />
+                    </ProtectedRoute>
+                } />
 
-                <Route path="/manage-users" element={<ManageUserPage />} />
-                <Route path="/manage-users/add" element={<AddUserPage />} />
-                <Route path="/manage-users/edit" element={<EditUserPage />} />
+                <Route path="/dashboard/employee" element={
+                    <ProtectedRoute allowedRoles={['Employee']}>
+                        <EmployeeDashboard />
+                    </ProtectedRoute>
+                } />
 
+                {/* Reimbursement Routes */}
+                <Route path="/reimbursement/bbm" element={
+                    <ProtectedRoute allowedRoles={['Employee', 'Reviewer', 'Validator', 'Admin']}>
+                        <RbsBbm />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/reimbursement/operasional" element={
+                    <ProtectedRoute allowedRoles={['Employee', 'Reviewer', 'Validator', 'Admin']}>
+                        <RbsOperasional />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/reimbursement/umum" element={
+                    <ProtectedRoute allowedRoles={['Employee', 'Reviewer', 'Validator', 'Admin']}>
+                        <RbsUmum />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/reimbursement/cek-pengajuan" element={
+                    <ProtectedRoute allowedRoles={['Reviewer', 'Validator', 'Super Admin']}>
+                        <RbsCheckPage />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/reimbursement/:id" element={
+                    <ProtectedRoute allowedRoles={['Employee', 'Reviewer', 'Validator', 'Admin', 'Super Admin']}>
+                        <DetailReimbursementPage />
+                    </ProtectedRoute>
+                } />
+
+                {/* Create BS Routes */}
+                <Route path="/create-bs/create" element={
+                    <ProtectedRoute allowedRoles={['Employee', 'Reviewer', 'Validator', 'Admin']}>
+                        <CreateBon />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/create-bs/cek-pengajuan" element={
+                    <ProtectedRoute allowedRoles={['Reviewer', 'Validator', 'Super Admin']}>
+                        <CreateBsCheckPage />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/create-bs/:id" element={
+                    <ProtectedRoute allowedRoles={['Employee', 'Reviewer', 'Validator', 'Admin', 'Super Admin']}>
+                        <DetailCreateBsPage />
+                    </ProtectedRoute>
+                } />
+
+                {/* LPJ BS Routes */}
+                <Route path="/lpj/umum" element={
+                    <ProtectedRoute allowedRoles={['Employee', 'Reviewer', 'Validator', 'Admin']}>
+                        <LpjUmum />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/lpj/marketing" element={
+                    <ProtectedRoute allowedRoles={['Employee', 'Reviewer', 'Validator', 'Admin']}>
+                        <LpjMarketing />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/lpj/cek-pengajuan" element={
+                    <ProtectedRoute allowedRoles={['Reviewer', 'Validator', 'Super Admin']}>
+                        <LpjCheckPage />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/lpj/:id" element={
+                    <ProtectedRoute allowedRoles={['Employee', 'Reviewer', 'Validator', 'Admin', 'Super Admin']}>
+                        <DetailLpjPage />
+                    </ProtectedRoute>
+                } />
+
+                {/* User Management Routes */}
+                <Route path="/manage-users" element={
+                    <ProtectedRoute allowedRoles={['Super Admin']}>
+                        <ManageUserPage />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/manage-users/add" element={
+                    <ProtectedRoute allowedRoles={['Super Admin']}>
+                        <AddUserPage />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/manage-users/edit" element={
+                    <ProtectedRoute allowedRoles={['Super Admin']}>
+                        <EditUserPage />
+                    </ProtectedRoute>
+                } />
+
+                {/* 404 Route */}
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </div>

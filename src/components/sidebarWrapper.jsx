@@ -1,12 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { validPaths } from './routesConfig';
+import { routesConfig } from './routesConfig';
 
 const SidebarWrapper = ({ role }) => {
     const location = useLocation();
-    const showSidebar = location.pathname !== '/' && validPaths.includes(location.pathname);
-    return showSidebar ? <Sidebar role={role} /> : null;
+
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen(!isSidebarOpen);
+    };
+    
+    const showSidebar = location.pathname !== '/' && routesConfig.includes(location.pathname);
+
+    return showSidebar ? (
+        <Sidebar
+            role={role}
+            isOpen={isSidebarOpen}
+            toggleSidebar={toggleSidebar}            
+        />
+    ) : null;
 };
 
 export default SidebarWrapper;

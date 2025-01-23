@@ -7,6 +7,7 @@ import Modal from '../components/Modal';
 const Layout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     const toggleSidebar = () => {
@@ -18,13 +19,21 @@ const Layout = ({ children }) => {
     };
 
     const handleCloseLogoutModal = () => {
-        setShowLogoutModal(false);
+        if (!isLoading) {
+            setShowLogoutModal(false);
+        }
     };
 
-    const handleConfirmLogout = () => {
-        localStorage.removeItem('userRole');
-        navigate('/');
-    };
+    const handleConfirmLogout = async () => {
+        setIsLoading(true);
+        try {            
+            localStorage.clear(); 
+            navigate('/'); 
+        } finally {
+            setIsLoading(false);
+            setShowLogoutModal(false);
+        }        
+    };    
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -48,6 +57,7 @@ const Layout = ({ children }) => {
                 onConfirm={handleConfirmLogout}
                 cancelText="Batal"
                 confirmText="Ya, Keluar"
+                isLoading={isLoading}
             />
         </div>
     );

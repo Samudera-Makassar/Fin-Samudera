@@ -20,9 +20,9 @@ const LoginPage = () => {
     }
 
     const handleLogin = async (e) => {
-        e.preventDefault()
-        setError('')
-        setIsLoading(true)
+        e.preventDefault();
+        setError('');
+        setIsLoading(true);
 
         try {
             const emailQuery = query(collection(db, 'users'), where('email', '==', email));
@@ -49,20 +49,20 @@ const LoginPage = () => {
 
             const userDoc = userSnapshot.docs[0];
             const userData = userDoc.data();
-
             const role = userData.role;
-            localStorage.setItem('userRole', role);
-            localStorage.setItem('userUid', userDoc.id);
 
-            if (role === 'Admin') navigate('/dashboard/admin');
-            else if (role === 'Validator') navigate('/dashboard/validator');
-            else if (role === 'Reviewer') navigate('/dashboard/reviewer');
-            else if (role === 'Employee') navigate('/dashboard/employee');
-            else if (role === 'Super Admin') navigate('/manage-users');
-            else {
-                setError('Role tidak dikenali. Hubungi administrator.');
+            localStorage.setItem('userUid', userDoc.id);
+            localStorage.setItem('userRole', role);
+
+            if (role === 'Super Admin') {
+                navigate('/manage-users');
+            } else if (['Admin', 'Validator', 'Reviewer', 'Employee'].includes(role)) {
+                navigate(`/dashboard/${role.toLowerCase().replace(' ', '')}`);
+            } else {
+                setError('Role tidak dikenali. Hubungi Super Admin.');
                 setIsLoading(false);
             }
+
         } catch (err) {
             console.error('Login error:', err);
             setError('Terjadi kesalahan saat login. Silakan coba lagi.');
