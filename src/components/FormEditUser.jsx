@@ -115,32 +115,32 @@ const EditUserForm = () => {
                         user.role === 'Reviewer'
                     )
                     .map(user => ({
-                        value: user.nama,
+                        value: user.uid,
                         label: user.nama,
                         uid: user.uid
                     }))                                 
 
                 // Hapus pengguna yang sedang diedit dari opsi reviewer
-                const currentUserName = formData.nama
-                const filteredReviewerOptions = reviewerOptions.filter(option => option.value !== currentUserName)
+                const currentUserUid = formData.uid
+                const filteredReviewerOptions = reviewerOptions.filter(option => option.value !== currentUserUid)
                 
                 setReviewer1Options(filteredReviewerOptions)
                 setReviewer2Options(filteredReviewerOptions)
                 
-                setFormData({
-                    ...formData,
-                    reviewer1: filteredReviewerOptions.filter((e) => formData.reviewer1.includes(e.uid)).map((e) => e.label) || [],
-                    reviewer2: filteredReviewerOptions.filter((e) => formData.reviewer2.includes(e.uid)).map((e) => e.label) || [],
-                })
+                setFormData(prevFormData => ({
+                    ...prevFormData,
+                    reviewer1: prevFormData.reviewer1.filter(r => filteredReviewerOptions.some(e => e.value === r)),
+                    reviewer2: prevFormData.reviewer2.filter(r => filteredReviewerOptions.some(e => e.value === r)),
+                }))
             } catch (error) {
                 console.error('Error fetching reviewers:', error)
             }
         }
 
-        if (formData.nama) {
+        if (formData.uid) {
             fetchReviewers()
         }
-    }, [formData.nama])
+    }, [formData.uid])
 
     useEffect(() => {
         const fetchValidators = async () => {
@@ -152,36 +152,32 @@ const EditUserForm = () => {
                         user.role === 'Validator' || user.role === 'Reviewer'
                     )
                     .map(user => ({
-                        value: user.nama,
+                        value: user.uid,
                         label: user.nama,
                         role: user.role,
                         uid: user.uid
                     }))
     
                 // Remove current user from validator options
-                const currentUserName = formData.nama
-                const filteredValidatorOptions = validatorOpts.filter(option => option.value !== currentUserName)
+                const currentUserUid = formData.uid
+                const filteredValidatorOptions = validatorOpts.filter(option => option.value !== currentUserUid)
                 
                 setValidatorOptions(filteredValidatorOptions)
                 
-                // Update formData with validator names
-                const validatorNames = filteredValidatorOptions
-                    .filter(opt => formData.validator?.includes(opt.uid))
-                    .map(opt => opt.value)
-    
+                // Update formData with validator UIDs
                 setFormData(prev => ({
                     ...prev,
-                    validator: validatorNames || []
+                    validator: prev.validator.filter(v => filteredValidatorOptions.some(opt => opt.value === v))
                 }))
             } catch (error) {
                 console.error('Error fetching validators:', error)
             }
         }
     
-        if (formData.nama) {
+        if (formData.uid) {
             fetchValidators()
         }
-    }, [formData.nama])
+    }, [formData.uid])
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -212,26 +208,24 @@ const EditUserForm = () => {
         }
 
         const selectedValues = Array.isArray(selectedOption)
-            ? selectedOption.map(option => option.label)
-            : selectedOption?.label || ''
+            ? selectedOption.map(option => option.value)
+            : selectedOption?.value || ''
     
         if (field === 'reviewer1' || field === 'reviewer2') {
             // Validasi untuk reviewer1 dan reviewer2
-            const currentUserName = formData.nama
+            const currentUserUid = formData.uid
     
             // Filter untuk memastikan reviewer bukan pengguna yang sedang diedit
             const filteredValues = Array.isArray(selectedValues)
-                ? selectedValues.filter(value => value !== currentUserName)
+                ? selectedValues.filter(value => value !== currentUserUid)
                 : selectedValues
     
-            if (field === 'reviewer2') {
-                if (!filteredValues.length) {
-                    setFormData({
-                        ...formData,
-                        [field]: [] // Izinkan reviewer2 kosong
-                    })
-                    return
-                }
+            if (field === 'reviewer2' && !filteredValues.length) {
+                setFormData({
+                    ...formData,
+                    [field]: [] // Izinkan reviewer2 kosong
+                })
+                return
             }
     
             setFormData({
@@ -343,24 +337,14 @@ const EditUserForm = () => {
                 return
             }
     
-            // Pemetaan validator dari nama ke UID
-            const validatorUids = formData.validator.map((validatorName) => {
-                const validator = validatorOptions.find((option) => option.value === validatorName)
-                return validator ? validator.uid : null
-            }).filter((uid) => uid !== null)
+            // Pemetaan validator dari UID
+            const validatorUids = formData.validator.filter(uid => validatorOptions.some(option => option.value === uid))
     
-            // Pemetaan reviewer dari nama ke UID
-            const reviewer1Uids = formData.reviewer1.map((reviewerName) => {
-                const reviewer = reviewer1Options.find((option) => option.label === reviewerName)
-                return reviewer ? reviewer.uid : null
-            }).filter((uid) => uid !== null) // Hanya ambil UID yang valid
+            // Pemetaan reviewer dari UID
+            const reviewer1Uids = formData.reviewer1.filter(uid => reviewer1Options.some(option => option.value === uid))
+            const reviewer2Uids = formData.reviewer2.filter(uid => reviewer2Options.some(option => option.value === uid))
     
-            const reviewer2Uids = formData.reviewer2.map((reviewerName) => {
-                const reviewer = reviewer2Options.find((option) => option.label === reviewerName)
-                return reviewer ? reviewer.uid : null
-            }).filter((uid) => uid !== null) // Hanya ambil UID yang valid
-    
-            // Update formData dengan UID
+            // Update formData dengan UID yang valid
             const updatedFormData = {
                 ...formData,
                 validator: validatorUids,
