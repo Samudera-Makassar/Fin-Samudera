@@ -44,7 +44,7 @@ const Modal = ({
             onClick={handleBackdropClick}
         >
             <div
-                className="bg-white rounded-lg p-4 lg:p-6 max-w-md w-full mx-4 relative"
+                className="bg-white rounded-lg p-4 lg:p-6 max-w-md w-full mx-4 relative sm:landscape:scale-90 sm:landscape:transform"
                 onClick={(e) => e.stopPropagation()}
             >
                 <h2 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">{title}</h2>

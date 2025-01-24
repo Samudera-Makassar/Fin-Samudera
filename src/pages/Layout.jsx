@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import Modal from '../components/Modal';
+import { auth } from '../firebaseConfig';
+import { signOut } from "firebase/auth";
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -29,6 +31,7 @@ const Layout = ({ children }) => {
     const handleConfirmLogout = async () => {
         setIsLoading(true);
         try {            
+            await signOut(auth);
             localStorage.clear(); 
             navigate('/'); 
         } finally {

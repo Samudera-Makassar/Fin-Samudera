@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { db } from '../firebaseConfig'
-import { collection, doc, setDoc, getDocs, query, where, or } from 'firebase/firestore'
+import { collection, doc, setDoc, getDocs, query, where } from 'firebase/firestore'
 import Select from 'react-select'
-import { v4 as uuidv4 } from 'uuid'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebaseConfig'; 
 
 const AddUserForm = () => {
     const navigate = useNavigate()
@@ -32,13 +33,6 @@ const AddUserForm = () => {
     const fetchReviewers = async () => {
         try {
             const q = query(collection(db, 'users'), where('role', '==', 'Reviewer'))
-            // const q = query(
-            //     collection(db, 'reimbursement'),
-            //     or(where('reviewer1', "array-contains", uid),
-            //     where('reviewer2', 'array-contains', uid)
-            //     ))
-            // const q = query(collection(db, 'medical'), where('reviewer1', "array-contains", uid))
-
             const querySnapshot = await getDocs(q)
 
             const reviewers = querySnapshot.docs.map((doc) => ({
@@ -123,23 +117,23 @@ const AddUserForm = () => {
         return !querySnapshot.empty
     }
 
-    const uid = uuidv4()
+    // const uid = uuidv4()
 
     const handleSubmit = async (e) => {
-        e.preventDefault()
-        setIsSubmitting(true)
+        e.preventDefault();
+        setIsSubmitting(true);
     
-        try {
-            const missingFields = []
+        try {            
+            const missingFields = [];
+            let fieldsToValidate = [];
     
-            let fieldsToValidate = []
             if (formData.role === 'Super Admin') {
                 fieldsToValidate = [
                     { name: 'nama', label: 'Nama' },
                     { name: 'email', label: 'Email' },
                     { name: 'password', label: 'Password' },
                     { name: 'role', label: 'Role' }
-                ]
+                ];
             } else if (formData.role === 'Reviewer') {
                 fieldsToValidate = [
                     { name: 'nama', label: 'Nama' },
@@ -151,7 +145,7 @@ const AddUserForm = () => {
                     { name: 'department', label: 'Department' },
                     { name: 'bankName', label: 'Nama Bank' },
                     { name: 'accountNumber', label: 'Nomor Rekening' }
-                ]
+                ];
             } else {
                 fieldsToValidate = [
                     { name: 'nama', label: 'Nama' },
@@ -166,62 +160,70 @@ const AddUserForm = () => {
                     { name: 'reviewer1', label: 'Reviewer 1' },
                     { name: 'reviewer2', label: 'Reviewer 2' },
                     { name: 'validator', label: 'Validator' }
-                ]
+                ];
             }
     
             for (let field of fieldsToValidate) {
                 if (!formData[field.name] || (Array.isArray(formData[field.name]) && formData[field.name].length === 0)) {
-                    missingFields.push(field.label)
+                    missingFields.push(field.label);
                 }
             }
     
             if (missingFields.length > 0) {
+                console.warn('Field yang tidak diisi:', missingFields);
                 missingFields.forEach((field) => {
                     toast.warning(
                         <>
                             <b>{field}</b> tidak boleh kosong
                         </>
-                    )
-                })
-                setIsSubmitting(false)
-                return
-            }
+                    );
+                });
+                setIsSubmitting(false);
+                return;
+            }            
     
             // Validasi reviewer1 dan reviewer2 tidak boleh sama
             if (formData.reviewer1?.length > 0 && formData.reviewer2?.length > 0) {
                 if (formData.reviewer1.some((r) => formData.reviewer2.includes(r))) {
-                    toast.warning('Reviewer 1 dan Reviewer 2 tidak boleh sama')
-                    setIsSubmitting(false)
-                    return
+                    console.warn('Reviewer 1 dan Reviewer 2 sama');
+                    toast.warning('Reviewer 1 dan Reviewer 2 tidak boleh sama');
+                    setIsSubmitting(false);
+                    return;
                 }
-            }
+            }            
     
             // Validasi email sudah terdaftar
-            const emailExists = await checkEmailExists(formData.email)
+            const emailExists = await checkEmailExists(formData.email);
             if (emailExists) {
-                toast.warning('Email sudah terdaftar. Gunakan email lain')
-                setIsSubmitting(false)
-                return
-            }
+                console.warn('Email sudah terdaftar:', formData.email);
+                toast.warning('Email sudah terdaftar. Gunakan email lain');
+                setIsSubmitting(false);
+                return;
+            }            
+    
+            // Membuat user menggunakan email dan password
+            const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+            const firebaseUser = userCredential.user;                
     
             // Menyimpan data pengguna ke Firestore
+            const uid = firebaseUser.uid;
             await setDoc(doc(db, 'users', uid), {
                 uid,
                 nama: formData.nama,
                 email: formData.email,
-                password: formData.password,
+                password: formData.password, 
                 role: formData.role,
                 posisi: formData.role === 'Super Admin' ? '' : formData.posisi,
                 unit: formData.role === 'Super Admin' ? '' : formData.unit,
                 department: formData.role === 'Super Admin' ? [] : formData.department,
                 bankName: formData.role === 'Super Admin' ? '' : formData.bankName,
                 accountNumber: formData.role === 'Super Admin' ? '' : formData.accountNumber,
-                reviewer1: formData.role === 'Super Admin' || formData.role === 'Reviewer' ? [] : formData.reviewer1,
+                reviewer1: formData.role === 'Super Admin' ? [] : formData.reviewer1,
                 reviewer2: formData.role === 'Super Admin' ? [] : formData.reviewer2,
-                validator: formData.role === 'Super Admin' || formData.role === 'Reviewer' ? [] : formData.validator,
-            })
+                validator: formData.role === 'Super Admin' ? [] : formData.validator,
+            });            
     
-            toast.success('Pengguna berhasil ditambahkan')
+            toast.success('Pengguna berhasil ditambahkan');
     
             // Reset form setelah submit
             setFormData({
@@ -237,15 +239,18 @@ const AddUserForm = () => {
                 reviewer1: [],
                 reviewer2: [],
                 validator: []
-            })
-            navigate(-1)
+            });
+                
+            setTimeout(() => {
+                navigate(-1)
+            }, 3500)
         } catch (error) {
-            console.error('Error adding user:', error)
-            toast.error('Gagal menambahkan pengguna. Silakan coba lagi')
+            console.error('Error terjadi saat proses submit:', error);
+            toast.error('Gagal menambahkan pengguna. Silakan coba lagi');
         } finally {
-            setIsSubmitting(false)
+            setIsSubmitting(false);            
         }
-    }
+    };
 
     // Options role
     const roleOptions = [

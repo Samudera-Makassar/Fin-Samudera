@@ -355,10 +355,11 @@ const EditUserForm = () => {
             // Simpan data pengguna ke Firestore
             const userRef = doc(db, 'users', uid)
             await updateDoc(userRef, updatedFormData)
-    
-            console.log("User successfully updated")
+                
             toast.success('Pengguna berhasil diperbarui')
-            navigate(-1) // Kembali ke halaman sebelumnya
+            setTimeout(() => {
+                navigate(-1)
+            }, 3500)
         } catch (error) {
             console.error('Error updating user data:', error)
             toast.error('Gagal memperbarui pengguna. Silakan coba lagi')
