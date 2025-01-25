@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
-const Sidebar = ({ isOpen, toggleSidebar, onLogout }) => {
+const Sidebar = ({ isOpen, toggleSidebar }) => {
     const role = localStorage.getItem('userRole')
 
     useEffect(() => {
@@ -33,7 +33,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onLogout }) => {
                     isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
                 }`}
             >
-                <div className="h-full overflow-y-auto pb-20">
+                <div className="h-full overflow-y-auto pb-20" style={{scrollbarWidth: 'none'}}>
                     <div className="flex justify-end px-4 lg:hidden mb-2">
                         <button onClick={toggleSidebar} className="text-white text-2xl">
                             <FontAwesomeIcon icon={faTimes} />
@@ -234,15 +234,6 @@ const Sidebar = ({ isOpen, toggleSidebar, onLogout }) => {
                                 )}
                             </>
                         )}
-                        <li>
-                            <hr className="border-red-500" />
-                            <button
-                                onClick={onLogout}
-                                className="block w-full py-2 pl-8 text-white hover:bg-[#FF5B5F] text-left"
-                            >
-                                Logout
-                            </button>
-                        </li>
                     </ul>
                 </div>
             </aside>

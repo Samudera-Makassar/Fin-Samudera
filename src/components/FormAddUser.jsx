@@ -266,7 +266,7 @@ const AddUserForm = () => {
         { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
         { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
         { value: 'PT SILKargo Indonesia', label: 'PT SILKargo Indonesia' },
-        { value: 'PT PAD Samudera Perdanaa', label: 'PT PAD Samudera Perdana' },
+        { value: 'PT PAD Samudera Perdana', label: 'PT PAD Samudera Perdana' },
         { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
     ]
 

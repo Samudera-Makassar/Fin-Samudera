@@ -66,7 +66,7 @@ const LoginPage = () => {
 
         try {
             // Step 1: Login via Firebase Authentication
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);                        
+            await signInWithEmailAndPassword(auth, email, password);                        
 
             // Step 2: Validasi email di Firestore
             const emailQuery = query(collection(db, 'users'), where('email', '==', email));

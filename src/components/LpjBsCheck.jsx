@@ -5,8 +5,7 @@ import { db } from '../firebaseConfig'
 import Modal from './Modal'
 import Select from 'react-select'
 import EmptyState from '../assets/images/EmptyState.png'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { toast } from 'react-toastify'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 
@@ -224,7 +223,7 @@ const LpjBsCheck = () => {
         }
 
         fetchUserAndLpj()
-    }, [])
+    }, [uid, userRole])
 
     // Handle Approve
     const handleApprove = (item) => {
@@ -545,7 +544,7 @@ const LpjBsCheck = () => {
             setFilteredApprovedData({ lpj: filtered })
         }
         filterData()
-    }, [filters.bulan, filters.tahun, approvedData])
+    }, [filters.bulan, filters.tahun, approvedData, uid])
 
     const handleFilterChange = (field, selectedOption) => {
         setFilters((prev) => ({
@@ -866,19 +865,6 @@ const LpjBsCheck = () => {
                 onConfirm={modalProps.onConfirm}
                 cancelText="Batal"
                 confirmText="Ya"
-            />
-
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                closeOnClick
-                pauseOnHover
-                style={{
-                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
-                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
-                }}
-                toastClassName="toast-item mt-2 xl:mt-0"
             />
         </div>
     )

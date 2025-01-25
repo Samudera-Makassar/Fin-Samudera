@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import EmptyState from '../assets/images/EmptyState.png'
 import Select from 'react-select'
@@ -73,10 +73,6 @@ const CreateBsTable = () => {
                     setLoading(false)
                     return
                 }
-
-                // Fetch data user berdasarkan UID
-                const userDocRef = doc(db, 'users', uid)
-                const userDoc = await getDoc(userDocRef)
 
                 // Query bon sementara berdasarkan UID user
                 const q = query(

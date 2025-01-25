@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { doc, setDoc, getDoc, addDoc, collection, getDocs, runTransaction, query, where } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import Select from 'react-select'
-import { toast, ToastContainer } from 'react-toastify'
+import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
@@ -101,7 +101,7 @@ const CreateBonForm = () => {
         { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
         { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
         { value: 'PT SILKargo Indonesia', label: 'PT SILKargo Indonesia' },
-        { value: 'PT PAD Samudera Indonesia', label: 'PT PAD Samudera Indonesia' },
+        { value: 'PT PAD Samudera Perdana', label: 'PT PAD Samudera Perdana' },
         { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
     ]
 
@@ -262,16 +262,16 @@ const CreateBonForm = () => {
         }
     };
 
-    const BUSINESS_UNIT_CODES = {
+    const BUSINESS_UNIT_CODES = useMemo(() => ({
         'PT Makassar Jaya Samudera': '019',
         'PT Samudera Makassar Logistik': '035',
         'PT Kendari Jaya Samudera': '083',
         'PT Samudera Kendari Logistik': 'SKEL',
         'PT Samudera Agencies Indonesia': 'SAI',
         'PT SILKargo Indonesia': 'SKI',
-        'PT PAD Samudera Indonesia': 'SP',
+        'PT PAD Samudera Perdana': 'SP',
         'PT Masaji Kargosentra Tama': 'MKT'
-    }
+    }), []);
 
     const handleUnitChange = async (selectedOption) => {
         setSelectedUnit(selectedOption);
@@ -305,9 +305,9 @@ const CreateBonForm = () => {
         }
     };
 
-    const generateNomorBS = async () => {
+    const generateNomorBS = useCallback(async () => {
         try {
-            if (alreadyFetchBS) return;
+            if (alreadyFetchBS) return null;
 
             if (!isUserDataLoaded) {
                 console.error('User data not loaded yet');
@@ -346,15 +346,11 @@ const CreateBonForm = () => {
             toast.error('Error: ' + error.message);
             return null;
         }
-    };
+    }, [alreadyFetchBS, isUserDataLoaded, isAdmin, selectedUnit, userData.unit, BUSINESS_UNIT_CODES]);
 
     useEffect(() => {
         const fetchNomorBS = async () => {
-            // Only proceed if user data is loaded and we haven't fetched BS yet
             if (!isUserDataLoaded || alreadyFetchBS) return
-
-            console.log("Attempting to generate BS number with userData:", userData)
-            console.log("Selected Unit:", selectedUnit)
 
             const nomorBS = await generateNomorBS()
             if (nomorBS) {
@@ -365,7 +361,22 @@ const CreateBonForm = () => {
         }
 
         fetchNomorBS()
-    }, [todayDate, alreadyFetchBS, isUserDataLoaded])
+    }, [todayDate, alreadyFetchBS, isUserDataLoaded, generateNomorBS]);
+
+    useEffect(() => {
+        const fetchNomorBS = async () => {
+            if (!isUserDataLoaded || alreadyFetchBS) return
+
+            const nomorBS = await generateNomorBS()
+            if (nomorBS) {
+                setBonSementara((prevBonSementara) =>
+                    prevBonSementara.map((item, index) => (index === 0 ? { ...item, nomorBS: nomorBS } : item))
+                )
+            }
+        }
+
+        fetchNomorBS()
+    }, [todayDate, alreadyFetchBS, isUserDataLoaded, generateNomorBS])
 
 
     const handleSubmit = async () => {
@@ -793,18 +804,6 @@ const CreateBonForm = () => {
                 </div>
             </div>
 
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                closeOnClick
-                pauseOnHover
-                style={{
-                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
-                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0                    
-                }}
-                toastClassName="toast-item mt-2 xl:mt-0"
-            />
         </div>
     )
 }

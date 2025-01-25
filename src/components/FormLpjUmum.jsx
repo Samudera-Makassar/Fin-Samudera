@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { doc, setDoc, getDoc, addDoc, collection, getDocs, query, where } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebaseConfig'
 import Select from 'react-select'
 import { useLocation } from 'react-router-dom'
-import { toast, ToastContainer } from 'react-toastify'
+import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
@@ -43,7 +43,7 @@ const FormLpjUmum = () => {
     const [lpj, setLpj] = useState([initialLpjState])
     const [nomorBS, setNomorBS] = useState(location.state?.nomorBS || '')
     const [jumlahBS, setJumlahBS] = useState(location.state?.jumlahBS || '')
-    const [aktivitas, setAktivitas] = useState(location.state?.aktivitas || '')
+    const [aktivitas] = useState(location.state?.aktivitas || '')
 
     const [calculatedCosts, setCalculatedCosts] = useState({
         totalBiaya: 0,
@@ -93,22 +93,19 @@ const FormLpjUmum = () => {
         }
     }, [isAdmin])
 
-    const BUSINESS_UNITS = [
+    const BUSINESS_UNITS = useMemo(() => [
         { value: 'PT Makassar Jaya Samudera', label: 'PT Makassar Jaya Samudera' },
         { value: 'PT Samudera Makassar Logistik', label: 'PT Samudera Makassar Logistik' },
         { value: 'PT Kendari Jaya Samudera', label: 'PT Kendari Jaya Samudera' },
         { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
         { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
         { value: 'PT SILKargo Indonesia', label: 'PT SILKargo Indonesia' },
-        { value: 'PT PAD Samudera Indonesia', label: 'PT PAD Samudera Indonesia' },
+        { value: 'PT PAD Samudera Perdana', label: 'PT PAD Samudera Perdana' },
         { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
-    ]
+    ], []);
 
     useEffect(() => {
         const today = new Date()
-        const day = today.getDate()
-        const month = today.getMonth()
-        const year = today.getFullYear()
 
         const formattedDate = today.toISOString().split('T')[0]
 
@@ -147,7 +144,7 @@ const FormLpjUmum = () => {
         }
 
         fetchUserData()
-    }, [])
+    }, [isAdmin])
 
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A'
@@ -243,7 +240,7 @@ const FormLpjUmum = () => {
         'PT Samudera Kendari Logistik': 'SKEL',
         'PT Samudera Agencies Indonesia': 'SAI',
         'PT SILKargo Indonesia': 'SKI',
-        'PT PAD Samudera Indonesia': 'SP',
+        'PT PAD Samudera Perdana': 'SP',
         'PT Masaji Kargosentra Tama': 'MKT'
     }
 
@@ -363,18 +360,6 @@ const FormLpjUmum = () => {
 
             // Upload attachment
             const lampiranUrl = await uploadAttachment(attachmentFile, displayId)
-
-            // Upload attachments and collect download URLs
-            const lpjWithUrls = await Promise.all(
-                lpj.map(async (item) => {
-                    const lampiranUrl = await uploadAttachment(item.lampiranFile, displayId)
-                    return {
-                        ...item,
-                        lampiranUrl: lampiranUrl || '',
-                        lampiran: item.lampiran || ''
-                    }
-                })
-            )
 
             const lpjData = {
                 user: {
@@ -523,7 +508,7 @@ const FormLpjUmum = () => {
                 }
             }
         }
-    }, [location.state, isAdmin, validatorOptions])
+    }, [location.state, isAdmin, validatorOptions, BUSINESS_UNITS])
 
     const customStyles = {
         control: (base) => ({
@@ -943,18 +928,6 @@ const FormLpjUmum = () => {
                 </div>
             </div>
 
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                closeOnClick
-                pauseOnHover
-                style={{
-                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
-                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
-                }}
-                toastClassName="toast-item mt-2 xl:mt-0"
-            />
         </div>
     )
 }

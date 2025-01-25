@@ -4,7 +4,7 @@ import { db } from '../firebaseConfig'
 import { useParams, useNavigate } from 'react-router-dom'
 import { generateBsPDF } from '../utils/BsPdf'
 import ModalPDF from './ModalPDF'
-import { toast, ToastContainer } from 'react-toastify'
+import { toast } from 'react-toastify'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -14,7 +14,7 @@ const DetailCreateBs = () => {
     const [userData, setUserData] = useState(null)
     const [bonSementaraDetail, setBonSementaraDetail] = useState(null)
     const [reviewers, setReviewers] = useState([])
-    const [error, setError] = useState(null)
+    const [, setError] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
 
     const { id } = useParams()
@@ -556,18 +556,6 @@ const DetailCreateBs = () => {
 
             <ModalPDF showModal={!!modalPdfUrl} previewUrl={modalPdfUrl} onClose={closePreview} title={modalTitle} />
 
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                closeOnClick
-                pauseOnHover
-                style={{
-                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
-                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
-                }}
-                toastClassName="toast-item mt-2 xl:mt-0"
-            />
         </div>
     )
 }

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { doc, setDoc, getDoc, addDoc, collection, getDocs, query, where } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebaseConfig'
 import Select from 'react-select'
 import { useLocation } from 'react-router-dom'
-import { toast, ToastContainer } from 'react-toastify'
+import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
@@ -105,16 +105,16 @@ const FormLpjMarketing = () => {
         }
     }, [isAdmin])
 
-    const BUSINESS_UNITS = [
+    const BUSINESS_UNITS = useMemo(() => [
         { value: 'PT Makassar Jaya Samudera', label: 'PT Makassar Jaya Samudera' },
         { value: 'PT Samudera Makassar Logistik', label: 'PT Samudera Makassar Logistik' },
         { value: 'PT Kendari Jaya Samudera', label: 'PT Kendari Jaya Samudera' },
         { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
         { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
         { value: 'PT SILkargo Indonesia', label: 'PT SILkargo Indonesia' },
-        { value: 'PT PAD Samudera Indonesia', label: 'PT PAD Samudera Indonesia' },
+        { value: 'PT PAD Samudera Perdana', label: 'PT PAD Samudera Perdana' },
         { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
-    ]
+    ], []);
 
     useEffect(() => {
         const today = new Date()
@@ -159,7 +159,7 @@ const FormLpjMarketing = () => {
         }
 
         fetchUserData()
-    }, [])
+    }, [isAdmin])
 
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A'
@@ -257,7 +257,7 @@ const FormLpjMarketing = () => {
         'PT Samudera Kendari Logistik': 'SKEL',
         'PT Samudera Agencies Indonesia': 'SAI',
         'PT SILKargo Indonesia': 'SKI',
-        'PT PAD Samudera Indonesia': 'SP',
+        'PT PAD Samudera Perdana': 'SP',
         'PT Masaji Kargosentra Tama': 'MKT'
     }
 
@@ -541,7 +541,7 @@ const FormLpjMarketing = () => {
                 }
             }
         }
-    }, [location.state, isAdmin, validatorOptions])
+    }, [location.state, isAdmin, validatorOptions, BUSINESS_UNITS])
 
     const customStyles = {
         control: (base) => ({
@@ -1094,18 +1094,6 @@ const FormLpjMarketing = () => {
                 </div>
             </div>
 
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                closeOnClick
-                pauseOnHover
-                style={{
-                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
-                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
-                }}
-                toastClassName="toast-item mt-2 xl:mt-0"
-            />
         </div>
     )
 }

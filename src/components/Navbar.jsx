@@ -146,28 +146,23 @@ function Navbar({ toggleSidebar }) {
                     ) : (
                         <span>Please login</span>
                     )}
-                    <Modal
-                        showModal={showLogoutModal}
-                        title="Konfirmasi Logout"
-                        message="Apakah Anda yakin ingin keluar?"
-                        onClose={handleCloseLogoutModal}
-                        onConfirm={handleConfirmLogout}
-                        cancelText="Batal"
-                        confirmText="Ya, Keluar"
-                        isLoading={isLoading}
-                    />
                 </div>
             </nav>
             
-            <PasswordChangeModal
-                isOpen={isPasswordModalOpen}
-                onClose={() => setIsPasswordModalOpen(false)}
+            <Modal
+                showModal={showLogoutModal}
+                title="Konfirmasi Logout"
+                message="Apakah Anda yakin ingin keluar?"
+                onClose={handleCloseLogoutModal}
+                onConfirm={handleConfirmLogout}
+                cancelText="Batal"
+                confirmText="Ya, Keluar"
+                isLoading={isLoading}
             />
-            
-            <BankUpdateModal
-                isOpen={isBankUpdateModalOpen}
-                onClose={() => setIsBankUpdateModalOpen(false)}
-            />
+
+            <PasswordChangeModal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} />
+
+            <BankUpdateModal isOpen={isBankUpdateModalOpen} onClose={() => setIsBankUpdateModalOpen(false)} />
         </>
     )
 }

@@ -3,7 +3,7 @@ import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { useParams } from 'react-router-dom'
 import { generateLpjPDF } from '../utils/LpjPdf'
-import { toast, ToastContainer } from 'react-toastify'
+import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import ModalPDF from './ModalPDF'
 import Skeleton from 'react-loading-skeleton'
@@ -15,7 +15,7 @@ const DetailLpj = () => {
     const [userData, setUserData] = useState(null)
     const [lpjDetail, setLpjDetail] = useState(null)
     const [reviewers, setReviewers] = useState([])
-    const [error, setError] = useState(null)
+    const [, setError] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
 
     const { id } = useParams() // Get lpj ID from URL params
@@ -645,18 +645,6 @@ const DetailLpj = () => {
 
             <ModalPDF showModal={!!modalPdfUrl} previewUrl={modalPdfUrl} onClose={closePreview} title={modalTitle} />
 
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                closeOnClick
-                pauseOnHover
-                style={{
-                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
-                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
-                }}
-                toastClassName="toast-item mt-2 xl:mt-0"
-            />
         </div>
     )
 }
