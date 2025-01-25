@@ -67,11 +67,11 @@ const EditUserForm = () => {
         { value: 'Direktur', label: 'Direktur' }
     ]
 
-    
+
     useEffect(() => {
         const getUidFromParams = () => {
             const params = new URLSearchParams(location.search)
-            return params.get('uid') 
+            return params.get('uid')
         }
 
         const fetchUserData = async () => {
@@ -259,9 +259,9 @@ const EditUserForm = () => {
         try {
             const getUidFromParams = () => {
                 const params = new URLSearchParams(location.search)
-                return params.get('uid') 
+                return params.get('uid')
             }
-            
+
             const uid = getUidFromParams()
 
             // Validasi untuk memastikan tidak ada field yang kosong selain reviewer2
@@ -397,202 +397,6 @@ const EditUserForm = () => {
 
             <div className="bg-white p-6 rounded-lg shadow">
                 <h3 className="text-xl font-medium mb-4">Ubah Data Pengguna</h3>
-                {/* <div className="sm:grid sm:grid-cols-2 gap-6">
-                    <div className="mb-2">
-                        <label className="block font-medium text-gray-700">
-                            Nama Lengkap <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="nama"
-                            value={formData.nama}
-                            onChange={handleChange}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label className="block font-medium text-gray-700">
-                            Role <span className="text-red-500">*</span>
-                        </label>
-                        <Select
-                            name="role"
-                            value={roleOptions.find((option) => option.label === formData.role)}
-                            onChange={(selectedOption) => handleSelectChange(selectedOption, 'role')}
-                            options={roleOptions}
-                            isClearable
-                            className="mt-1"
-                            styles={selectStyles}
-                            isSearchable={false}
-                        />
-                    </div>
-                </div>
-                <div className="sm:grid sm:grid-cols-2 gap-6">
-                    <div className="mb-2">
-                        <label className="block font-medium text-gray-700">
-                            Email <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label className="block font-medium text-gray-700">
-                            Password <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                        />
-                    </div>
-                </div>
-                <div className="sm:grid sm:grid-cols-2 gap-6">
-                    {formData.role !== 'Super Admin' && (
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Unit Bisnis <span className="text-red-500">*</span>
-                            </label>
-                            <Select
-                                name="unit"
-                                value={unitOptions.find((option) => option.value === formData.unit)}
-                                onChange={(selectedOption) => handleSelectChange(selectedOption, 'unit')}
-                                options={unitOptions}
-                                isClearable
-                                className="mt-1"
-                                styles={selectStyles}
-                                isSearchable={false}
-                            />
-                        </div>
-                    )}
-                    {formData.role !== 'Super Admin' && (
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Nama Bank <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="bankName"
-                                value={formData.bankName}
-                                onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                            />
-                        </div>
-                    )}
-                </div>
-                <div className="sm:grid sm:grid-cols-2 gap-6">
-                    {formData.role !== 'Super Admin' && (
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Department <span className="text-red-500">*</span>
-                            </label>
-                            <Select
-                                isMulti
-                                name="department"
-                                value={departmentOptions.filter((option) =>
-                                    formData.department?.includes(option.label)
-                                )}
-                                onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'department')}
-                                options={departmentOptions}
-                                className="mt-1"
-                                styles={selectStyles}
-                                isSearchable={false}
-                            />
-                        </div>
-                    )}
-                    {formData.role !== 'Super Admin' && (
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Nomor Rekening <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="accountNumber"
-                                value={formData.accountNumber}
-                                onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                            />
-                        </div>
-                    )}
-                </div>
-                <div className="sm:grid sm:grid-cols-2 gap-6">
-                    {formData.role !== 'Super Admin' && (
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Posisi <span className="text-red-500">*</span>
-                            </label>
-                            <Select
-                                name="posisi"
-                                value={posisiOptions.find((option) => option.label === formData.posisi)}
-                                onChange={(selectedOption) => handleSelectChange(selectedOption, 'posisi')}
-                                options={posisiOptions}
-                                isClearable
-                                className="mt-1"
-                                styles={selectStyles}
-                                isSearchable={false}
-                            />
-                        </div>
-                    )}
-                    {formData.role !== 'Super Admin' && (
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Validator {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
-                            </label>
-                            <Select
-                                isMulti
-                                name="validator"
-                                value={validatorOptions.filter((option) => formData.validator?.includes(option.value))}
-                                options={validatorOptions}
-                                className="basic-multi-select mt-1"
-                                classNamePrefix="select"
-                                styles={selectStyles}
-                                onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'validator')}
-                            />
-                        </div>
-                    )}
-                </div>
-                {formData.role !== 'Super Admin' && (
-                    <div className="sm:grid sm:grid-cols-2 gap-6">
-                        {formData.role !== 'Super Admin' && (
-                            <div className="mb-2">
-                                <label className="block font-medium text-gray-700">
-                                    Reviewer 1 {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
-                                </label>
-                                <Select
-                                    isMulti
-                                    name="reviewer1"
-                                    value={reviewer1Options.filter((option) =>
-                                        formData.reviewer1?.includes(option.value)
-                                    )}
-                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer1')}
-                                    options={reviewer1Options}
-                                    className="mt-1"
-                                    styles={selectStyles}
-                                />
-                            </div>
-                        )}
-                        <div className="mb-2">
-                            <label className="block font-medium text-gray-700">
-                                Reviewer 2 {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
-                            </label>
-                            <Select
-                                isMulti
-                                name="reviewer2"
-                                value={reviewer2Options.filter((option) => formData.reviewer2?.includes(option.value))}
-                                onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer2')}
-                                options={reviewer2Options}
-                                className="mt-1"
-                                styles={selectStyles}
-                            />
-                        </div>
-                    </div>
-                )} */}
-
                 <div className='hidden sm:block'>
                     <div className="sm:grid sm:grid-cols-2 gap-6">
                         <div>
@@ -963,19 +767,6 @@ const EditUserForm = () => {
                     </button>
                 </div>
             </div>
-
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                closeOnClick
-                pauseOnHover
-                style={{
-                    padding: window.innerWidth <= 640 ? '0 48px' : 0,
-                    margin: window.innerWidth <= 640 ? '48px 0 0 36px' : 0
-                }}
-                toastClassName="toast-item mt-2 xl:mt-0"
-            />
         </div>
     )
 }
