@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { db } from '../firebaseConfig'
-import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore'
+import { collection, getDocs } from 'firebase/firestore'
 import Select from 'react-select'
-import Modal from './Modal'
-import { toast, ToastContainer } from 'react-toastify'
+import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 const ManageUser = () => {
@@ -18,10 +17,7 @@ const ManageUser = () => {
         department: ''
     })
     const itemsPerPage = 10 // Jumlah item per halaman
-    const navigate = useNavigate()
-
-    const [showModal, setShowModal] = useState(false) // State untuk menampilkan modal konfirmasi
-    const [userToDelete, setUserToDelete] = useState(null) // State untuk menyimpan pengguna yang akan dihapus
+    const navigate = useNavigate()   
 
     const filterOptions = {
         posisi: [
@@ -70,43 +66,9 @@ const ManageUser = () => {
 
         fetchUsers()
     }, [])
-    
-    const handleEdit = (uid) => {        
+
+    const handleEdit = (uid) => {
         navigate(`/manage-users/edit?uid=${uid}`)
-    }
-
-    const handleDelete = (uid) => {
-        const userToDelete = users.find((user) => user.uid === uid)
-        setUserToDelete(userToDelete)        
-        setShowModal(true) // Tampilkan modal konfirmasi
-    }
-
-    const confirmDelete = async () => {
-        if (userToDelete) {
-            try {
-                // Mencari dokumen berdasarkan uid
-                const querySnapshot = await getDocs(collection(db, 'users'))
-                const userDoc = querySnapshot.docs.find((doc) => doc.data().uid === userToDelete.uid)
-
-                if (userDoc) {
-                    // Menghapus dokumen berdasarkan ID dokumen yang ditemukan
-                    await deleteDoc(doc(db, 'users', userDoc.id))
-                    setUsers(users.filter((user) => user.uid !== userToDelete.uid))
-                    toast.success('Pengguna berhasil dihapus')
-                    setShowModal(false) // Menutup modal setelah berhasil menghapus
-                } else {
-                    toast.error('Pengguna tidak ditemukan.')
-                }
-            } catch (error) {
-                console.error('Error deleting user:', error)
-                toast.error('Gagal menghapus pengguna')
-                setShowModal(false) // Menutup modal jika gagal
-            }
-        }
-    }
-
-    const cancelDelete = () => {
-        setShowModal(false) // Menutup modal jika dibatalkan
     }
 
     // Fungsi untuk menangani input pencarian
@@ -138,7 +100,7 @@ const ManageUser = () => {
     const filteredUsers = users.filter((user) => {
         const searchTermLower = searchTerm.toLowerCase()
         const matchesSearch = user.nama?.toLowerCase().includes(searchTermLower) || user.email?.toLowerCase().includes(searchTermLower)
-    
+
         const matchesFilters = Object.entries(filters).every(([field, selectedOption]) => {
             if (!selectedOption) return true
             if (field === 'department' && Array.isArray(user[field])) {
@@ -217,7 +179,7 @@ const ManageUser = () => {
             isSearchable={false}
         />
     )
-    
+
     return (
         <div className="container mx-auto py-10 md:py-8">
             <h2 className="text-xl font-bold mb-4">Manage Users</h2>
@@ -238,7 +200,7 @@ const ManageUser = () => {
                     <FilterSelect field="unit" label="Unit Bisnis" />
                     <FilterSelect field="role" label="Role" />
                     <FilterSelect field="department" label="Department" />
-                    
+
                     <button
                         onClick={resetFilters}
                         className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
@@ -371,24 +333,6 @@ const ManageUser = () => {
                                                             <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
                                                         </svg>
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleDelete(user.uid)}
-                                                        className="flex items-center justify-center rounded-full p-1 bg-red-200 hover:bg-red-300 text-red-600 border-[1px] border-red-600"
-                                                        title="Hapus"
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            viewBox="0 0 20 20"
-                                                            fill="currentColor"
-                                                            className="size-5"
-                                                        >
-                                                            <path
-                                                                fillRule="evenodd"
-                                                                d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.06V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.309c.827-.035 1.66-.06 2.5-.06Zm2.5 5.25a.75.75 0 0 1 1.5 0v5.25a.75.75 0 0 1-1.5 0V9.25Zm-4.75-.75a.75.75 0 0 0-.75.75v5.25a.75.75 0 0 0 1.5 0V9.25a.75.75 0 0 0-.75-.75Z"
-                                                                clipRule="evenodd"
-                                                            />
-                                                        </svg>
-                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -405,11 +349,10 @@ const ManageUser = () => {
                     <button
                         onClick={prevPage}
                         disabled={currentPage === 1}
-                        className={`flex items-center gap-2 p-2 rounded-full ${
-                            currentPage === 1
+                        className={`flex items-center gap-2 p-2 rounded-full ${currentPage === 1
                                 ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                                 : 'border border-red-600 text-red-600 hover:bg-red-100'
-                        }`}
+                            }`}
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -428,11 +371,10 @@ const ManageUser = () => {
                         <button
                             key={page}
                             onClick={() => setCurrentPage(page)}
-                            className={`px-3 py-2 rounded-full ${
-                                currentPage === page
+                            className={`px-3 py-2 rounded-full ${currentPage === page
                                     ? 'bg-red-600 text-white'
                                     : 'border border-red-600 text-red-600 hover:bg-red-100'
-                            }`}
+                                }`}
                         >
                             {page}
                         </button>
@@ -442,11 +384,10 @@ const ManageUser = () => {
                     <button
                         onClick={nextPage}
                         disabled={currentPage === totalPages}
-                        className={`flex items-center gap-2 px-2 py-2 rounded-full ${
-                            currentPage === totalPages
+                        className={`flex items-center gap-2 px-2 py-2 rounded-full ${currentPage === totalPages
                                 ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                                 : 'border border-red-600 text-red-600 hover:bg-red-100'
-                        }`}
+                            }`}
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -461,14 +402,6 @@ const ManageUser = () => {
                     </button>
                 </div>
             </div>
-
-            <Modal
-                showModal={showModal}
-                title="Konfirmasi Hapus Pengguna"
-                message={`Apakah Anda yakin ingin menghapus pengguna ${userToDelete?.nama}?`}
-                onClose={cancelDelete}
-                onConfirm={confirmDelete}
-            />
 
             <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
         </div>

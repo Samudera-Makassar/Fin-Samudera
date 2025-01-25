@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { db } from '../firebaseConfig'
-import { doc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore'
+import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore'
 import Select from 'react-select'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css'
 const EditUserForm = () => {
     const navigate = useNavigate()
     const location = useLocation()
-    
+
     const [formData, setFormData] = useState({
         nama: '',
         email: '',
@@ -46,7 +46,7 @@ const EditUserForm = () => {
         { value: 'PT Samudera Kendari Logistik', label: 'PT Samudera Kendari Logistik' },
         { value: 'PT Samudera Agencies Indonesia', label: 'PT Samudera Agencies Indonesia' },
         { value: 'PT SILKargo Indonesia', label: 'PT SILKargo Indonesia' },
-        { value: 'PT PAD Samudera Indonesia', label: 'PT PAD Samudera Perdana' },
+        { value: 'PT PAD Samudera Perdana', label: 'PT PAD Samudera Perdana' },
         { value: 'PT Masaji Kargosentra Tama', label: 'PT Masaji Kargosentra Tama' }
     ]
 
@@ -67,30 +67,31 @@ const EditUserForm = () => {
         { value: 'Direktur', label: 'Direktur' }
     ]
 
-    const getUidFromParams = () => {
-        const params = new URLSearchParams(location.search)
-        return params.get('uid') // Mengambil UID dari parameter id
-    }
     
     useEffect(() => {
+        const getUidFromParams = () => {
+            const params = new URLSearchParams(location.search)
+            return params.get('uid') 
+        }
+
         const fetchUserData = async () => {
             const uid = getUidFromParams() // Ambil UID dari parameter
             if (!uid) {
                 console.error('UID not found in URL')
                 return
             }
-    
+
             const docRef = doc(db, 'users', uid) // Gunakan UID sebagai referensi
             try {
                 const docSnap = await getDoc(docRef)
-                
+
                 if (docSnap.exists()) {
-                    const userData = docSnap.data()                    
+                    const userData = docSnap.data()
                     setFormData({
                         ...userData,
                         reviewer1: userData.reviewer1 || [],
                         reviewer2: userData.reviewer2 || [],
-                        department: userData.department || []                        
+                        department: userData.department || []
                     })
                 } else {
                     console.error('User not found')
@@ -99,10 +100,10 @@ const EditUserForm = () => {
                 console.error('Error fetching user data:', error)
             }
         }
-    
+
         fetchUserData()
     }, [location])
-    
+
 
     // Mengambil data reviewer dari Firestore
     useEffect(() => {
@@ -111,22 +112,22 @@ const EditUserForm = () => {
                 const querySnapshot = await getDocs(collection(db, 'users'))
                 const reviewerOptions = querySnapshot.docs
                     .map(doc => doc.data())
-                    .filter(user => 
+                    .filter(user =>
                         user.role === 'Reviewer'
                     )
                     .map(user => ({
                         value: user.uid,
                         label: user.nama,
                         uid: user.uid
-                    }))                                 
+                    }))
 
                 // Hapus pengguna yang sedang diedit dari opsi reviewer
                 const currentUserUid = formData.uid
                 const filteredReviewerOptions = reviewerOptions.filter(option => option.value !== currentUserUid)
-                
+
                 setReviewer1Options(filteredReviewerOptions)
                 setReviewer2Options(filteredReviewerOptions)
-                
+
                 setFormData(prevFormData => ({
                     ...prevFormData,
                     reviewer1: prevFormData.reviewer1.filter(r => filteredReviewerOptions.some(e => e.value === r)),
@@ -148,7 +149,7 @@ const EditUserForm = () => {
                 const querySnapshot = await getDocs(collection(db, 'users'))
                 const validatorOpts = querySnapshot.docs
                     .map(doc => doc.data())
-                    .filter(user => 
+                    .filter(user =>
                         user.role === 'Validator' || user.role === 'Reviewer'
                     )
                     .map(user => ({
@@ -157,13 +158,13 @@ const EditUserForm = () => {
                         role: user.role,
                         uid: user.uid
                     }))
-    
+
                 // Remove current user from validator options
                 const currentUserUid = formData.uid
                 const filteredValidatorOptions = validatorOpts.filter(option => option.value !== currentUserUid)
-                
+
                 setValidatorOptions(filteredValidatorOptions)
-                
+
                 // Update formData with validator UIDs
                 setFormData(prev => ({
                     ...prev,
@@ -173,7 +174,7 @@ const EditUserForm = () => {
                 console.error('Error fetching validators:', error)
             }
         }
-    
+
         if (formData.uid) {
             fetchValidators()
         }
@@ -210,16 +211,16 @@ const EditUserForm = () => {
         const selectedValues = Array.isArray(selectedOption)
             ? selectedOption.map(option => option.value)
             : selectedOption?.value || ''
-    
+
         if (field === 'reviewer1' || field === 'reviewer2') {
             // Validasi untuk reviewer1 dan reviewer2
             const currentUserUid = formData.uid
-    
+
             // Filter untuk memastikan reviewer bukan pengguna yang sedang diedit
             const filteredValues = Array.isArray(selectedValues)
                 ? selectedValues.filter(value => value !== currentUserUid)
                 : selectedValues
-    
+
             if (field === 'reviewer2' && !filteredValues.length) {
                 setFormData({
                     ...formData,
@@ -227,7 +228,7 @@ const EditUserForm = () => {
                 })
                 return
             }
-    
+
             setFormData({
                 ...formData,
                 [field]: filteredValues,
@@ -250,25 +251,17 @@ const EditUserForm = () => {
             })
         }
     }
-    
-    const checkEmailExists = async (email, currentUid) => {
-        const q = query(collection(db, 'users'), where('email', '==', email))
-        const querySnapshot = await getDocs(q)
 
-        
-        // Jika email ditemukan, pastikan email tersebut tidak milik pengguna yang sedang diedit
-        if (!querySnapshot.empty) {
-            const existingUser = querySnapshot.docs[0]
-            return existingUser.id !== currentUid // Email sudah dipakai oleh user lain
-        }
-        return false // Email belum terdaftar
-    }
-    
     const handleSubmit = async (e) => {
         e.preventDefault()
         setIsSubmitting(true)
 
         try {
+            const getUidFromParams = () => {
+                const params = new URLSearchParams(location.search)
+                return params.get('uid') 
+            }
+            
             const uid = getUidFromParams()
 
             // Validasi untuk memastikan tidak ada field yang kosong selain reviewer2
@@ -328,22 +321,14 @@ const EditUserForm = () => {
                     return
                 }
             }
-    
-            // Cek apakah email sudah terdaftar
-            const emailExists = await checkEmailExists(formData.email, uid)
-            if (emailExists) {
-                toast.warning('Email sudah terdaftar. Gunakan email lain')
-                setIsSubmitting(false)
-                return
-            }
-    
+
             // Pemetaan validator dari UID
             const validatorUids = formData.validator.filter(uid => validatorOptions.some(option => option.value === uid))
-    
+
             // Pemetaan reviewer dari UID
             const reviewer1Uids = formData.reviewer1.filter(uid => reviewer1Options.some(option => option.value === uid))
             const reviewer2Uids = formData.reviewer2.filter(uid => reviewer2Options.some(option => option.value === uid))
-    
+
             // Update formData dengan UID yang valid
             const updatedFormData = {
                 ...formData,
@@ -351,11 +336,11 @@ const EditUserForm = () => {
                 reviewer1: reviewer1Uids,
                 reviewer2: reviewer2Uids,
             }
-    
+
             // Simpan data pengguna ke Firestore
             const userRef = doc(db, 'users', uid)
             await updateDoc(userRef, updatedFormData)
-                
+
             toast.success('Pengguna berhasil diperbarui')
             setTimeout(() => {
                 navigate(-1)
@@ -412,7 +397,7 @@ const EditUserForm = () => {
 
             <div className="bg-white p-6 rounded-lg shadow">
                 <h3 className="text-xl font-medium mb-4">Ubah Data Pengguna</h3>
-                <div className="sm:grid sm:grid-cols-2 gap-6">
+                {/* <div className="sm:grid sm:grid-cols-2 gap-6">
                     <div className="mb-2">
                         <label className="block font-medium text-gray-700">
                             Nama Lengkap <span className="text-red-500">*</span>
@@ -606,7 +591,361 @@ const EditUserForm = () => {
                             />
                         </div>
                     </div>
-                )}
+                )} */}
+
+                <div className='hidden sm:block'>
+                    <div className="sm:grid sm:grid-cols-2 gap-6">
+                        <div>
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Nama Lengkap <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="nama"
+                                    value={formData.nama}
+                                    onChange={handleChange}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                />
+                            </div>
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Email <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            {formData.role !== 'Super Admin' && (
+                                <div>
+                                    <div className="mb-2">
+                                        <label className="block font-medium text-gray-700">
+                                            Nama Bank <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="bankName"
+                                            value={formData.bankName}
+                                            onChange={handleChange}
+                                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                        />
+                                    </div>
+                                    <div className="mb-2">
+                                        <label className="block font-medium text-gray-700">
+                                            Nomor Rekening <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="accountNumber"
+                                            value={formData.accountNumber}
+                                            onChange={handleChange}
+                                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    {formData.role !== 'Super Admin' && (
+                        <div className="sm:grid sm:grid-cols-2 gap-6">
+                            <div>
+                                <div className="mb-2">
+                                    <label className="block font-medium text-gray-700">
+                                        Unit Bisnis <span className="text-red-500">*</span>
+                                    </label>
+                                    <Select
+                                        name="unit"
+                                        value={unitOptions.find((option) => option.value === formData.unit)}
+                                        onChange={(selectedOption) => handleSelectChange(selectedOption, 'unit')}
+                                        options={unitOptions}
+                                        className="basic-single-select mt-1 hover:border-blue-400"
+                                        classNamePrefix="select"
+                                        isClearable
+                                        styles={selectStyles}
+                                        isSearchable={true}
+                                    />
+                                </div>
+                                <div className="mb-2">
+                                    <label className="block font-medium text-gray-700">
+                                        Department <span className="text-red-500">*</span>
+                                    </label>
+                                    <Select
+                                        isMulti
+                                        name="department"
+                                        value={departmentOptions.filter((option) =>
+                                            formData.department?.includes(option.label)
+                                        )}
+                                        onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'department')}
+                                        options={departmentOptions}
+                                        className="basic-multi-select mt-1"
+                                        classNamePrefix="select"
+                                        styles={selectStyles}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <div className="mb-2">
+                                    <label className="block font-medium text-gray-700">
+                                        Validator {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
+                                    </label>
+                                    <Select
+                                        isMulti
+                                        name="validator"
+                                        value={validatorOptions.filter((option) => formData.validator?.includes(option.value))}
+                                        options={validatorOptions}
+                                        className="basic-multi-select mt-1"
+                                        classNamePrefix="select"
+                                        styles={selectStyles}
+                                        onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'validator')}
+                                    />
+                                </div>
+                                <div className="mb-2">
+                                    <label className="block font-medium text-gray-700">
+                                        Reviewer 1
+                                    </label>
+                                    <Select
+                                        isMulti
+                                        name="reviewer1"
+                                        value={reviewer1Options.filter((option) =>
+                                            formData.reviewer1?.includes(option.value)
+                                        )}
+                                        onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer1')}
+                                        options={reviewer1Options}
+                                        className="basic-multi-select mt-1"
+                                        classNamePrefix="select"
+                                        styles={selectStyles}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    <div className="sm:grid sm:grid-cols-2 gap-6">
+                        <div>
+                            {formData.role !== 'Super Admin' && (
+                                <div className="mb-2">
+                                    <label className="block font-medium text-gray-700">
+                                        Posisi <span className="text-red-500">*</span>
+                                    </label>
+                                    <Select
+                                        name="posisi"
+                                        value={posisiOptions.find((option) => option.label === formData.posisi)}
+                                        onChange={(selectedOption) => handleSelectChange(selectedOption, 'posisi')}
+                                        options={posisiOptions}
+                                        className="basic-single-select mt-1 hover:border-blue-400"
+                                        classNamePrefix="select"
+                                        isClearable
+                                        styles={selectStyles}
+                                        isSearchable={false}
+                                    />
+                                </div>
+                            )}
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Role <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    name="role"
+                                    value={roleOptions.find((option) => option.label === formData.role)}
+                                    onChange={(selectedOption) => handleSelectChange(selectedOption, 'role')}
+                                    options={roleOptions}
+                                    className="basic-single-select mt-1 hover:border-blue-400"
+                                    classNamePrefix="select"
+                                    isClearable
+                                    styles={selectStyles}
+                                    isSearchable={false}
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            {formData.role !== 'Super Admin' && (
+                                <div className="mb-2">
+                                    <label className="block font-medium text-gray-700">
+                                        Reviewer 2
+                                    </label>
+                                    <Select
+                                        isMulti
+                                        name="reviewer2"
+                                        value={reviewer2Options.filter((option) => formData.reviewer2?.includes(option.value))}
+                                        onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer2')}
+                                        options={reviewer2Options}
+                                        className="basic-multi-select mt-1"
+                                        classNamePrefix="select"
+                                        styles={selectStyles}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Mobile/small screen layout */}
+                <div className="block sm:hidden">
+                    <div className="mb-2">
+                        <label className="block font-medium text-gray-700">
+                            Nama Lengkap <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="nama"
+                            value={formData.nama}
+                            onChange={handleChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                        />
+                    </div>
+                    <div className="mb-2">
+                        <label className="block font-medium text-gray-700">
+                            Email <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                        />
+                    </div>
+                    <div className="mb-2">
+                        <label className="block font-medium text-gray-700">
+                            Role <span className="text-red-500">*</span>
+                        </label>
+                        <Select
+                            name="role"
+                            value={roleOptions.find((option) => option.label === formData.role)}
+                            onChange={(selectedOption) => handleSelectChange(selectedOption, 'role')}
+                            options={roleOptions}
+                            className="basic-single-select mt-1 hover:border-blue-400"
+                            classNamePrefix="select"
+                            isClearable
+                            styles={selectStyles}
+                            isSearchable={false}
+                        />
+                    </div>
+                    {formData.role !== 'Super Admin' && (
+                        <div>
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Posisi <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    name="posisi"
+                                    options={posisiOptions}
+                                    value={posisiOptions.find(option => option.value === formData.posisi)}
+                                    onChange={(selectedOption) => handleSelectChange(selectedOption, 'posisi')}
+                                    className="basic-single-select mt-1 hover:border-blue-400"
+                                    classNamePrefix="select"
+                                    styles={selectStyles}
+                                    isSearchable={false}
+                                />
+                            </div>
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Department <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    isMulti
+                                    name="department"
+                                    options={departmentOptions}
+                                    value={departmentOptions.filter(option => formData.department.includes(option.value))}
+                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'department')}
+                                    className="basic-multi-select mt-1"
+                                    classNamePrefix="select"
+                                    styles={selectStyles}
+                                />
+                            </div>
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Unit Bisnis <span className="text-red-500">*</span>
+                                </label>
+                                <Select
+                                    name="unit"
+                                    options={unitOptions}
+                                    value={unitOptions.find(option => option.value === formData.unit)}
+                                    onChange={(selectedOption) => handleSelectChange(selectedOption, 'unit')}
+                                    className="basic-single-select mt-1 hover:border-blue-400"
+                                    classNamePrefix="select"
+                                    styles={selectStyles}
+                                    isSearchable={true}
+                                />
+                            </div>
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Nama Bank <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="bankName"
+                                    value={formData.bankName}
+                                    onChange={handleChange}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                />
+                            </div>
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Nomor Rekening <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="accountNumber"
+                                    value={formData.accountNumber}
+                                    onChange={handleChange}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 hover:border-blue-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                />
+                            </div>
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Validator {formData.role !== 'Reviewer' && <span className="text-red-500">*</span>}
+                                </label>
+                                <Select
+                                    isMulti
+                                    name="validator"
+                                    value={validatorOptions.filter((option) => formData.validator?.includes(option.value))}
+                                    options={validatorOptions}
+                                    className="basic-multi-select mt-1"
+                                    classNamePrefix="select"
+                                    styles={selectStyles}
+                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'validator')}
+                                />
+                            </div>
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Reviewer 1
+                                </label>
+                                <Select
+                                    isMulti
+                                    name="reviewer1"
+                                    value={reviewer1Options.filter((option) =>
+                                        formData.reviewer1?.includes(option.value)
+                                    )}
+                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer1')}
+                                    options={reviewer1Options}
+                                    className="mt-1"
+                                    styles={selectStyles}
+                                />
+                            </div>
+                            <div className="mb-2">
+                                <label className="block font-medium text-gray-700">
+                                    Reviewer 2
+                                </label>
+                                <Select
+                                    isMulti
+                                    name="reviewer2"
+                                    value={reviewer2Options.filter((option) => formData.reviewer2?.includes(option.value))}
+                                    onChange={(selectedOptions) => handleSelectChange(selectedOptions, 'reviewer2')}
+                                    options={reviewer2Options}
+                                    className="mt-1"
+                                    styles={selectStyles}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 <div className="flex flex-col sm:flex-row justify-end mt-6 gap-4">
                     <button
                         onClick={() => navigate(-1)}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import Select from "react-select";
 import GAUBarChart from './GAUBarChart';
@@ -194,22 +194,24 @@ const GAUPieChart = () => {
         const fetchData = async () => {
             setLoading(true)
 
-            try {
-                // Fetch reimbursement data
-                const reimbQuerySnapshot = await getDocs(collection(db, "reimbursement"));
+            try {              
+                // Fetch reimbursement data (hanya yang Disetujui)
+                const reimbQuery = query(collection(db, "reimbursement"), where("status", "==", "Disetujui"));
+                const reimbQuerySnapshot = await getDocs(reimbQuery);
                 const reimbData = reimbQuerySnapshot.docs.map(doc => ({
                     ...doc.data(),
                     id: doc.id
                 }));
-                setReimbursementData(reimbData); // Set reimbursementData
+                setReimbursementData(reimbData);
 
-                // Fetch LPJ data
-                const lpjQuerySnapshot = await getDocs(collection(db, "lpj"));
+                // Fetch LPJ data (hanya yang Disetujui)
+                const lpjQuery = query(collection(db, "lpj"), where("status", "==", "Disetujui"));
+                const lpjQuerySnapshot = await getDocs(lpjQuery);
                 const lpjFetchedData = lpjQuerySnapshot.docs.map(doc => ({
                     ...doc.data(),
                     id: doc.id
                 }));
-                setLpjData(lpjFetchedData); // Set lpjData
+                setLpjData(lpjFetchedData);
 
                 const combinedData = [...reimbData, ...lpjFetchedData];
 
